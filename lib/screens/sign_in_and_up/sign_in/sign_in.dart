@@ -1,4 +1,3 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
@@ -7,6 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 import '../../../models/http_exception.dart';
+import '../../home_screen.dart';
 
 class SignIn extends StatefulWidget {
   @override
@@ -39,103 +39,6 @@ class _SignInState extends State<SignIn> {
       ),
     );
   }
-  Future<void> _submitForm() async {
-//    if(!_isSignUp){
-//      if (_formKey.currentState.validate()) {
-//        _formKey.currentState.save();
-//        setState(() {
-//          _isSignInSuccessful = true;
-//        });
-//        try {
-//          bool auth = await Provider.of<Auth>(context, listen: false).signInUsingEmail(
-//              email: email.trim(), password: password.trim());
-//          if (auth == true) {
-//            Toast.show(
-//                "successfully Sign Up", context, duration: Toast.LENGTH_SHORT,
-//                gravity: Toast.BOTTOM);
-//            Navigator.of(context).pushReplacement(
-//                MaterialPageRoute(builder: (context) => HomeScreen()));
-//          }
-//        } on HttpException catch (error) {
-//          setState(() {
-//            _isSignInSuccessful = false;
-//          });
-//          switch (error.toString()) {
-//            case "ERROR_INVALID_EMAIL":
-//              errorMessage = "Your email address appears to be malformed.";
-//              break;
-//            case "ERROR_WRONG_PASSWORD":
-//              errorMessage = "Your password is wrong.";
-//              break;
-//            case "ERROR_USER_NOT_FOUND":
-//              errorMessage = "User with this email doesn't exist.";
-//              break;
-//            case "ERROR_USER_DISABLED":
-//              errorMessage = "User with this email has been disabled.";
-//              break;
-//            case "ERROR_TOO_MANY_REQUESTS":
-//              errorMessage = "Too many requests. Try again later.";
-//              break;
-//            case "ERROR_OPERATION_NOT_ALLOWED":
-//              errorMessage = "Signing in with Email and Password is not enabled.";
-//              break;
-//            default:
-//              errorMessage = "An undefined Error happened.";
-//          }
-//          _showErrorDialog(errorMessage);
-//        } catch (error) {
-//          setState(() {
-//            _isSignInSuccessful = false;
-//          });
-//          const errorMessage =
-//              'Could not authenticate you. Please try again later.';
-//          _showErrorDialog(errorMessage);
-//        }
-//      }
-//    }
-  }
-
-//  getLocation() {
-//    try {
-//     // Provider.of<Auth>(context, listen: false).getLocation();
-//    } on HttpException catch (error) {
-//      switch (error.toString()) {
-//        case "PERMISSION_DENIED":
-//          errorMessage = "Please enable Your Location";
-//          break;
-//        default:
-//          errorMessage = "An undefined Error happened.";
-//      }
-//      _showErrorDialogLocation(errorMessage);
-//    } catch (error) {
-//      const errorMessage = 'Could not get your location. Please try again.';
-//      _showErrorDialogLocation(errorMessage);
-//    }
-//  }
-//  void _showErrorDialogLocation(String message) {
-//    showDialog(
-//      context: context,
-//      builder: (ctx) => AlertDialog(
-//        title: Text('An Error Occurred!'),
-//        content: Text(message),
-//        actions: <Widget>[
-//          FlatButton(
-//            child: Text('Enable Now'),
-//            onPressed: () {
-//              getLocation();
-//              Navigator.of(ctx).pop();
-//            },
-//          ),
-//          FlatButton(
-//            child: Text('Cancel'),
-//            onPressed: () {
-//              Navigator.of(ctx).pop();
-//            },
-//          )
-//        ],
-//      ),
-//    );
-//  }
   @override
   Widget build(BuildContext context) {
     return InfoWidget(
@@ -172,18 +75,6 @@ class _SignInState extends State<SignIn> {
                             setState(() {
                               _isSignInUsingPhoneSuccessful=true;
                             });
-//                        bool x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG('G');
-//                        if(x==false){
-//                          Toast.show("Please try again!", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-//                          setState(() {
-//                            _isSignInUsingGoogleSuccessful=false;
-//                          });
-//                        }else{
-//                          Toast.show("successfully Sign Up", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-//                          //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
-//                          //getLocation();
-//                        }
-//
                           },
                           shape: RoundedRectangleBorder(
                               borderRadius:
@@ -201,12 +92,8 @@ class _SignInState extends State<SignIn> {
                                     translator.currentLanguage == "en"
                                         ? 'Continue with Phone Number':'الدخول عن طريق الهاتف',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
+                                    style: infoWidget.titleButton,
+                                ),)
                               ],
                             ),
                           ),
@@ -223,14 +110,15 @@ class _SignInState extends State<SignIn> {
                             });
                         bool x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG('G');
                         if(x==false){
-                          Toast.show("Please try again!", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                          Toast.show(translator.currentLanguage == "en"
+                              ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
                           setState(() {
                             _isSignInUsingGoogleSuccessful=false;
                           });
                         }else{
-                          Toast.show("successfully Sign Up", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                          //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
-                          //getLocation();
+                          Toast.show(translator.currentLanguage == "en"
+                              ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
                         }
 //
                           },
@@ -250,10 +138,7 @@ class _SignInState extends State<SignIn> {
                                     translator.currentLanguage == "en"
                                         ? 'Continue with Google':'الدخول عن طريق حساب جوجل',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: infoWidget.titleButton,
                                   ),
                                 ),
                               ],
@@ -269,13 +154,15 @@ class _SignInState extends State<SignIn> {
                            });
                            await Provider.of<Auth>(context, listen: false).signInUsingFBorG("FB").then((x){
                              if(x==false){
-                               Toast.show("Please try again!", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                               Toast.show(translator.currentLanguage == "en"
+                                   ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
                                setState(() {
                                  _isSignInUsingFBSuccessful=false;
                                });
                              }else{
-                               Toast.show("successfully Sign Up", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                               //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+                               Toast.show(translator.currentLanguage == "en"
+                                   ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
                              }
                            });
                          },
@@ -297,10 +184,7 @@ class _SignInState extends State<SignIn> {
                                    translator.currentLanguage == "en"
                                        ? 'Continue with Facebook':'الدخول عن طريق حساب الفيس بوك',
                                    textAlign: TextAlign.center,
-                                   style: TextStyle(
-                                       color: Colors.white,
-                                       fontSize: 16,
-                                       fontWeight: FontWeight.bold),
+                                   style: infoWidget.titleButton,
                                  ),
                                ),
                              ],
@@ -318,7 +202,7 @@ class _SignInState extends State<SignIn> {
                               translator.currentLanguage == "en"
                                   ? 'Register with phone ':'تسجيل برقم الهاتف ',
                               style:
-                              TextStyle(color: Colors.black, fontSize: 16),
+                              infoWidget.subTitle,
                             ),
                             InkWell(
                               onTap: () {
@@ -327,10 +211,7 @@ class _SignInState extends State<SignIn> {
                               child: Text(
                                 translator.currentLanguage == "en"
                                     ? 'Register!':'!سجل',
-                                style: TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 16,
-                                    decoration: TextDecoration.underline),
+                                style: infoWidget.subTitle.copyWith(color: Colors.indigo),
                               ),
                             ),
                           ],
