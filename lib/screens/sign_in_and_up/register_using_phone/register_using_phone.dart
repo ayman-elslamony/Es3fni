@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
+import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 
 class RegisterUsingPhone extends StatefulWidget {
@@ -18,13 +20,11 @@ class _RegisterUsingPhoneState extends State<RegisterUsingPhone> {
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
   String phoneNumber;
-  void getPhoneNumber(String phoneNumber) async {
-    //PhoneNumber number =
-    //await PhoneNumber.getRegionInfoFromPhoneNumber(phoneNumber, 'US');
-
-//    setState(() {
-//      this.number = number;
-//    });
+Auth _auth;
+@override
+  void initState() {
+  _auth =Provider.of<Auth>(context,listen: false);
+    super.initState();
   }
 
   @override
@@ -101,8 +101,11 @@ class _RegisterUsingPhoneState extends State<RegisterUsingPhone> {
                                     formKey.currentState.validate();
                                     if(controller.text.trim().length ==12) {
                                       formKey.currentState.save();
-                                      print(phoneNumber);
-                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>VerifyCode(phoneNumber: phoneNumber,)));
+                                      _auth.signInUsingPhone(
+                                          infoWidget: infoWidget,
+                                          context: context,
+                                          phone: phoneNumber
+                                      );
                                     }else{
                                       Toast.show(translator.currentLanguage == "en" ?'invalid phone number':'الرقم غير صحيح', context);
                                     }

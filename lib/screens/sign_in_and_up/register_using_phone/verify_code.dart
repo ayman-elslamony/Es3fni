@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
+import 'package:helpme/providers/auth.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
+
+import '../../home_screen.dart';
 
 class VerifyCode extends StatefulWidget {
   final String phoneNumber;
-
-  VerifyCode({this.phoneNumber = '+201145523795'});
+final Function function;
+  VerifyCode({this.phoneNumber,this.function});
 
   @override
   _VerifyCodeState createState() => _VerifyCodeState();
@@ -20,7 +24,12 @@ class _VerifyCodeState extends State<VerifyCode> {
   int _previousStreamValue = 0;
   bool loadingStream = false;
   String _code;
-
+Auth _auth;
+  @override
+  void initState() {
+    _auth = Provider.of<Auth>(context,listen:false);
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return InfoWidget(
@@ -38,15 +47,15 @@ class _VerifyCodeState extends State<VerifyCode> {
                         SizedBox(
                           height: infoWidget.screenWidth * 0.16,
                         ),
-                        Image.asset('assets/Logo.png',
-                            fit: BoxFit.fill,
-                            width:
-                            infoWidget.orientation == Orientation.landscape
-                                ? infoWidget.localWidth * 0.2
-                                : infoWidget.localWidth * 0.28),
-                        SizedBox(
-                          height: infoWidget.screenWidth * 0.2,
-                        ),
+//                        Image.asset('assets/Logo.png',
+//                            fit: BoxFit.fill,
+//                            width:
+//                            infoWidget.orientation == Orientation.landscape
+//                                ? infoWidget.localWidth * 0.2
+//                                : infoWidget.localWidth * 0.28),
+//                        SizedBox(
+//                          height: infoWidget.screenWidth * 0.2,
+//                        ),
                         Text(
                           translator.currentLanguage == "en"
                               ? 'Verification'
@@ -89,9 +98,10 @@ class _VerifyCodeState extends State<VerifyCode> {
                                                   .copyWith(
                                                   color: Colors.indigo),
                                               underlineColor: Colors.indigo,
+                                              itemSize: 40,
                                               keyboardType:
                                               TextInputType.number,
-                                              length: 4,
+                                              length: 6,
                                               clearAll: Padding(
                                                   padding:
                                                   const EdgeInsets.all(8.0),
@@ -117,6 +127,7 @@ class _VerifyCodeState extends State<VerifyCode> {
                                         ),
                                         RaisedButton(
                                           onPressed: () {
+                                            print(_code);
                                             if (_code == null) {
                                               Toast.show(
                                                   translator.currentLanguage ==
@@ -124,14 +135,17 @@ class _VerifyCodeState extends State<VerifyCode> {
                                                       ? 'enter code'
                                                       : 'ادخل الكود',
                                                   context);
-                                            } else if (_code.length != 4) {
+                                            } else if (_code.length != 6) {
                                               Toast.show(
                                                   translator.currentLanguage ==
                                                       "en"
                                                       ? 'invalid code'
                                                       : 'الكود غير صحيح',
                                                   context);
-                                            } else {}
+                                            } else {
+                                              print('qqqqqqqqqq');
+                                              widget.function(_code);
+                                            }
                                           },
                                           color: Colors.indigo,
                                           child: Padding(
@@ -158,7 +172,7 @@ class _VerifyCodeState extends State<VerifyCode> {
                           height: 20,
                         ),
                         InkWell(
-                          onTap: () {
+                          onTap: () async{
                             if (loadingStream == false) {
                               setState(() {
                                 loadingStream = true;
@@ -167,6 +181,20 @@ class _VerifyCodeState extends State<VerifyCode> {
                               _periodicStream = Stream.periodic(
                                   Duration(milliseconds: 1000), (i) => i);
                               _previousStreamValue = 0;
+
+                              String x=await  _auth.signInUsingPhone(
+                                  infoWidget: infoWidget,
+                                  context: context,
+                                  phone: widget.phoneNumber
+                              );
+                              if(x == 'verifysccuess'){
+                                Toast.show(translator.currentLanguage == "en"
+                                    ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
+                              }else{
+                                Toast.show(translator.currentLanguage == "en"
+                                    ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                              }
                             }
                           },
                           child: Row(

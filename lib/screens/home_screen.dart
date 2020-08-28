@@ -3,6 +3,7 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:provider/provider.dart';
 
+import 'sign_in_and_up/sign_in/sign_in.dart';
 import 'sign_in_and_up/sign_in_and_up.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,7 +38,7 @@ class _HomePageState extends State<HomePage> {
                 RaisedButton(onPressed: ()async{
                  bool x =  await _auth.logout();
                  if(x){
-                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> Sign()));
+                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> SignIn()));
                  }
                 },
                 child: Text('log out'),
