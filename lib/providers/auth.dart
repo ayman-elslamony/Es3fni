@@ -18,7 +18,6 @@ class Auth with ChangeNotifier {
   final databaseReference = Firestore.instance;
   static String _token;
   static String userId='';
-  static String _address;
   String signInType='';
   bool get isAuth {
     try{
@@ -203,7 +202,6 @@ class Auth with ChangeNotifier {
       userId = null;
       final prefs = await SharedPreferences.getInstance();
       prefs.clear();
-
       return true;
     }catch(e){
       notifyListeners();
