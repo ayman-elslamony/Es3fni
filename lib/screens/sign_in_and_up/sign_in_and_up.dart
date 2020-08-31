@@ -1,6 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/register_using_phone.dart';
 import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';

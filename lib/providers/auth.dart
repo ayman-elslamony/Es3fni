@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/models/http_exception.dart';
 import 'package:helpme/models/user_data.dart';
-import 'package:helpme/screens/home_screen.dart';
+import 'package:helpme/screens/main_screen.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,24 @@ class Auth with ChangeNotifier {
   static String _token;
   static String userId = '';
   String signInType = '';
-
+  String _userType = 'patient';
+  UserData _userData = UserData(
+    name: 'ayman',
+    id: '12345',
+    email: 'ayman17@gmail',
+    address: 'mansoura',
+    phone: '01145523795',
+    gender: 'male',
+    government: 'mansoura',
+    imgUrl: 'https://w0.pngwave.com/png/246/366/computer-icons-avatar-user-profile-man-avatars-png-clip-art.png'
+  );
+  set setUserType(String type) {
+    _userType = type;
+  }
+  String get getUserType {
+    return _userType;
+  }
+  UserData get userData => _userData;
   bool get isAuth {
     try {
       firebaseAuth.currentUser().then((user) {
@@ -108,7 +126,112 @@ class Auth with ChangeNotifier {
       });
     }
   }
-
+  Future<bool> editProfile({String type,String address,String phone,File image,String job,String social,String bio})async{
+//    FormData formData;
+//    var data;
+//    try{
+//      if(type =='bio'){
+//        formData = FormData.fromMap({
+//          'bio': bio,
+//        });
+//        data = await _netWork
+//            .updateData(url: 'doctor/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print('data $data');
+//      }
+//      if(type == 'image'){
+//        String fileName = image.path
+//            .split('/')
+//            .last;
+//        if(_userType == 'doctor'){
+//          formData = FormData.fromMap({
+//            'doctorImage': await MultipartFile.fromFile(image.path,
+//                filename: fileName)
+//          });
+//        }else{
+//          formData = FormData.fromMap({
+//            'patientImage': await MultipartFile.fromFile(image.path,
+//                filename: fileName)
+//          });
+//        }
+//        data = await _netWork
+//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print(data);
+//      }
+//      if(type == 'job'){
+//        formData = FormData.fromMap({
+//          'job': job,
+//        });
+//        data = await _netWork
+//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print('data $data');
+//      }
+//      if(type == 'address'){
+//        String government = '';
+//        for (int i = 0; i < governorateList.length; i++) {
+//          if (address.contains(governorateList[i])) {
+//            government = governorateList[i];
+//          }
+//        }
+//        formData = FormData.fromMap({
+//          'address': address,
+//          'government': government,
+//        });
+//        data = await _netWork
+//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print('data $data');
+//      }
+//      if(type == 'phone'){
+//        if(_userType == 'doctor') {
+//          formData = FormData.fromMap({
+//            'number': '0$phone',
+//          });
+//        }else{
+//          formData = FormData.fromMap({
+//            'phone': '0$phone',
+//          });
+//        }
+//        data = await _netWork
+//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print('data $data');
+//      }
+//      if(type == 'social'){
+//        formData = FormData.fromMap({
+//          'status': social,
+//        });
+//        data = await _netWork
+//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
+//          'Authorization': 'Bearer $_token',
+//        });
+//        print('data $data');
+//      }
+//      if (data != null) {
+//        if(_userType =='doctor'){
+//          rgisterData = RegisterData.fromJson(data['doctor'], 'doctor');
+//        }else{
+//          rgisterData = RegisterData.fromJson(data['patient'], 'patient');
+//        }
+//        print('svfdsb');
+//        notifyListeners();
+//        return true;
+//      }else{
+//        return false;
+//      }
+//    }catch (e){
+//      print(e);
+//      return false;
+//    }
+  return true;
+  }
   createAccount(
       {String name,
       String email,
@@ -247,7 +370,7 @@ class Auth with ChangeNotifier {
                });
                prefs.setString('signInUsingPhone', _signInUsingPhone);
                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                   builder: (context) =>HomePage() ));
+                   builder: (context) =>HomeScreen() ));
              }
            } else {
              print("Error");
@@ -290,7 +413,7 @@ class Auth with ChangeNotifier {
                    });
                    prefs.setString('signInUsingPhone', _signInUsingPhone);
                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                       builder: (context) =>HomePage() ));
+                       builder: (context) =>HomeScreen() ));
                  }
 
                } else {

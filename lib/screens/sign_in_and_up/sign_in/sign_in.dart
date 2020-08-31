@@ -8,7 +8,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 import '../../../models/http_exception.dart';
-import '../../home_screen.dart';
+import '../../main_screen.dart';
 
 class SignIn extends StatefulWidget {
   @override
@@ -194,7 +194,7 @@ class _SignInState extends State<SignIn> {
                         }else{
                           Toast.show(translator.currentLanguage == "en"
                               ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
                         }
 //
                           },
@@ -238,7 +238,7 @@ class _SignInState extends State<SignIn> {
                              }else{
                                Toast.show(translator.currentLanguage == "en"
                                    ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
+                               Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
                              }
                            });
                          },

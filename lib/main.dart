@@ -5,8 +5,7 @@ import 'package:helpme/screens/sign_in_and_up/register_using_phone/register_usin
 import 'package:helpme/screens/sign_in_and_up/sign_in_and_up.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
-
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 import 'screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'screens/splash_screen.dart';
@@ -47,7 +46,7 @@ class _AppState extends State<App> {
           debugShowCheckedModeBanner: false,
           title: 'Es3fni',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.indigo,
             accentColor: Colors.white,
             cardTheme: CardTheme(
               color: Colors.white,
@@ -67,14 +66,14 @@ class _AppState extends State<App> {
             ),
           ),
           home: auth.isAuth
-              ? HomePage()
+              ? HomeScreen()
               : FutureBuilder(
               future: auth.tryToLogin(),
               builder: (ctx, authResultSnapshot) {
                 if (authResultSnapshot.connectionState ==
                     ConnectionState.done &&
                     auth.isAuth) {
-                  return HomePage();
+                  return HomeScreen();
                 } else if (authResultSnapshot.connectionState ==
                     ConnectionState.waiting ||
                     authResultSnapshot.connectionState ==

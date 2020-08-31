@@ -6,7 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
 
-import '../../home_screen.dart';
+import '../../main_screen.dart';
 
 class VerifyCode extends StatefulWidget {
   final String phoneNumber;
@@ -190,7 +190,7 @@ Auth _auth;
                               if(x == 'verifysccuess'){
                                 Toast.show(translator.currentLanguage == "en"
                                     ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomePage()));
+                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
                               }else{
                                 Toast.show(translator.currentLanguage == "en"
                                     ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);

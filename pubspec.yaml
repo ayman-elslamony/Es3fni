@@ -39,6 +39,12 @@ dependencies:
   firebase_database:
   firebase_storage: ^3.1.5
   cloud_firestore: ^0.13.5
+  curved_navigation_bar: ^0.3.3
+  image_picker: ^0.6.7+7
+  geocoder: ^0.2.1
+  geocoding: ^1.0.2
+  geolocator: ^6.0.0+1
+  google_maps_flutter:
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +77,17 @@ flutter:
    - assets/google.png
    - assets/facebook.png
    - assets/phone.png
+   - assets/icons/marker.png
+   - assets/icons/home.png
+   - assets/icons/user1.jpeg
+   - assets/icons/homename.png
+   - assets/icons/profile.png
+   - assets/icons/profilename.png
+   - assets/icons/clinic.png
+   - assets/icons/clinicname.png
+   - assets/icons/search.png
+   - assets/icons/nameSearch.png
+   - assets/user.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
