@@ -48,13 +48,37 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Widget _iconNavBar(String iconPath, DeviceInfo infoWidget) {
-    return ImageIcon(AssetImage(iconPath,
-      ),
-      size: infoWidget.orientation==Orientation.portrait?infoWidget.screenWidth*0.099:infoWidget.screenWidth*0.05,
+  Widget _iconNavBar({IconData iconPath, String title, DeviceInfo infoWidget}) {
+    return title == null
+        ? Icon(
+      iconPath,
       color: Colors.white,
+    )
+        : Padding(
+      padding: const EdgeInsets.only(top: 15.0),
+      child: Column(
+        children: <Widget>[
+          Icon(
+            iconPath,
+            color: Colors.white,
+          ),
+          title == null
+              ? SizedBox()
+              : Text(
+            title,
+            style: TextStyle(
+                fontSize: MediaQuery.of(context).orientation ==
+                    Orientation.portrait
+                    ? MediaQuery.of(context).size.width * 0.035
+                    : MediaQuery.of(context).size.width * 0.024,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
+          )
+        ],
+      ),
     );
   }
+
 
 
   Widget _drawerListTile({String name,
@@ -139,6 +163,13 @@ Widget set(){
               child: Drawer(
                 child: ListView(
                   children: <Widget>[
+
+                  (() {
+                    if(_auth.getUserType == 'doctor'){
+                      return Column();
+                    }
+                    return Column();
+                  }()),
                     UserAccountsDrawerHeader(
                       onDetailsPressed: () {
                         Navigator.of(context).pop();
@@ -166,7 +197,8 @@ Widget set(){
                     ),
                     _drawerListTile(
                         name: translator.currentLanguage == "en" ?"Home":'الرئيسيه',
-                        imgPath: 'assets/icons/home.png',
+                        isIcon: true,
+                        icon: Icons.home,
                         infoWidget: infoWidget,
                         onTap: () {
                           Navigator.of(context).pop();
@@ -175,19 +207,10 @@ Widget set(){
                           });
                           _pageController.jumpToPage(_page);
                         }),
-                    _auth.getUserType == 'doctor'?_drawerListTile(
-                        name: "Clinic",
-                        imgPath: 'assets/icons/clinic.png',
-                        infoWidget: infoWidget,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            _page = 1;
-                          });
-                          _pageController.jumpToPage(_page);
-                        }):_drawerListTile(
+                   _drawerListTile(
                         name: translator.currentLanguage == "en" ?"Search":'بحث',
-                        imgPath: 'assets/icons/search.png',
+                        isIcon: true,
+                        icon: Icons.search,
                         infoWidget: infoWidget,
                         onTap: () {
                           Navigator.of(context).pop();
@@ -198,8 +221,9 @@ Widget set(){
                         }),
                     _drawerListTile(
                         name: translator.currentLanguage == "en" ?"Edit Profile":'تعديل الحساب',
-                        imgPath: 'assets/icons/profile.png',
                         infoWidget: infoWidget,
+                        isIcon: true,
+                        icon: Icons.person,
                         onTap: () {
                           print('njb');
                           Navigator.of(context).push(MaterialPageRoute(
@@ -207,17 +231,6 @@ Widget set(){
                                   EditProfile()));
                         }),
 
-//                  _auth.getUserType == 'doctor' ? SizedBox() : _drawerListTile(
-//                      name: "Drug List",
-//                      isIcon: true,
-//                      icon: Icons.assignment,
-//                      infoWidget: infoWidget,
-//                      onTap: () {
-//                        Navigator.of(context)
-//                            .push(
-//                            MaterialPageRoute(builder: (context) => DrugAndRadiologyAndAnalysis(isDrugs: true,)));
-//                      }),
-//
                     _drawerListTile(
                         name: translator.currentLanguage == "en" ?"Log Out":'تسجيل الخروج',
                         isIcon: true,
@@ -234,23 +247,21 @@ Widget set(){
             ),
 
             bottomNavigationBar: CurvedNavigationBar(
-              height: infoWidget
-                  .screenHeight >=960?70:50,
+              height: infoWidget.screenHeight >= 960 ? 70 : 55,
               key: _bottomNavigationKey,
               backgroundColor: Colors.white,
               color: Colors.indigo,
               items: <Widget>[
-                _page == 0
-                    ? _iconNavBar('assets/icons/home.png',infoWidget)
-                    : _iconNavBar('assets/icons/homename.png',infoWidget),
-                _auth.getUserType == 'doctor'?_page == 1
-                    ? _iconNavBar('assets/icons/clinic.png',infoWidget)
-                    : _iconNavBar('assets/icons/clinicname.png',infoWidget):_page == 1
-                    ? _iconNavBar('assets/icons/search.png',infoWidget)
-                    : _iconNavBar('assets/icons/nameSearch.png',infoWidget),
-                _page == 2
-                    ? _iconNavBar('assets/icons/profile.png',infoWidget)
-                    : _iconNavBar('assets/icons/profilename.png',infoWidget),
+                _page != 0
+                    ? _iconNavBar(infoWidget: infoWidget,iconPath: Icons.home,title: translator.currentLanguage == "en" ?'Home':'الرئيسيه')
+                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.home),
+                _page != 1
+                    ? _iconNavBar(infoWidget: infoWidget,iconPath: Icons.search,title: translator.currentLanguage == "en" ?'Search':'بحث')
+                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.search),
+                _page != 2
+                    ? _iconNavBar(
+                    infoWidget: infoWidget,iconPath: Icons.person,title: translator.currentLanguage == "en" ?'Profile':'البروفايل')
+                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.person),
               ],
               onTap: (index) {
                 setState(() {

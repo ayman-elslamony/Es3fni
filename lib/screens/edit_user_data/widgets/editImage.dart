@@ -40,7 +40,7 @@ class _EditImageState extends State<EditImage> {
         context: context,
         builder: (BuildContext context) {
           return Container(
-            height: 100.0,
+            height: MediaQuery.of(context).orientation==Orientation.portrait?MediaQuery.of(context).size.height*0.16:MediaQuery.of(context).size.height*0.28,
             padding: EdgeInsets.all(10.0),
             child: Column(children: [
               Text(
@@ -115,8 +115,7 @@ class _EditImageState extends State<EditImage> {
         _openImagePicker();
       },
       child: Container(
-        padding: EdgeInsets.all(10.0),
-        height: 40,
+        padding: EdgeInsets.all(5.0),
         width: 150,
         decoration: BoxDecoration(
             color: Colors.indigo,

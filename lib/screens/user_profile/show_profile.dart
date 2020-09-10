@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/user_data.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 
 class ShowUserProfile extends StatefulWidget {
   final UserData userData;
@@ -14,6 +16,27 @@ class ShowUserProfile extends StatefulWidget {
 }
 
 class _ShowUserProfileState extends State<ShowUserProfile> {
+
+  personalInfo(
+      {String title,
+        String subtitle,
+        DeviceInfo infoWidget,
+        IconData iconData}) {
+    return ListTile(
+      title: Text(
+        title,
+        style: infoWidget.titleButton.copyWith(color: Colors.indigo),
+      ),
+      leading:Icon(
+        iconData,
+        color: Colors.indigo,
+      ),
+      subtitle: Text(
+        subtitle,
+        style: infoWidget.subTitle.copyWith(color: Colors.grey[600]),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return InfoWidget(
@@ -114,46 +137,52 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 3.0, right: 3.0),
-                child: Material(
-                  shadowColor: Colors.indigoAccent,
-                  elevation: 1.0,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10)),
-                  type: MaterialType.card,
-                  child: Container(
-                    padding: const EdgeInsets.only(
-                        top: 0.0, left: 10.0, right: 10.0, bottom: 0.0),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 8.0,
-                        ),
-                        Text('${widget.userData.name}',
-                            style: infoWidget.titleButton.copyWith(
-                                color: Colors.indigo,
-                                fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
               SizedBox(
                 height: infoWidget.screenHeight * 0.02,
               ),
-              PersonalInfoCard(
-                title: infoWidget.title,
-                email: '',
-                orientation: infoWidget.orientation,
-                subTitle: infoWidget.titleButton,
-                width: infoWidget.screenWidth,
-                address: widget.userData.address,
-                gender: widget.userData.gender,
-                governorate: widget.userData.government,
-                phoneNumber: widget.userData.phone,
-              ),
+              personalInfo(
+                  title: translator.currentLanguage == "en" ? 'Name' : 'الاسم',
+                  subtitle: translator.currentLanguage == "en" ? '' : 'أيمن',
+                  iconData: Icons.person,
+                  infoWidget: infoWidget),
+              personalInfo(
+                  title: translator.currentLanguage == "en" ? 'Address' : 'العنوان',
+                  subtitle: translator.currentLanguage == "en" ? '' : 'المنصوره',
+                  iconData: Icons.my_location,
+                  infoWidget: infoWidget),
+              personalInfo(
+                  title: translator.currentLanguage == "en"
+                      ? 'Phone Number'
+                      : 'رقم الهاتف',
+                  subtitle: translator.currentLanguage == "en" ? '' : '01144523795',
+                  iconData: Icons.phone,
+                  infoWidget: infoWidget),
+              personalInfo(
+
+                  title:
+                  translator.currentLanguage == "en" ? 'National Id' : 'الرقم القومى',
+                  subtitle: translator.currentLanguage == "en" ? '' : '1145523795126',
+                  iconData: Icons.fingerprint,
+                  infoWidget: infoWidget),
+              personalInfo(
+
+                  title:
+                  translator.currentLanguage == "en" ? 'Birth Date' : 'تاريخ الميلاد',
+                  subtitle: translator.currentLanguage == "en" ? '' : '7-3-1998',
+                  iconData: Icons.date_range,
+                  infoWidget: infoWidget),
+              personalInfo(
+
+                  title: translator.currentLanguage == "en" ? 'Gender' : 'النوع',
+                  subtitle: translator.currentLanguage == "en" ? '' : 'ذكر',
+                  iconData:Icons.view_agenda,
+                  infoWidget: infoWidget),
+              personalInfo(
+
+                  title: translator.currentLanguage == "en" ? 'Points' : 'النقاط',
+                  subtitle: translator.currentLanguage == "en" ? '' : '50',
+                  iconData: Icons.trip_origin,
+                  infoWidget: infoWidget),
             ],
           ),
         );
