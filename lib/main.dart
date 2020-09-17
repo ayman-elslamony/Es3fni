@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
-import 'package:helpme/screens/add_user_data/add_user_data.dart';
-import 'package:helpme/screens/sign_in_and_up/register_using_phone/register_using_phone.dart';
-import 'package:helpme/screens/sign_in_and_up/sign_in_and_up.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'screens/main_screen.dart';
-import 'screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'screens/splash_screen.dart';
 
@@ -38,8 +34,9 @@ class _AppState extends State<App> {
         ChangeNotifierProxyProvider<Auth, Home>(
           update: (ctx, auth, previousProducts) => Home(
             auth.getToken(),
+            auth.userId
           ),
-          create: (context) => Home(null),
+          create: (context) => Home(null,null),
         ),
       ],
       child: Consumer<Auth>(
@@ -66,26 +63,26 @@ class _AppState extends State<App> {
               ),
             ),
           ),
-          home: AddUserData()
-//          auth.isAuth
-//              ? HomeScreen()
-//              : FutureBuilder(
-//              future: auth.tryToLogin(),
-//              builder: (ctx, authResultSnapshot) {
-//                if (authResultSnapshot.connectionState ==
-//                    ConnectionState.done &&
-//                    auth.isAuth) {
-//                  return HomeScreen();
-//                } else if (authResultSnapshot.connectionState ==
-//                    ConnectionState.waiting ||
-//                    authResultSnapshot.connectionState ==
-//                        ConnectionState.active &&
-//                        !auth.isAuth) {
-//                  return Splash();
-//                } else {
-//                  return Sign();
-//                }
-//              }),
+          home:
+          auth.isAuth
+              ? HomeScreen()
+              : FutureBuilder(
+              future: auth.tryToLogin(),
+              builder: (ctx, authResultSnapshot) {
+                if (authResultSnapshot.connectionState ==
+                    ConnectionState.done &&
+                    auth.isAuth) {
+                  return HomeScreen();
+                } else if (authResultSnapshot.connectionState ==
+                    ConnectionState.waiting ||
+                    authResultSnapshot.connectionState ==
+                        ConnectionState.active &&
+                        !auth.isAuth) {
+                  return Splash();
+                } else {
+                  return SignIn();
+                }
+              }),
         ),
       ),
     );

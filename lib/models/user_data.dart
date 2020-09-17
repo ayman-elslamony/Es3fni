@@ -1,14 +1,27 @@
 class UserData {
-  final String id;
+  String docId;
+  String points;
   String name;
   String email;
-  String imgUrl;
+  String password;
   String address;
+  String phoneNumber;
+  String nationalId;
+  String birthDate;
   String gender;
-  String government;
-  String phone;
-
-  UserData({this.phone,this.government,this.id, this.name, this.email, this.imgUrl, this.address,this.gender});
-
-
+  String imgUrl;
+bool loading;
+  UserData(
+      {this.docId,
+      this.address,
+      this.nationalId,
+      this.email,
+      this.password,
+      this.phoneNumber,
+      this.name,
+      this.points,
+      this.imgUrl,
+      this.gender,
+        this.loading =false,
+      this.birthDate});
 }

@@ -18,18 +18,18 @@ import 'package:toast/toast.dart';
 class Auth with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
-  static String _token;
-  static String userId = '';
+   String _token;
+   String userId = '';
   String signInType = '';
   String _userType = 'patient';
   UserData _userData = UserData(
     name: 'ayman',
-    id: '12345',
+    docId: '12345',
+    points: '20',
     email: 'ayman17@gmail',
     address: 'mansoura',
-    phone: '01145523795',
+    phoneNumber: '01145523795',
     gender: 'male',
-    government: 'mansoura',
     imgUrl: 'https://w0.pngwave.com/png/246/366/computer-icons-avatar-user-profile-man-avatars-png-clip-art.png'
   );
   set setUserType(String type) {
@@ -40,18 +40,7 @@ class Auth with ChangeNotifier {
   }
   UserData get userData => _userData;
   bool get isAuth {
-    try {
-      firebaseAuth.currentUser().then((user) {
-        if (user != null) {
-          user.getIdToken().then((token) {
-            _token = token.token;
-          });
-        }
-      });
-      return _token != null;
-    } catch (e) {
-      return _token == null;
-    }
+    return _token != null;
   }
 
   String getToken() {
@@ -94,18 +83,11 @@ class Auth with ChangeNotifier {
       .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
   AuthResult x = await firebaseAuth.signInWithCustomToken(token: dataToSignIn['phoneToken']);
       userId = x.user.uid;
+      await x.user.getIdToken().then((x){
+        _token =  x.token;
+      });
      signInType = 'signInUsingPhone';
     }
-    if (_token == null) {
-      await firebaseAuth.currentUser().then((user) {
-        if (user != null) {
-          user.getIdToken().then((token) {
-            _token = token.token;
-          });
-        }
-      });
-    }
-
     if (signInType == 'signInUsingFBorG') {
       return true;
     } else if (signInType == 'signInUsingPhone') {

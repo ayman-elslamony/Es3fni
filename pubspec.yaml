@@ -30,7 +30,7 @@ dependencies:
   localize_and_translate: any
   animated_text_kit: ^2.0.0
   provider:
-  intl_phone_number_input: ^0.4.6
+  intl_phone_number_input:
   toast: ^0.1.5
   flutter_verification_code: ^0.2.1
   firebase_auth: ^0.16.0
@@ -45,6 +45,7 @@ dependencies:
   geocoding: ^1.0.2
   geolocator: ^6.0.0+1
   google_maps_flutter:
+  flutter_time_picker_spinner: ^1.0.6
   flutter_datetime_picker: ^1.4.0
 
 dev_dependencies:

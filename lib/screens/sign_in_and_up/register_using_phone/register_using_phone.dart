@@ -84,10 +84,41 @@ Auth _auth;
                                     phoneNumber= number.phoneNumber;
                                   },
                                   focusNode: focusNode,
-                                  ignoreBlank: false,
+                                  ignoreBlank: true,
                                   autoValidate: false,
                                   selectorTextStyle: TextStyle(color: Colors.black),
                                   initialValue: number,
+                                  inputDecoration: InputDecoration(
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                        borderSide: BorderSide(
+                                          color: Colors.indigo,
+                                        ),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                        borderSide: BorderSide(
+                                          color: Colors.indigo,
+                                        ),
+                                      ),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                        borderSide: BorderSide(
+                                          color: Colors.indigo,
+                                        ),
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                        borderSide: BorderSide(
+                                          color: Colors.indigo,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                        borderSide: BorderSide(color: Colors.indigo),
+                                      ),
+                                      errorStyle: TextStyle(color: Colors.indigo)
+                                  ),
                                   textFieldController: controller,
                                   inputBorder: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.indigo),

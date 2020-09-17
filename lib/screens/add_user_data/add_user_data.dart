@@ -607,9 +607,9 @@ class _AddUserDataState extends State<AddUserData> {
                     if (value.trim().isEmpty) {
                       return translator.currentLanguage == "en"
                           ? "Please enter National Id!"
-                          : 'من فضلك ادخل رقم الهاتف';
+                          : 'من فضلك ادخل الرقم القومى';
                     }
-                    if (value.trim().length != 10) {
+                    if (value.trim().length != 14) {
                       return translator.currentLanguage == "en"
                           ? "Invalid national id!"
                           : 'الرقم خطاء';
@@ -682,10 +682,41 @@ class _AddUserDataState extends State<AddUserData> {
                   phoneNumber= number.phoneNumber;
                 },
                 focusNode: focusNode,
-                ignoreBlank: false,
+                ignoreBlank: true,
                 autoValidate: false,
                 selectorTextStyle: TextStyle(color: Colors.black),
                 initialValue: number,
+                inputDecoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(color: Colors.indigo),
+                    ),
+                    errorStyle: TextStyle(color: Colors.indigo)
+                ),
                 textFieldController: controller,
                 inputBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.indigo),
