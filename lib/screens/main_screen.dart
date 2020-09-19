@@ -218,17 +218,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         }),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
+                            ? "Profile"
+                            : 'الملف الشخصي',
+                        isIcon: true,
+                        icon: Icons.person,
+                        infoWidget: infoWidget,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          setState(() {
+                            _page = 1;
+                          });
+                          _pageController.jumpToPage(_page);
+                        }),
+                    _drawerListTile(
+                        name: translator.currentLanguage == "en"
                             ? "Archived requests"
                             : 'الطلبات المؤرشفه',
                         isIcon: true,
                         icon: Icons.archive,
                         infoWidget: infoWidget,
                         onTap: () async {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            _page = 1;
-                          });
-                          _pageController.jumpToPage(_page);
                         }),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
@@ -302,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         iconPath: Icons.person,
                         title: translator.currentLanguage == "en"
                             ? 'Profile'
-                            : 'البروفايل')
+                            : 'الملف الشخصى')
                     : _iconNavBar(
                         infoWidget: infoWidget, iconPath: Icons.person),
               ],

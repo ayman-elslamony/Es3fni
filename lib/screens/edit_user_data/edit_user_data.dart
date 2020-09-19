@@ -29,7 +29,7 @@ class _EditProfileState extends State<EditProfile> {
     'Add Phone',
   ];
   final GlobalKey<ScaffoldState> _userProfileState = GlobalKey<ScaffoldState>();
-  TextEditingController _nameTextEditingController = TextEditingController();
+  TextEditingController _anotherInfoTextEditingController = TextEditingController();
   final TextEditingController controller = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String initialCountry = 'EG';
@@ -42,8 +42,8 @@ class _EditProfileState extends State<EditProfile> {
     _auth = Provider.of<Auth>(context, listen: false);
     address = _auth.userData.address;
     addList = translator.currentLanguage == "en"
-        ? ['Add Image', 'Add Phone']
-        : ['اضافه صوره', 'اضافه هاتف'];
+        ? ['Add Image', 'Add Phone','Add Address','Add Another Info']
+        : ['اضافه صوره', 'اضافه هاتف','اضافه عنوان','اضافه معلومات اخرى'];
   }
 
   @override
@@ -82,19 +82,19 @@ class _EditProfileState extends State<EditProfile> {
                       )),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text('Ok'),
+                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
                       onPressed: () async {
                         if (_imageFile != null) {
                           print(_imageFile);
                           bool x = await _auth.editProfile(
-                              type: 'image', image: _imageFile);
+                              type: 'image', picture: _imageFile);
                           if (x) {
-                            Toast.show("Scuessfully Editing", context,
+                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                             Navigator.of(ctx).pop();
                           } else {
-                            Toast.show("Please try again later", context,
+                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
@@ -106,7 +106,7 @@ class _EditProfileState extends State<EditProfile> {
                       },
                     ),
                     FlatButton(
-                      child: Text('Cancel'),
+                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
                       onPressed: () {
                         Navigator.of(ctx).pop();
                       },
@@ -144,18 +144,31 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text('Ok'),
+                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
                       onPressed: () async {
                         focusNode.unfocus();
                         if(controller.text.trim().length ==12) {
-                         //TODO: save phone
+                          bool x = await _auth.editProfile(
+                            type: 'Phone Number',
+                            phone: phoneNumber.toString(),
+                          );
+                          if (x) {
+                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
+                                duration: Toast.LENGTH_SHORT,
+                                gravity: Toast.BOTTOM);
+                            Navigator.of(ctx).pop();
+                          } else {
+                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
+                                duration: Toast.LENGTH_SHORT,
+                                gravity: Toast.BOTTOM);
+                          }
                         }else{
                           Toast.show(translator.currentLanguage == "en" ?'invalid phone number':'الرقم غير صحيح', context);
                         }
                       },
                     ),
                     FlatButton(
-                      child: Text('Cancel'),
+                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
                       onPressed: () {
                         Navigator.of(ctx).pop();
                       },
@@ -184,21 +197,21 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text('Ok'),
+                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
                       onPressed: () async {
                         if (address != null) {
                           print(address);
                           bool x = await _auth.editProfile(
-                            type: 'address',
+                            type: 'Address',
                             address: address,
                           );
                           if (x) {
-                            Toast.show("Scuessfully Editing", context,
+                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                             Navigator.of(ctx).pop();
                           } else {
-                            Toast.show("Please try again later", context,
+                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
@@ -210,7 +223,7 @@ class _EditProfileState extends State<EditProfile> {
                       },
                     ),
                     FlatButton(
-                      child: Text('Cancel'),
+                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
                       onPressed: () {
                         Navigator.of(ctx).pop();
                       },
@@ -219,8 +232,9 @@ class _EditProfileState extends State<EditProfile> {
                 ),
           ));
     }
-    if (type ==  'Name'
-         || type == 'الاسم') {
+    if (type ==  'Another Info'
+         || type == 'معلومات اخرى') {
+      _anotherInfoTextEditingController.text = _auth.userData.aboutYou;
       showDialog(
           context: context,
           builder: (ctx) => Directionality(
@@ -229,93 +243,104 @@ class _EditProfileState extends State<EditProfile> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(25.0))),
               contentPadding: EdgeInsets.only(top: 10.0),
-              content: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child:  Form(
-                  key: formKey,
-                  child: Container(
-                    height: 80,
-                    child: TextFormField(
-
-                      autofocus: false,
-                      style: TextStyle(fontSize: 15),
-                      controller: _nameTextEditingController,
-                      textInputAction: TextInputAction.done,
-                      decoration: InputDecoration(
-                        labelText: translator.currentLanguage == "en" ?'Name':'الاسم',
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0)),
-                          borderSide: BorderSide(
-                            color: Colors.indigo,
+              content: StatefulBuilder(
+                builder: (context,setState)=>
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child:  Form(
+                    key: formKey,
+                    child: Container(
+                      height: 90,
+                      padding: EdgeInsets.symmetric(
+                          vertical: 7.0),
+                      child: TextFormField(
+                        controller: _anotherInfoTextEditingController,
+                        autofocus: false,
+                        textInputAction:
+                        TextInputAction.newline,
+                        decoration: InputDecoration(
+                          labelText:
+                          translator.currentLanguage ==
+                              "en"
+                              ? "Another Info"
+                              : 'معلومات اخرى',
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)),
+                            borderSide: BorderSide(
+                              color: Colors.indigo,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)),
+                            borderSide: BorderSide(
+                              color: Colors.indigo,
+                            ),
+                          ),
+                          focusedErrorBorder:
+                          OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)),
+                            borderSide: BorderSide(
+                              color: Colors.indigo,
+                            ),
+                          ),
+                          disabledBorder:
+                          OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)),
+                            borderSide: BorderSide(
+                              color: Colors.indigo,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10.0)),
+                            borderSide: BorderSide(
+                                color: Colors.indigo),
                           ),
                         ),
-                        disabledBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0)),
-                          borderSide: BorderSide(
-                            color: Colors.indigo,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0)),
-                          borderSide: BorderSide(color: Colors.indigo),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0)),
-                          borderSide: BorderSide(color: Colors.indigo),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0)),
-                          borderSide: BorderSide(color: Colors.indigo),
-                        ),
-                        errorStyle: TextStyle(color: Colors.indigo)
+                        keyboardType: TextInputType.text,
+                        maxLines: 5,
+                        minLines: 2,
+                        // ignore: missing_return
+                        validator: (val){
+                          if(val.trim().length == 0){
+                            return 'Please write some info';
+                          }
+                        },
                       ),
-                      keyboardType: TextInputType.text,
-// ignore: missing_return
-                      validator: (String val) {
-                        if (val.trim().isEmpty) {
-                          return translator.currentLanguage == "en" ?'Invalid Name':'الاسم غير صحيح';
-                        }
-                      },
                     ),
                   ),
                 ),
               ),
               actions: <Widget>[
                 FlatButton(
-                  child: Text('Ok'),
+                  child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
                   onPressed: () async {
                     if (formKey.currentState.validate()) {
                       formKey.currentState.save();
 
                       bool x = await _auth.editProfile(
-                        type: 'address',
-                        address: address,
+                        type: 'Another Info',
+                        aboutYou: _anotherInfoTextEditingController.text,
                       );
                       if (x) {
-                        Toast.show("Scuessfully Editing", context,
+                        Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
                             duration: Toast.LENGTH_SHORT,
                             gravity: Toast.BOTTOM);
                         Navigator.of(ctx).pop();
                       } else {
-                        Toast.show("Please try again later", context,
+                        Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
                             duration: Toast.LENGTH_SHORT,
                             gravity: Toast.BOTTOM);
                       }
                     }
-//                  else {
-//                    Toast.show(translator.currentLanguage == "en" ?"Please enter your name":'من فضلك ادخل ', context,
-//                        duration: Toast.LENGTH_SHORT,
-//                        gravity: Toast.BOTTOM);
-//                  }
                   },
                 ),
                 FlatButton(
-                  child: Text('Cancel'),
+                  child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
                   onPressed: () {
                     Navigator.of(ctx).pop();
                   },
@@ -388,8 +413,7 @@ class _EditProfileState extends State<EditProfile> {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      //TODO: make pop
+
                     }),
                 actions: <Widget>[
                   PopupMenuButton(
@@ -408,6 +432,13 @@ class _EditProfileState extends State<EditProfile> {
                       }
                       if (val == 'Add Phone' || val == 'اضافه هاتف') {
                         editProfile('Phone Number', context);
+                      }
+                      if (val == 'Add Address' || val == 'اضافه عنوان') {
+                        editProfile('Address', context);
+                      }
+                      if (val ==  'Add Another Info'
+                          || val == 'اضافه معلومات اخرى') {
+                        editProfile('Another Info', context);
                       }
                     },
                     icon: Icon(
@@ -511,77 +542,77 @@ class _EditProfileState extends State<EditProfile> {
                         SizedBox(
                           height: infoWidget.screenHeight * 0.02,
                         ),
-                        personalInfo(
+                        data.userData.name ==''?SizedBox():personalInfo(
                           context: context,
+                            enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'Name'
                                 : 'الاسم',
                             subtitle: translator.currentLanguage == "en"
-                                ? 'Ayman'
-                                : 'أيمن',
+                                ? data.userData.name
+                                : data.userData.name,
                             iconData: Icons.person,
                             infoWidget: infoWidget),
-                        personalInfo(
+                        data.userData.address ==''?SizedBox():personalInfo(
                             context: context,
                             title: translator.currentLanguage == "en"
                                 ? 'Address'
                                 : 'العنوان',
                             subtitle: translator.currentLanguage == "en"
-                                ? 'Mansoura'
-                                : 'المنصوره',
+                                ? data.userData.address
+                                : data.userData.address,
                             iconData: Icons.my_location,
                             infoWidget: infoWidget),
-                        personalInfo(
+                        data.userData.phoneNumber ==''?SizedBox():personalInfo(
                             context: context,
                             title: translator.currentLanguage == "en"
                                 ? 'Phone Number'
                                 : 'رقم الهاتف',
                             subtitle: translator.currentLanguage == "en"
-                                ? ''
-                                : '01145523795',
+                                ? data.userData.phoneNumber
+                                : data.userData.phoneNumber,
                             iconData: Icons.phone,
                             infoWidget: infoWidget),
-                        personalInfo(
+                        data.userData.nationalId ==''?SizedBox():personalInfo(
                             context: context,
                             enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'National Id'
                                 : 'الرقم القومى',
                             subtitle: translator.currentLanguage == "en"
-                                ? ''
-                                : '1145523795456',
+                                ? data.userData.nationalId
+                                : data.userData.nationalId,
                             iconData: Icons.fingerprint,
                             infoWidget: infoWidget),
-                        personalInfo(
+                        data.userData.birthDate ==''?SizedBox():personalInfo(
                             context: context,
                             enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'Birth Date'
                                 : 'تاريخ الميلاد',
                             subtitle: translator.currentLanguage == "en"
-                                ? ''
-                                : '7-3-1998',
+                                ?data.userData.birthDate
+                                : data.userData.birthDate,
                             iconData: Icons.date_range,
                             infoWidget: infoWidget),
-                        personalInfo(
+                        data.userData.gender ==''?SizedBox():personalInfo(
                             context: context,
                             enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'Gender'
                                 : 'النوع',
                             subtitle:
-                                translator.currentLanguage == "en" ? '' : 'ذكر',
+                                translator.currentLanguage == "en" ? data.userData.gender : data.userData.gender,
                             iconData: Icons.view_agenda,
                             infoWidget: infoWidget),
-                        personalInfo(
-                            context: context,
-                            enableEdit: false,
+                        _auth.userData.aboutYou ==''?SizedBox():personalInfo(
                             title: translator.currentLanguage == "en"
-                                ? 'Points'
-                                : 'النقاط',
-                            subtitle:
-                                translator.currentLanguage == "en" ? '' : '50',
-                            iconData: Icons.trip_origin,
+                                ? 'Another Info'
+                                : 'معلومات اخرى',
+                            subtitle: translator.currentLanguage == "en"
+                                ? _auth.userData.aboutYou
+                                : _auth.userData.aboutYou,
+                            iconData: Icons.info,
                             infoWidget: infoWidget),
                       ],
                     ))),

@@ -35,7 +35,6 @@ class _SignInState extends State<SignIn> {
   bool _isSignInUsingPhoneSuccessful = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
   var loggedIn = false;
-
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -52,6 +51,60 @@ class _SignInState extends State<SignIn> {
         ],
       ),
     );
+  }
+  Future<void> _submitForm({BuildContext context}) async {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      setState(() {
+        _isSignInSuccessful = true;
+      });
+      try {
+        bool auth = await Provider.of<Auth>(context, listen: false).signInUsingEmailForNurse(
+            email: email.trim(), password: password.trim(),context: context);
+        if (auth == true) {
+          Toast.show(
+              "successfully Sign In", context, duration: Toast.LENGTH_SHORT,
+              gravity: Toast.BOTTOM);
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => HomeScreen()));
+        }
+      } on HttpException catch (error) {
+        setState(() {
+          _isSignInSuccessful = false;
+        });
+        switch (error.toString()) {
+          case "ERROR_INVALID_EMAIL":
+            errorMessage = "Your email address appears to be malformed.";
+            break;
+          case "ERROR_WRONG_PASSWORD":
+            errorMessage = "Your password is wrong.";
+            break;
+          case "ERROR_USER_NOT_FOUND":
+            errorMessage = "User with this email doesn't exist.";
+            break;
+          case "ERROR_USER_DISABLED":
+            errorMessage = "User with this email has been disabled.";
+            break;
+          case "ERROR_TOO_MANY_REQUESTS":
+            errorMessage = "Too many requests. Try again later.";
+            break;
+          case "ERROR_OPERATION_NOT_ALLOWED":
+            errorMessage = "Signing in with Email and Password is not enabled.";
+            break;
+          default:
+            errorMessage = "An undefined Error happened.";
+        }
+        _showErrorDialog(errorMessage);
+      } catch (error) {
+        setState(() {
+          _isSignInSuccessful = false;
+        });
+        const errorMessage =
+            'Could not authenticate you. Please try again later.';
+        _showErrorDialog(errorMessage);
+      }
+    }
+
   }
 
   @override
@@ -212,8 +265,7 @@ class _SignInState extends State<SignIn> {
                               ],
                             )
                           : RaisedButton(
-                              onPressed: () {},
-//                        _submitForm,
+                        onPressed: ()=>_submitForm(context: context),
                               color: Colors.white,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(

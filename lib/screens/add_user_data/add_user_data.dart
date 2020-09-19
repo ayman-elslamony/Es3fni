@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
+import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
+import '../../main.dart';
 import '../main_screen.dart';
 
 class AddUserData extends StatefulWidget {
@@ -24,9 +26,10 @@ class _AddUserDataState extends State<AddUserData> {
   GlobalKey<FormState> _newAccountKey = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> _key = GlobalKey();
   final TextEditingController controller = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController nationalIdController = TextEditingController();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
-  String phoneNumber;
   FocusNode focusNode=FocusNode();
   bool _isLoading = false;
   int currentStep = 0;
@@ -58,6 +61,7 @@ class _AddUserDataState extends State<AddUserData> {
     'gender': '',
     'National Id': '',
     'Birth Date': '',
+    'aboutYou': '',
     'UrlImg': '',
     'Location': '',
   };
@@ -73,14 +77,15 @@ class _AddUserDataState extends State<AddUserData> {
   List<String> visitTime=[];
   final FocusNode _phoneNumberNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
-  List<Step> steps = [];
   Auth _auth;
 
   @override
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
-    _genderList = ['ذكر', 'انثى'];
+    _genderList = translator.currentLanguage =='en'?['Male', 'Female']:['ذكر', 'انثى'];
+    nameController.text =_auth.userData.name;
+    _userData['name'] =_auth.userData.name;
   }
 
   cancel() {
@@ -404,65 +409,33 @@ class _AddUserDataState extends State<AddUserData> {
   }
 
   verifyUserData() async {
-    if (_userData['Patient name'] == '' ||
-        _userData['Phone number'] == '' ||
-        _userData['gender'] == '' ||
-        _userData['age'] == '' ||
-        _userData['Location'] == '') {
-      Toast.show(
-          translator.currentLanguage == "en"
-              ? "Please complete patient info"
-              : 'من فضلك ادخل معلومات المريض',
-          context,
-          duration: Toast.LENGTH_SHORT,
-          gravity: Toast.BOTTOM);
-    } else {
       setState(() {
         _isLoading = true;
       });
       try {
-        String isSccuess = '';
-//        await Provider.of<Auth>(context, listen: false)
-//            .registerUserData(listOfData: _accountData);
-        print('isScuessisScuess$isSccuess');
-        if (isSccuess == 'success') {
+        bool isScuess =await Provider.of<Auth>(context, listen: false)
+            .updateNurseData(
+          name: _userData['name'],
+          phoneNumber: _userData['Phone number'],
+          birthDate: _userData['Birth Date'],
+          gender: _userData['gender'],
+          picture: _userData['UrlImg'],
+          aboutYou: _userData['aboutYou'],
+            location:_userData['Location']
+        );
+        print('isScuessisScuess$isScuess');
+        if (isScuess) {
           setState(() {
             _isLoading = false;
           });
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0))),
-              contentPadding: EdgeInsets.only(top: 10.0),
-              title: Text("Profile Created"),
-              content: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    "Welcome ${_userData['First name']}",
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("Ok"),
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => HomeScreen()));
-                  },
-                ),
-                FlatButton(
-                  child: Text("Cancel"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    setState(() => complete = true);
-                  },
-                ),
-              ],
-            ),
-          );
+          Toast.show(
+              translator.currentLanguage == "en"
+                  ? "Welcome ${_auth.userData.name} 😃"
+                  : 'مرحبا ${_auth.userData.name} 😃',
+              context,
+              duration: Toast.LENGTH_SHORT,
+              gravity: Toast.BOTTOM);
+
         } else {
           setState(() {
             _isLoading = false;
@@ -479,44 +452,26 @@ class _AddUserDataState extends State<AddUserData> {
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
     }
-  }
 
   _incrementStep() {
-    currentStep + 1 == steps.length
+    currentStep + 1 == 1
         ? setState(() => complete = true)
         : goTo(currentStep + 1);
   }
 
   nextStep() async {
-    print(steps.length);
     print(currentStep);
-
-    if (currentStep == 0) {
-      print(_userData);
-      if (_userData['Patient name'] == '' ||
-          _userData['Phone number'] == '' ||
-          _userData['Location'] == '') {
-        Toast.show(
-            translator.currentLanguage == "en"
-                ? "Please add patient location"
-                : 'من فضلك ادخل موقع المريض',
-            context,
-            duration: Toast.LENGTH_SHORT,
-            gravity: Toast.BOTTOM);
-      }
       if (_newAccountKey.currentState.validate()) {
         _newAccountKey.currentState.save();
         _phoneNumberNode.unfocus();
         _incrementStep();
       }
-      return;
-    }
-    if (currentStep == 1) {
-      if (_userData['age'] == '' ||
-          _userData['month'] == '' ||
-          _userData['year'] == '' ||
+
+    if (currentStep == 0) {
+      if (_userData['Birth Date'] == '' ||
           _userData['gender'] == '' ||
-          _userData['materialStatus'] == '') {
+          _userData['Location'] == ''
+         ) {
         Toast.show(
             translator.currentLanguage == "en"
                 ? "Please Complete data"
@@ -526,7 +481,6 @@ class _AddUserDataState extends State<AddUserData> {
             gravity: Toast.BOTTOM);
       } else {
         verifyUserData();
-        return;
       }
     }
   }
@@ -534,416 +488,6 @@ class _AddUserDataState extends State<AddUserData> {
   @override
   Widget build(BuildContext context) {
 //    SystemChannels.textInput.invokeMethod('TextInput.hide');
-    steps = [
-      Step(
-        title: Text(translator.currentLanguage == "en"
-            ? 'Information'
-            : 'معلوماتك'),
-        isActive: true,
-        state: StepState.indexed,
-        content: Form(
-          key: _newAccountKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _createTextForm(
-                  labelText: 'name',
-                  nextFocusNode: _phoneNumberNode,
-                  // ignore: missing_return
-                  validator: (String val) {
-                    if (val.trim().isEmpty || val.trim().length < 2) {
-                      return translator.currentLanguage == "en"
-                          ? 'Please enter your name'
-                          : 'من فضلك ادخل اسمك';
-                    }
-                    if (val.trim().length < 2) {
-                      return translator.currentLanguage == "en"
-                          ? 'Invalid Name'
-                          : 'الاسم خطاء';
-                    }
-                  }),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 7.0),
-                height: 80,
-                child: TextFormField(
-                  autofocus: false,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: translator.currentLanguage == "en"
-                        ? "National Id"
-                        : 'الرقم القومى',
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(color: Colors.indigo),
-                    ),
-                  ),
-                  keyboardType: TextInputType.phone,
-// ignore: missing_return
-                  validator: (String value) {
-                    if (value.trim().isEmpty) {
-                      return translator.currentLanguage == "en"
-                          ? "Please enter National Id!"
-                          : 'من فضلك ادخل الرقم القومى';
-                    }
-                    if (value.trim().length != 14) {
-                      return translator.currentLanguage == "en"
-                          ? "Invalid national id!"
-                          : 'الرقم خطاء';
-                    }
-                  },
-                  onChanged: (value) {
-                    _userData['National Id'] = value.trim();
-                  },
-                  onSaved: (value) {
-                    _userData['National Id'] = value.trim();
-//                    _phoneNumberNode.unfocus();
-                  },
-                  onFieldSubmitted: (_) {
-//                    _phoneNumberNode.unfocus();
-                  },
-                ),
-              ),
-
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 0.0),
-                height: 80,
-                child: TextFormField(
-                  autofocus: false,
-                  style: TextStyle(fontSize: 15),
-                  controller: _locationTextEditingController,
-                  textInputAction: TextInputAction.done,
-                  enabled: _isEditLocationEnable,
-                  decoration: InputDecoration(
-                    suffixIcon: InkWell(
-                      onTap: selectUserLocationType,
-                      child: Icon(
-                        Icons.my_location,
-                        size: 20,
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    labelText: translator.currentLanguage == "en"
-                        ? 'Location'
-                        : 'الموقع',
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(color: Colors.indigo),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(color: Colors.indigo),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(color: Colors.indigo),
-                    ),
-                  ),
-                  keyboardType: TextInputType.text,
-                ),
-              ),
-              InternationalPhoneNumberInput(
-                onInputChanged: (PhoneNumber number) {
-                  phoneNumber= number.phoneNumber;
-                },
-                focusNode: focusNode,
-                ignoreBlank: true,
-                autoValidate: false,
-                selectorTextStyle: TextStyle(color: Colors.black),
-                initialValue: number,
-                inputDecoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(color: Colors.indigo),
-                    ),
-                    errorStyle: TextStyle(color: Colors.indigo)
-                ),
-                textFieldController: controller,
-                inputBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.indigo),
-                ),
-                hintText: translator.currentLanguage == "en" ?'phone number':'رقم الهاتف',
-              ),
-              SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 7),
-                      child: Text(
-                        translator.currentLanguage == "en" ? 'Birth Date:  ' : 'تاريخ الميلاد:  ',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        DatePicker.showDatePicker(context,
-                            showTitleActions: true,
-                            theme: DatePickerTheme(
-                              itemStyle: TextStyle(color: Colors.indigo),
-                              backgroundColor: Colors.white,
-                              headerColor: Colors.white,
-                              doneStyle:
-                              TextStyle(color: Colors.indigoAccent),
-                              cancelStyle:
-                              TextStyle(color: Colors.black87),
-                            ),
-                            minTime: DateTime.now(),
-                            maxTime: DateTime(2080, 6, 7),
-                            onChanged: (_) {}, onConfirm: (date) {
-                              print('confirm $date');
-                              setState(() {
-                                _userData['Birth Date'] =
-                                '${date.day}-${date.month}-${date.year}';
-                              });
-                            },
-                            currentTime: DateTime.now(),
-                            locale: translator.currentLanguage == "en"
-                                ? LocaleType.en
-                                : LocaleType.ar);
-                      },
-                      color: Colors.indigo,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Text(
-                        translator.currentLanguage == "en"
-                            ? '${_userData['Birth Date']}'
-                            : '${_userData['Birth Date']}',
-                        style:
-                        TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 7),
-                      child: Text(
-                        translator.currentLanguage == "en"
-                            ? 'Gender:'
-                            : 'النوع:',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Material(
-                        shadowColor: Colors.blueAccent,
-                        elevation: 2.0,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        type: MaterialType.card,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Padding(
-                              padding:
-                              const EdgeInsets.only(left: 8.0, right: 8.0),
-                              child: Text(
-                                  _isGenderSelected == false
-                                      ? translator.currentLanguage == "en"
-                                      ? 'gender'
-                                      : 'النوع'
-                                      : _userData['gender'],
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            Container(
-                              height: 40,
-                              width: 35,
-                              child: PopupMenuButton(
-                                initialValue: translator.currentLanguage == "en"
-                                    ? 'Male'
-                                    : 'ذكر',
-                                tooltip: 'Select Gender',
-                                itemBuilder: (ctx) => _genderList
-                                    .map((String val) => PopupMenuItem<String>(
-                                  value: val,
-                                  child: Text(val.toString()),
-                                ))
-                                    .toList(),
-                                onSelected: (val) {
-                                  setState(() {
-                                    _userData['gender'] = val.trim();
-                                    _isGenderSelected = true;
-                                  });
-                                },
-                                icon: Icon(
-                                  Icons.keyboard_arrow_down,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                        child: Text(
-                          translator.currentLanguage == "en"
-                              ? 'Add picture:'
-                              : 'اضافه صوره:',
-                          style: TextStyle(fontSize: 18),
-                          maxLines: 2,
-                        ),
-                      ),
-                    ),
-                    enablePicture
-                        ? SizedBox()
-                        : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: InkWell(
-                            onTap: () {
-                              _openImagePicker();
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(4.0),
-                              decoration: BoxDecoration(
-                                  color: Colors.indigo,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Center(
-                                child: Text(
-                                  translator.currentLanguage == "en"
-                                      ? " Select Image "
-                                      : ' اختر صوره ',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .display1
-                                      .copyWith(
-                                      color: Colors.white,
-                                      fontSize: 17),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              enablePicture
-                  ? Container(
-                width: double.infinity,
-                height: 200,
-                child: Stack(
-                  children: <Widget>[
-                    ClipRRect(
-                      //backgroundColor: Colors.white,
-                      //backgroundImage:
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(
-                        _imageFile,
-                        fit: BoxFit.fill,
-                        width: double.infinity,
-                        height: 200,
-                      ),
-                    ),
-                    Positioned(
-                        top: 3.0,
-                        right: 3.0,
-                        child: IconButton(
-                            icon: Icon(
-                              Icons.clear,
-                              color: Colors.indigo,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _userData['UrlImg'] = '';
-                                _imageFile = null;
-                                enablePicture = false;
-                              });
-                            }))
-                  ],
-                ),
-              )
-                  : SizedBox(),
-            ],
-          ),
-        ),
-      ),
-    ];
     return InfoWidget(
       builder: (context, infoWidget) => Directionality(
         textDirection: translator.currentLanguage == "en"
@@ -960,6 +504,22 @@ class _AddUserDataState extends State<AddUserData> {
                   : 'أدخل معلوماتك',
               style: infoWidget.titleButton,
             ),
+            actions: <Widget>[
+              InkWell(
+                onTap: () async {
+        await Provider.of<Auth>(context, listen: false)
+            .logout();
+        Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+        builder: (context) => App()));
+        },
+                child: Row(
+                  children: <Widget>[
+                    Text(translator.currentLanguage=='en'?'  Log out ':'تسجيل الخروج   ',style: infoWidget.subTitle.copyWith(color: Colors.white),),
+                  ],
+                ),
+              ),
+            ],
           ),
           body: SafeArea(
             child: Column(
@@ -972,7 +532,484 @@ class _AddUserDataState extends State<AddUserData> {
                     ),
                   )
                       : Stepper(
-                    steps: steps,
+                    steps: [
+                      Step(
+                        title: Text(translator.currentLanguage == "en"
+                            ? 'Information'
+                            : 'معلوماتك'),
+                        isActive: true,
+                        state: StepState.indexed,
+                        content: Form(
+                          key: _newAccountKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              _createTextForm(
+                                  labelText: 'name',
+                                  controller: nameController,
+                                  nextFocusNode: _phoneNumberNode,
+                                  // ignore: missing_return
+                                  validator: (String val) {
+                                    if (val.trim().isEmpty || val.trim().length < 2) {
+                                      return translator.currentLanguage == "en"
+                                          ? 'Please enter your name'
+                                          : 'من فضلك ادخل اسمك';
+                                    }
+                                    if (val.trim().length < 2) {
+                                      return translator.currentLanguage == "en"
+                                          ? 'Invalid Name'
+                                          : 'الاسم خطاء';
+                                    }
+                                  }),
+                            _auth.getUserType !='nurse'?
+                            Container(
+                                padding: EdgeInsets.symmetric(vertical: 7.0),
+                                height: 80,
+                                child: TextFormField(
+                                  autofocus: false,
+                                  controller: nationalIdController,
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                    labelText: translator.currentLanguage == "en"
+                                        ? "National Id"
+                                        : 'الرقم القومى',
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(color: Colors.indigo),
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.phone,
+// ignore: missing_return
+                                  validator: (String value) {
+                                    if (value.trim().isEmpty) {
+                                      return translator.currentLanguage == "en"
+                                          ? "Please enter National Id!"
+                                          : 'من فضلك ادخل الرقم القومى';
+                                    }
+                                    if (value.trim().length != 14) {
+                                      return translator.currentLanguage == "en"
+                                          ? "Invalid national id!"
+                                          : 'الرقم خطاء';
+                                    }
+                                  },
+                                  onChanged: (value) {
+                                    _userData['National Id'] = value.trim();
+                                  },
+                                  onSaved: (value) {
+                                    _userData['National Id'] = value.trim();
+//                    _phoneNumberNode.unfocus();
+                                  },
+                                  onFieldSubmitted: (_) {
+//                    _phoneNumberNode.unfocus();
+                                  },
+                                ),
+                              ):SizedBox(),
+
+                              Container(
+                                padding: EdgeInsets.symmetric(vertical: 0.0),
+                                height: 80,
+                                child: TextFormField(
+                                  autofocus: false,
+                                  style: TextStyle(fontSize: 15),
+                                  controller: _locationTextEditingController,
+                                  textInputAction: TextInputAction.done,
+                                  enabled: _isEditLocationEnable,
+                                  decoration: InputDecoration(
+                                    suffixIcon: InkWell(
+                                      onTap: selectUserLocationType,
+                                      child: Icon(
+                                        Icons.my_location,
+                                        size: 20,
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    labelText: translator.currentLanguage == "en"
+                                        ? 'Location'
+                                        : 'الموقع',
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(color: Colors.indigo),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(color: Colors.indigo),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(color: Colors.indigo),
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.text,
+                                ),
+                              ),
+                              InternationalPhoneNumberInput(
+                                onInputChanged: (PhoneNumber number) {
+                                  _userData['Phone number']=number.toString();
+                                },
+                                focusNode: focusNode,
+                                ignoreBlank: true,
+                                autoValidate: false,
+                                selectorTextStyle: TextStyle(color: Colors.black),
+                                initialValue: number,
+                                inputDecoration: InputDecoration(
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(
+                                        color: Colors.indigo,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                      borderSide: BorderSide(color: Colors.indigo),
+                                    ),
+                                    errorStyle: TextStyle(color: Colors.indigo)
+                                ),
+                                textFieldController: controller,
+                                inputBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.indigo),
+                                ),
+                                hintText: translator.currentLanguage == "en" ?'phone number':'رقم الهاتف',
+                              ),
+                              _auth.getUserType =='nurse'
+                                  ? SizedBox(height:12): SizedBox(),
+                            _auth.getUserType =='nurse'
+                                ? Container(
+                        height: 90,
+                        padding: EdgeInsets.symmetric(
+                            vertical: 7.0),
+        child: TextFormField(
+          autofocus: false,
+          textInputAction:
+          TextInputAction.newline,
+          decoration: InputDecoration(
+            labelText:
+            translator.currentLanguage ==
+                "en"
+                ? "Another Info"
+                : 'معلومات اخرى',
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(10.0)),
+              borderSide: BorderSide(
+                color: Colors.indigo,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(10.0)),
+              borderSide: BorderSide(
+                color: Colors.indigo,
+              ),
+            ),
+            focusedErrorBorder:
+            OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(10.0)),
+              borderSide: BorderSide(
+                color: Colors.indigo,
+              ),
+            ),
+            disabledBorder:
+            OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(10.0)),
+              borderSide: BorderSide(
+                color: Colors.indigo,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(
+                  Radius.circular(10.0)),
+              borderSide: BorderSide(
+                  color: Colors.indigo),
+            ),
+          ),
+          keyboardType: TextInputType.text,
+          onChanged: (value) {
+            _userData['aboutYou'] =
+                value.trim();
+          },
+          maxLines: 5,
+          minLines: 2,
+        ),
+      )
+            : SizedBox(),
+                              _auth.getUserType =='nurse'
+                                  ?SizedBox(height: 4,):SizedBox(height: 18),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 7),
+                                      child: Text(
+                                        translator.currentLanguage == "en" ? 'Birth Date:  ' : 'تاريخ الميلاد:  ',
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                    ),
+                                    RaisedButton(
+                                      onPressed: () {
+                                        DatePicker.showDatePicker(context,
+                                            showTitleActions: true,
+                                            theme: DatePickerTheme(
+                                              itemStyle: TextStyle(color: Colors.indigo),
+                                              backgroundColor: Colors.white,
+                                              headerColor: Colors.white,
+                                              doneStyle:
+                                              TextStyle(color: Colors.indigoAccent),
+                                              cancelStyle:
+                                              TextStyle(color: Colors.black87),
+                                            ),
+                                            minTime: DateTime.now(),
+                                            maxTime: DateTime(2080, 6, 7),
+                                            onChanged: (_) {}, onConfirm: (date) {
+                                              print('confirm $date');
+                                              setState(() {
+                                                _userData['Birth Date'] =
+                                                '${date.day}-${date.month}-${date.year}';
+                                              });
+                                            },
+                                            currentTime: DateTime.now(),
+                                            locale: translator.currentLanguage == "en"
+                                                ? LocaleType.en
+                                                : LocaleType.ar);
+                                      },
+                                      color: Colors.indigo,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10)),
+                                      child: Text(
+                                        translator.currentLanguage == "en"
+                                            ? 'Date ${_userData['Birth Date']}'
+                                            : 'التاريخ ${_userData['Birth Date']}',
+                                        style:
+                                        TextStyle(color: Colors.white, fontSize: 18),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 7),
+                                      child: Text(
+                                        translator.currentLanguage == "en"
+                                            ? 'Gender:'
+                                            : 'النوع:',
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: Material(
+                                        shadowColor: Colors.blueAccent,
+                                        elevation: 2.0,
+                                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                                        type: MaterialType.card,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(left: 8.0, right: 8.0),
+                                              child: Text(
+                                                  _isGenderSelected == false
+                                                      ? translator.currentLanguage == "en"
+                                                      ? 'gender'
+                                                      : 'النوع'
+                                                      : _userData['gender'],
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold)),
+                                            ),
+                                            Container(
+                                              height: 40,
+                                              width: 35,
+                                              child: PopupMenuButton(
+                                                initialValue: translator.currentLanguage == "en"
+                                                    ? 'Male'
+                                                    : 'ذكر',
+                                                tooltip: 'Select Gender',
+                                                itemBuilder: (ctx) => _genderList
+                                                    .map((String val) => PopupMenuItem<String>(
+                                                  value: val,
+                                                  child: Text(val.toString()),
+                                                ))
+                                                    .toList(),
+                                                onSelected: (val) {
+                                                  setState(() {
+                                                    _userData['gender'] = val.trim();
+                                                    _isGenderSelected = true;
+                                                  });
+                                                },
+                                                icon: Icon(
+                                                  Icons.keyboard_arrow_down,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 7),
+                                        child: Text(
+                                          translator.currentLanguage == "en"
+                                              ? 'Add picture:'
+                                              : 'اضافه صوره:',
+                                          style: TextStyle(fontSize: 18),
+                                          maxLines: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    enablePicture
+                                        ? SizedBox()
+                                        : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding:
+                                          const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              _openImagePicker();
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(4.0),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.indigo,
+                                                  borderRadius: BorderRadius.circular(10)),
+                                              child: Center(
+                                                child: Text(
+                                                  translator.currentLanguage == "en"
+                                                      ? " Select Image "
+                                                      : ' اختر صوره ',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .display1
+                                                      .copyWith(
+                                                      color: Colors.white,
+                                                      fontSize: 17),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                              enablePicture
+                                  ? Container(
+                                width: double.infinity,
+                                height: 200,
+                                child: Stack(
+                                  children: <Widget>[
+                                    ClipRRect(
+                                      //backgroundColor: Colors.white,
+                                      //backgroundImage:
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.file(
+                                        _imageFile,
+                                        fit: BoxFit.fill,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ),
+                                    ),
+                                    Positioned(
+                                        top: 3.0,
+                                        right: 3.0,
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Colors.indigo,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _userData['UrlImg'] = '';
+                                                _imageFile = null;
+                                                enablePicture = false;
+                                              });
+                                            }))
+                                  ],
+                                ),
+                              )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     currentStep: currentStep,
                     onStepContinue: nextStep,
                     onStepTapped: (step) => goTo(step),

@@ -34,7 +34,7 @@ class _UserProfileState extends State<UserProfile> {
         title,
         style: infoWidget.titleButton.copyWith(color: Colors.indigo),
       ),
-      leading:Icon(
+      leading: Icon(
         iconData,
         color: Colors.indigo,
       ),
@@ -92,47 +92,74 @@ class _UserProfileState extends State<UserProfile> {
                 SizedBox(
                   height: infoWidget.screenHeight * 0.02,
                 ),
-                personalInfo(
-                    title: translator.currentLanguage == "en" ? 'Name' : 'الاسم',
-                    subtitle: translator.currentLanguage == "en" ? '' : 'أيمن',
+                _auth.userData.name ==''?SizedBox():personalInfo(
+                    title:
+                        translator.currentLanguage == "en" ? 'Name' : 'الاسم',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.name
+                        : _auth.userData.name,
                     iconData: Icons.person,
                     infoWidget: infoWidget),
-                personalInfo(
-                    title: translator.currentLanguage == "en" ? 'Address' : 'العنوان',
-                    subtitle: translator.currentLanguage == "en" ? '' : 'المنصوره',
+                _auth.userData.address ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Address'
+                        : 'العنوان',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.address
+                        : _auth.userData.address,
                     iconData: Icons.my_location,
                     infoWidget: infoWidget),
-                personalInfo(
+                _auth.userData.phoneNumber ==''?SizedBox():personalInfo(
                     title: translator.currentLanguage == "en"
                         ? 'Phone Number'
                         : 'رقم الهاتف',
-                    subtitle: translator.currentLanguage == "en" ? '' : '01144523795',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.phoneNumber
+                        : _auth.userData.phoneNumber,
                     iconData: Icons.phone,
                     infoWidget: infoWidget),
-                personalInfo(
 
-                    title:
-                        translator.currentLanguage == "en" ? 'National Id' : 'الرقم القومى',
-                    subtitle: translator.currentLanguage == "en" ? '' : '1145523795126',
+                _auth.userData.nationalId ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'National Id'
+                        : 'الرقم القومى',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.nationalId
+                        : _auth.userData.nationalId,
                     iconData: Icons.fingerprint,
                     infoWidget: infoWidget),
-                personalInfo(
-
-                    title:
-                        translator.currentLanguage == "en" ? 'Birth Date' : 'تاريخ الميلاد',
-                    subtitle: translator.currentLanguage == "en" ? '' : '7-3-1998',
+            _auth.userData.birthDate ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Birth Date'
+                        : 'تاريخ الميلاد',
+                    subtitle:
+                        translator.currentLanguage == "en" ? _auth.userData.birthDate : _auth.userData.birthDate,
                     iconData: Icons.date_range,
                     infoWidget: infoWidget),
-                personalInfo(
-
-                    title: translator.currentLanguage == "en" ? 'Gender' : 'النوع',
-                    subtitle: translator.currentLanguage == "en" ? '' : 'ذكر',
-                    iconData:Icons.view_agenda,
+                _auth.userData.gender ==''?SizedBox():personalInfo(
+                    title:
+                        translator.currentLanguage == "en" ? 'Gender' : 'النوع',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.gender
+                        : _auth.userData.gender,
+                    iconData: Icons.view_agenda,
                     infoWidget: infoWidget),
-                personalInfo(
-
-                    title: translator.currentLanguage == "en" ? 'Points' : 'النقاط',
-                    subtitle: translator.currentLanguage == "en" ? '' : '50',
+                _auth.userData.aboutYou ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Another Info'
+                        : 'معلومات اخرى',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.aboutYou
+                        : _auth.userData.aboutYou,
+                    iconData: Icons.info,
+                    infoWidget: infoWidget),
+                _auth.userData.points ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Points'
+                        : 'النقاط',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.points
+                        : _auth.userData.points,
                     iconData: Icons.trip_origin,
                     infoWidget: infoWidget),
               ],

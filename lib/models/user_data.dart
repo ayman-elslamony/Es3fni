@@ -10,6 +10,7 @@ class UserData {
   String birthDate;
   String gender;
   String imgUrl;
+  String aboutYou;
 bool loading;
   UserData(
       {this.docId,
@@ -20,6 +21,7 @@ bool loading;
       this.phoneNumber,
       this.name,
       this.points,
+        this.aboutYou,
       this.imgUrl,
       this.gender,
         this.loading =false,

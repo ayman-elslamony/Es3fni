@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/models/http_exception.dart';
 import 'package:helpme/models/user_data.dart';
+import 'package:helpme/screens/add_user_data/add_user_data.dart';
 import 'package:helpme/screens/main_screen.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
@@ -18,27 +20,31 @@ import 'package:toast/toast.dart';
 class Auth with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
-   String _token;
-   String userId = '';
+  String _token;
+  String userId = '';
   String signInType = '';
   String _userType = 'patient';
   UserData _userData = UserData(
-    name: 'ayman',
-    docId: '12345',
-    points: '20',
-    email: 'ayman17@gmail',
-    address: 'mansoura',
-    phoneNumber: '01145523795',
-    gender: 'male',
-    imgUrl: 'https://w0.pngwave.com/png/246/366/computer-icons-avatar-user-profile-man-avatars-png-clip-art.png'
-  );
+      name: 'ayman',
+      docId: '12345',
+      points: '20',
+      email: 'ayman17@gmail',
+      address: 'mansoura',
+      phoneNumber: '01145523795',
+      gender: 'male',
+      imgUrl:
+          'https://w0.pngwave.com/png/246/366/computer-icons-avatar-user-profile-man-avatars-png-clip-art.png');
+
   set setUserType(String type) {
     _userType = type;
   }
+
   String get getUserType {
     return _userType;
   }
+  String _temporaryToken='';
   UserData get userData => _userData;
+
   bool get isAuth {
     return _token != null;
   }
@@ -77,16 +83,27 @@ class Auth with ChangeNotifier {
         });
       }
     }
-
-    if(prefs.containsKey('signInUsingPhone')){
-  final dataToSignIn = await json
-      .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
-  AuthResult x = await firebaseAuth.signInWithCustomToken(token: dataToSignIn['phoneToken']);
-      userId = x.user.uid;
-      await x.user.getIdToken().then((x){
-        _token =  x.token;
+    if (prefs.containsKey('signInUsingEmail')) {
+      final dataToSignIn = await json
+          .decode(prefs.getString('signInUsingEmail')) as Map<String, Object>;
+      await signInUsingEmailForNurse(
+              isTryToLogin: true,
+              email: dataToSignIn['email'],
+              password: dataToSignIn['password'])
+          .then((_) {
+        signInType = 'signInUsingEmail';
       });
-     signInType = 'signInUsingPhone';
+    }
+    if (prefs.containsKey('signInUsingPhone')) {
+      final dataToSignIn = await json
+          .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
+      AuthResult x = await firebaseAuth.signInWithCustomToken(
+          token: dataToSignIn['phoneToken']);
+      userId = x.user.uid;
+      await x.user.getIdToken().then((x) {
+        _token = x.token;
+      });
+      signInType = 'signInUsingPhone';
     }
     if (signInType == 'signInUsingFBorG') {
       return true;
@@ -108,112 +125,81 @@ class Auth with ChangeNotifier {
       });
     }
   }
-  Future<bool> editProfile({String type,String address,String phone,File image,String job,String social,String bio})async{
-//    FormData formData;
-//    var data;
-//    try{
-//      if(type =='bio'){
-//        formData = FormData.fromMap({
-//          'bio': bio,
-//        });
-//        data = await _netWork
-//            .updateData(url: 'doctor/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print('data $data');
-//      }
-//      if(type == 'image'){
-//        String fileName = image.path
-//            .split('/')
-//            .last;
-//        if(_userType == 'doctor'){
-//          formData = FormData.fromMap({
-//            'doctorImage': await MultipartFile.fromFile(image.path,
-//                filename: fileName)
-//          });
-//        }else{
-//          formData = FormData.fromMap({
-//            'patientImage': await MultipartFile.fromFile(image.path,
-//                filename: fileName)
-//          });
-//        }
-//        data = await _netWork
-//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print(data);
-//      }
-//      if(type == 'job'){
-//        formData = FormData.fromMap({
-//          'job': job,
-//        });
-//        data = await _netWork
-//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print('data $data');
-//      }
-//      if(type == 'address'){
-//        String government = '';
-//        for (int i = 0; i < governorateList.length; i++) {
-//          if (address.contains(governorateList[i])) {
-//            government = governorateList[i];
-//          }
-//        }
-//        formData = FormData.fromMap({
-//          'address': address,
-//          'government': government,
-//        });
-//        data = await _netWork
-//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print('data $data');
-//      }
-//      if(type == 'phone'){
-//        if(_userType == 'doctor') {
-//          formData = FormData.fromMap({
-//            'number': '0$phone',
-//          });
-//        }else{
-//          formData = FormData.fromMap({
-//            'phone': '0$phone',
-//          });
-//        }
-//        data = await _netWork
-//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print('data $data');
-//      }
-//      if(type == 'social'){
-//        formData = FormData.fromMap({
-//          'status': social,
-//        });
-//        data = await _netWork
-//            .updateData(url: _userType=='doctor'?'doctor/$_userId':'patient/$_userId', formData: formData, headers: {
-//          'Authorization': 'Bearer $_token',
-//        });
-//        print('data $data');
-//      }
-//      if (data != null) {
-//        if(_userType =='doctor'){
-//          rgisterData = RegisterData.fromJson(data['doctor'], 'doctor');
-//        }else{
-//          rgisterData = RegisterData.fromJson(data['patient'], 'patient');
-//        }
-//        print('svfdsb');
-//        notifyListeners();
-//        return true;
-//      }else{
-//        return false;
-//      }
-//    }catch (e){
-//      print(e);
-//      return false;
-//    }
-  return true;
+
+  Future<bool> editProfile(
+      {String type,
+      String address,
+      String phone,
+      File picture,
+        String aboutYou
+      }) async {
+    var nurseData = databaseReference.collection("nurses");
+
+    try{
+      if(type == 'image'){
+        String imgUrl = '';
+        if (picture != null) {
+          try {
+            var storageReference = FirebaseStorage.instance
+                .ref()
+                .child('${userData.name}/${path.basename(picture.path)}');
+            StorageUploadTask uploadTask = storageReference.putFile(picture);
+            await uploadTask.onComplete;
+            await storageReference.getDownloadURL().then((fileURL) async {
+              imgUrl = fileURL;
+            });
+          } catch (e) {
+            print(e);
+          }
+        }
+        nurseData.document(userId).setData({
+          'imgUrl': imgUrl,
+        },
+            merge: true
+        );
+      }
+      if(type == 'Another Info'){
+        nurseData.document(userId).setData({
+          'aboutYou':aboutYou
+        },
+            merge: true
+        );
+      }
+      if(type == 'Address'){
+        nurseData.document(userId).setData({
+          'address': address,
+        },
+            merge: true
+        );
+      }
+      if(type == 'Phone Number'){
+        nurseData.document(userId).setData({
+          'phoneNumber': phone,
+        },
+            merge: true
+        );
+      }
+      DocumentSnapshot doc = await nurseData.document(userId).get();
+      _userData = UserData(
+          name: doc.data['name'] ?? 'Nurse',
+          docId: doc.documentID,
+          nationalId: doc.data['nationalId'] ?? '',
+          gender: doc.data['gender'] ?? '',
+          birthDate: doc.data['birthDate'] ?? '',
+          address: doc.data['address'] ?? '',
+          phoneNumber: doc.data['phoneNumber'] ?? '',
+          imgUrl: doc.data['imgUrl'] ?? '',
+          email: doc.data['email'] ?? '',
+          aboutYou: doc.data['aboutYou'] ?? ''
+      );
+      notifyListeners();
+      return true;
+    }catch (e){
+      print(e);
+      return false;
+    }
   }
+
   createAccount(
       {String name,
       String email,
@@ -319,102 +305,228 @@ class Auth with ChangeNotifier {
     return googleSignInAccount;
   }
 
-
   Future<String> signInUsingPhone(
-      
       {String phone, BuildContext context, DeviceInfo infoWidget}) async {
     final prefs = await SharedPreferences.getInstance();
-     firebaseAuth.verifyPhoneNumber(
-         phoneNumber: phone,
-         timeout: Duration(seconds: 60),
-         verificationCompleted: (AuthCredential credential) async {
-           print('dfbfbff');
-           AuthResult result =
-           await firebaseAuth.signInWithCredential(credential);
-           FirebaseUser user = result.user;
+    firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phone,
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (AuthCredential credential) async {
+          print('dfbfbff');
+          AuthResult result =
+              await firebaseAuth.signInWithCredential(credential);
+          FirebaseUser user = result.user;
 
-           if (user != null) {
-             userId = user.uid;
-             if (_token == null) {
-               await firebaseAuth.currentUser().then((user) async{
-                 if (user != null) {
-                   await user.getIdToken().then((token) {
-                     print(token.token);
-                     _token = token.token;
-                   });
-                 }
+          if (user != null) {
+            userId = user.uid;
+            if (_token == null) {
+              await firebaseAuth.currentUser().then((user) async {
+                if (user != null) {
+                  await user.getIdToken().then((token) {
+                    print(token.token);
+                    _token = token.token;
+                  });
+                }
+              });
+              print(userId);
+              print(_token);
+              final _signInUsingPhone = json.encode({
+                'phoneToken': _token,
+              });
+              prefs.setString('signInUsingPhone', _signInUsingPhone);
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => HomeScreen()));
+            }
+          } else {
+            print("Error");
+          }
+        },
+        verificationFailed: (AuthException exception) {
+          print('vdbcdbd');
+          print(exception.message);
+          Toast.show(
+              translator.currentLanguage == "en"
+                  ? "you are send more requests please try again later"
+                  : 'لقد قمت بطلب الكود اكثر من مره من فضلك حاول فى وق لاحق',
+              context,
+              duration: Toast.LENGTH_LONG,
+              gravity: Toast.BOTTOM);
+        },
+        codeSent: (String verificationId, [int forceResendingToken]) {
+          getCode(String code) async {
+            print('etey$code');
+            try {
+              AuthCredential credential = PhoneAuthProvider.getCredential(
+                  verificationId: verificationId, smsCode: code);
+              AuthResult result =
+                  await firebaseAuth.signInWithCredential(credential);
+              FirebaseUser user = result.user;
+              print('etetee');
+              if (user != null) {
+                userId = user.uid;
+                if (_token == null) {
+                  await firebaseAuth.currentUser().then((user) async {
+                    if (user != null) {
+                      await user.getIdToken().then((token) {
+                        print(token.token);
+                        _token = token.token;
+                      });
+                    }
+                  });
+                  print(userId);
+                  print(_token);
+                  final _signInUsingPhone = json.encode({
+                    'phoneToken': _token,
+                  });
+                  prefs.setString('signInUsingPhone', _signInUsingPhone);
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => HomeScreen()));
+                }
+              } else {
+                print("Error");
+              }
+            } catch (e) {
+              print(e);
+              Toast.show(
+                  translator.currentLanguage == "en"
+                      ? "invalid verification code"
+                      : 'الكود الذى ادخلته غير صحيح',
+                  context,
+                  duration: Toast.LENGTH_LONG,
+                  gravity: Toast.BOTTOM);
+            }
+          }
 
-               });
-               print(userId);
-               print(_token);
-               final _signInUsingPhone = json.encode({
-                 'phoneToken': _token,
-               });
-               prefs.setString('signInUsingPhone', _signInUsingPhone);
-               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                   builder: (context) =>HomeScreen() ));
-             }
-           } else {
-             print("Error");
-           }
-         },
-         verificationFailed: (AuthException exception) {
-           print('vdbcdbd');
-           print(exception.message);
-           Toast.show(translator.currentLanguage == "en"
-               ? "you are send more requests please try again later":'لقد قمت بطلب الكود اكثر من مره من فضلك حاول فى وق لاحق', context, duration: Toast.LENGTH_LONG, gravity:  Toast.BOTTOM);
-         },
-         codeSent: (String verificationId, [int forceResendingToken]) {
-           getCode(String code)async{
-             print('etey$code');
-             try {
-               AuthCredential credential =
-               PhoneAuthProvider.getCredential(
-                   verificationId: verificationId,
-                   smsCode: code);
-               AuthResult result =
-               await firebaseAuth.signInWithCredential(credential);
-               FirebaseUser user = result.user;
-               print('etetee');
-               if (user != null) {
-                 userId = user.uid;
-                 if (_token == null) {
-                   await firebaseAuth.currentUser().then((user) async{
-                     if (user != null) {
-                       await user.getIdToken().then((token) {
-                         print(token.token);
-                         _token = token.token;
-                       });
-                     }
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => VerifyCode(
+                    phoneNumber: phone,
+                    function: getCode,
+                  )));
+        },
+        codeAutoRetrievalTimeout: null);
+  }
 
-                   });
-                   print(userId);
-                   print(_token);
-                   final _signInUsingPhone = json.encode({
-                     'phoneToken': _token,
-                   });
-                   prefs.setString('signInUsingPhone', _signInUsingPhone);
-                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                       builder: (context) =>HomeScreen() ));
-                 }
+  Future<bool> signInUsingEmailForNurse(
+      {String email,
+      String password,
+      BuildContext context,
+      bool isTryToLogin = false}) async {
+    print(email);
+    print(password);
+    AuthResult auth;
+    var users = databaseReference.collection("nurses");
+    bool isRegisterData = true;
+    try {
+      auth = await firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      if (auth != null) {
+        userId = auth.user.uid;
+        IdTokenResult x = await auth.user.getIdToken();
+        if(isTryToLogin){
+          _token = x.token;
+        }else{
+          _temporaryToken = x.token;
+        }
+        _userType = 'nurse';
+        DocumentSnapshot doc = await users.document(userId).get();
+        print(doc.data);
+        if (doc.data['address'] == null ||
+            doc.data['phoneNumber'] == null ||
+            doc.data['gender'] == null) {
+          if (isTryToLogin == false) {
+            _userData = UserData(
+              name: doc.data['name'] ?? 'Nurse',
+              docId: doc.documentID,
+              nationalId: doc.data['nationalId'] ?? '',
+              gender: doc.data['gender'] ?? '',
+              birthDate: doc.data['birthDate'] ?? '',
+              address: doc.data['address'] ?? '',
+              phoneNumber: doc.data['phoneNumber'] ?? '',
+              imgUrl: doc.data['imgUrl'] ?? '',
+              email: doc.data['email'] ?? '',
+              aboutYou: doc.data['aboutYou'] ?? ''
+            );
+            await Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => AddUserData()));
+            isRegisterData = false;
+          }
+        } else {
+          _userData = UserData(
+            name: doc.data['name'] ?? 'Nurse',
+            points: doc.data['points'] ?? '0',
+            docId: doc.documentID,
+            nationalId: doc.data['nationalId'] ?? '',
+            gender: doc.data['gender'] ?? '',
+            birthDate: doc.data['birthDate'] ?? '',
+            address: doc.data['address'] ?? '',
+            phoneNumber: doc.data['phoneNumber'] ?? '',
+            imgUrl: doc.data['imgUrl'] ?? '',
+            email: doc.data['email'] ?? '',
+              aboutYou: doc.data['aboutYou'] ?? ''
+          );
+          isRegisterData = true;
+        }
+        final prefs = await SharedPreferences.getInstance();
+        if (!prefs.containsKey('signInUsingEmail')) {
+          final _signInUsingEmail = json.encode({
+            'email': email,
+            'password': password,
+          });
+          prefs.setString('signInUsingEmail', _signInUsingEmail);
+        }
+      }
+      if(isTryToLogin == false){
+        notifyListeners();
+      }
+      return isRegisterData;
+    } catch (e) {
+      print('eee');
+      print(e);
+      throw HttpException(e.code);
+    }
+  }
 
-               } else {
-                 print("Error");
-               }
-             }catch (e){
-               print(e);
-               Toast.show(translator.currentLanguage == "en"
-                   ? "invalid verification code":'الكود الذى ادخلته غير صحيح', context, duration: Toast.LENGTH_LONG, gravity:  Toast.BOTTOM);
-             }
-
-           }
-           Navigator.of(context).push(MaterialPageRoute(
-               builder: (context) => VerifyCode(
-                 phoneNumber: phone,
-                 function: getCode,
-               )));
-         },
-         codeAutoRetrievalTimeout: null);
+  Future<bool> updateNurseData({
+    String name = '',
+    String location = '',
+    String phoneNumber = '',
+    String aboutYou = '',
+    String birthDate = '',
+    String gender = '',
+    File picture,
+  }) async {
+    var nurseData = databaseReference.collection("nurses");
+    String imgUrl = '';
+    if (picture != null) {
+      try {
+        var storageReference = FirebaseStorage.instance
+            .ref()
+            .child('$name/${path.basename(picture.path)}');
+        StorageUploadTask uploadTask = storageReference.putFile(picture);
+        await uploadTask.onComplete;
+        await storageReference.getDownloadURL().then((fileURL) async {
+          imgUrl = fileURL;
+        });
+      } catch (e) {
+        print(e);
+      }
+    }
+    nurseData.document(userId).setData({
+      'name': name,
+      'address': location,
+      'phoneNumber': phoneNumber,
+      'birthDate': birthDate,
+      'gender': gender,
+      'imgUrl': imgUrl,
+      'aboutYou':aboutYou
+    },
+    merge: true
+    );
+    _token =_temporaryToken;
+    notifyListeners();
+    return true;
   }
 
   Future<bool> logout() async {
