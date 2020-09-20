@@ -429,7 +429,7 @@ class Auth with ChangeNotifier {
         }else{
           _temporaryToken = x.token;
         }
-        _userType = 'nurse';
+        _userType = 'patient';
         DocumentSnapshot doc = await users.document(userId).get();
         print(doc.data);
         if (doc.data['address'] == null ||

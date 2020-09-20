@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
+import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class PatientsRequests extends StatefulWidget {
 
 class _PatientsRequestsState extends State<PatientsRequests> {
   Home _home;
+  Auth _auth;
   bool loadingBody = true;
 
   Widget content({Requests request, DeviceInfo infoWidget}) {
@@ -274,109 +276,134 @@ class _PatientsRequestsState extends State<PatientsRequests> {
       },
       child: Padding(
         padding: const EdgeInsets.only(top: 6),
-        child: Container(
-          color: Colors.blue[100],
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      request.patientName != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Patient Name: ${request.patientName}'
-                            : 'اسم المريض: ${request.patientName}',
-                        style: infoWidget.titleButton
-                            .copyWith(color: Colors.indigo),
-                      )
-                          : SizedBox(),
-                      request.patientLocation != ''
-                          ? Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              translator.currentLanguage == 'en'
-                                  ? 'Patient Location: ${request.patientLocation}'
-                                  : 'موقع المريض: ${request.patientLocation}',
-                              style: infoWidget.titleButton
-                                  .copyWith(color: Colors.indigo),
-                              maxLines: 3,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 0.1,
-                          ),
-                        ],
-                      )
-                          : SizedBox(),
-                      request.serviceType != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Service Type: ${request.serviceType}'
-                            : 'نوع الخدمه: ${request.serviceType}',
-                        style: infoWidget.titleButton
-                            .copyWith(color: Colors.indigo),
-                      )
-                          : SizedBox(),
-                      request.analysisType != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Analysis Type: ${request.priceBeforeDiscount} EGP'
-                            : 'نوع التحليل: ${request.analysisType}',
-                        style: infoWidget.titleButton
-                            .copyWith(color: Colors.indigo),
-                      )
-                          : SizedBox(),
-                      request.date != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Dtate: ${request.date}'
-                            : 'التاريخ: ${request.date}',
-                        style: infoWidget.subTitle,
-                      )
-                          : SizedBox(),
-                      request.time != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Time: ${request.time}'
-                            : 'الوقت: ${request.time}',
-                        style: infoWidget.subTitle,
-                      )
-                          : SizedBox(),
-                      request.priceBeforeDiscount != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Price before discount: ${request.priceBeforeDiscount} EGP'
-                            : 'السعر قبل الخصم: ${request.priceBeforeDiscount} جنيه ',
-                        style: infoWidget.subTitle,
-                      )
-                          : SizedBox(),
-                      request.priceAfterDiscount != ''
-                          ? Text(
-                        translator.currentLanguage == 'en'
-                            ? 'Price after discount: ${request.priceAfterDiscount} EGP'
-                            : 'السعر بعد الخصم: ${request.priceAfterDiscount} جنيه ',
-                        style: infoWidget.subTitle,
-                      )
-                          : SizedBox(),
-                    ],
-                  ),
-                ),
-                Column(
+        child: Stack(
+          children: <Widget>[
+            Container(
+              color: Colors.blue[100],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                child:Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          request.patientName != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Patient Name: ${request.patientName}'
+                                : 'اسم المريض: ${request.patientName}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
+                              : SizedBox(),
+                          request.patientLocation != ''
+                              ? Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  translator.currentLanguage == 'en'
+                                      ? 'Patient Location: ${request.patientLocation}'
+                                      : 'موقع المريض: ${request.patientLocation}',
+                                  style: infoWidget.titleButton
+                                      .copyWith(color: Colors.indigo),
+                                  maxLines: 3,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 0.1,
+                              ),
+                            ],
+                          )
+                              : SizedBox(),
+                          request.serviceType != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Service Type: ${request.serviceType}'
+                                : 'نوع الخدمه: ${request.serviceType}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
+                              : SizedBox(),
+                          request.analysisType != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Analysis Type: ${request.priceBeforeDiscount} EGP'
+                                : 'نوع التحليل: ${request.analysisType}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
+                              : SizedBox(),
+                          request.date != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Dtate: ${request.date}'
+                                : 'التاريخ: ${request.date}',
+                            style: infoWidget.subTitle,
+                          )
+                              : SizedBox(),
+                          request.time != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Time: ${request.time}'
+                                : 'الوقت: ${request.time}',
+                            style: infoWidget.subTitle,
+                          )
+                              : SizedBox(),
+                          request.priceBeforeDiscount != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Price before discount: ${request.priceBeforeDiscount} EGP'
+                                : 'السعر قبل الخصم: ${request.priceBeforeDiscount} جنيه ',
+                            style: infoWidget.subTitle,
+                          )
+                              : SizedBox(),
+                          request.priceAfterDiscount != ''
+                              ? Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Price after discount: ${request.priceAfterDiscount} EGP'
+                                : 'السعر بعد الخصم: ${request.priceAfterDiscount} جنيه ',
+                            style: infoWidget.subTitle,
+                          )
+                              : SizedBox(),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      children: <Widget>[
 //                  RaisedButton(onPressed: (){},
 //                  child: Text(translator.currentLanguage =='en'?'delete':'حذف',
 //                    style: infoWidget.titleButton,),color: Colors.indigo,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),)
+                      ],
+                    )
                   ],
-                )
-              ],
+                ),
+              ),
             ),
-          ),
+            Positioned(child:
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: (){},
+                  color: Colors.white,
+                  child: Text(
+                    translator.currentLanguage == "en"
+                        ? 'Accept'
+                        : 'قبول',
+                    style: infoWidget.titleButton
+                        .copyWith(color: Colors.indigo),
+                  ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      side: BorderSide(color: Colors.indigoAccent)),
+                ),
+              ],
+            ),bottom: 8.0,right: 10.0,left: 10.0,)
+          ],
         ),
       ),
     );
@@ -419,6 +446,7 @@ class _PatientsRequestsState extends State<PatientsRequests> {
   @override
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
+    _auth = Provider.of<Auth>(context, listen: false);
     getAllRequests();
     super.initState();
   }
@@ -476,7 +504,7 @@ class _PatientsRequestsState extends State<PatientsRequests> {
               },
             ),
           ),
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: _auth.getUserType!='nurse'?FloatingActionButton(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => AddRequest()));
@@ -487,7 +515,7 @@ class _PatientsRequestsState extends State<PatientsRequests> {
               color: Colors.white,
             ),
             backgroundColor: Colors.indigo,
-          ),
+          ):SizedBox(),
           floatingActionButtonLocation:
           FloatingActionButtonLocation.endFloat,
         ));

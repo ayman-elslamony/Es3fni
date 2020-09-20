@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:helpme/providers/auth.dart';
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,7 @@ class Home with ChangeNotifier {
   final String authId;
   Home(
       this.authToken,
-      this.authId
+      this.authId,
       );
 
   List<Service> allService = [];
@@ -148,7 +149,12 @@ class Home with ChangeNotifier {
   }
 
   Future getAllRequests() async {
-    var requests = databaseReference.collection('analysis request');
+    var requests;
+    if(Auth().getUserType == 'nurse'){
+      requests = databaseReference.collection('analysis request');
+    }else{
+      requests = databaseReference.collection('analysis request');
+    }
     QuerySnapshot docs = await requests.getDocuments();
     allPatientsRequests.clear();
     print('A');

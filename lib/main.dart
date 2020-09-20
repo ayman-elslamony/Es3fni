@@ -34,7 +34,7 @@ class _AppState extends State<App> {
         ChangeNotifierProxyProvider<Auth, Home>(
           update: (ctx, auth, previousProducts) => Home(
             auth.getToken(),
-            auth.userId
+            auth.userId,
           ),
           create: (context) => Home(null,null),
         ),
