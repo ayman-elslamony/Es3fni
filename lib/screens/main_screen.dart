@@ -4,10 +4,13 @@ import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/requests/add_request.dart';
-import 'package:helpme/screens/requests/requests.dart';
+import 'package:helpme/screens/requests/acepted_requests.dart';
+import 'package:helpme/screens/requests/all_requests.dart';
+import 'package:helpme/screens/supplies/nurse_supplies.dart';
 import 'package:helpme/screens/user_profile/user_profile.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
+import 'completed_requests/completed_requests.dart';
 import 'edit_user_data/edit_user_data.dart';
 import 'sign_in_and_up/sign_in/sign_in.dart';
 
@@ -179,7 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       onDetailsPressed: () {
                         Navigator.of(context).pop();
                         setState(() {
-                          _page = 1;
+                          if (_auth.getUserType == 'nurse') {
+                            _page = 2;
+                          } else {
+                            _page = 1;
+                          }
                         });
                         _pageController.jumpToPage(_page);
                       },
@@ -264,14 +271,37 @@ class _HomeScreenState extends State<HomeScreen> {
                           });
                           _pageController.jumpToPage(_page);
                         }),
+                    _auth.getUserType == 'nurse'
+                        ? _drawerListTile(
+                            name: translator.currentLanguage == "en"
+                                ? "Completed requests"
+                                : 'الطلبات المنتهيه',
+                            isIcon: true,
+                            icon: Icons.archive,
+                            infoWidget: infoWidget,
+                            onTap: () async {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => CompletedRequests()));
+                            })
+                        : _drawerListTile(
+                            name: translator.currentLanguage == "en"
+                                ? "Archived requests"
+                                : 'الطلبات المؤرشفه',
+                            isIcon: true,
+                            icon: Icons.archive,
+                            infoWidget: infoWidget,
+                            onTap: () async {}),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
-                            ? "Archived requests"
-                            : 'الطلبات المؤرشفه',
+                            ? "Supplies"
+                            : 'التوريدات',
                         isIcon: true,
-                        icon: Icons.archive,
+                        icon: Icons.panorama_fish_eye,
                         infoWidget: infoWidget,
-                        onTap: () async {}),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => NurseSupplies()));
+                        }),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
                             ? "Edit Profile"
@@ -402,8 +432,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   navBarState.setPage(_page);
                 },
                 children: _auth.getUserType == 'nurse'
-                    ? <Widget>[PatientsRequests(), SizedBox(), UserProfile()]
-                    : <Widget>[PatientsRequests(), UserProfile()],
+                    ? <Widget>[AcceptedRequests(), AllRequests(), UserProfile()]
+                    : <Widget>[AcceptedRequests(), UserProfile()],
               ),
             ),
           ),

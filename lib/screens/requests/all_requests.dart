@@ -11,12 +11,12 @@ import 'package:shimmer/shimmer.dart';
 
 import 'add_request.dart';
 
-class PatientsRequests extends StatefulWidget {
+class AllRequests extends StatefulWidget {
   @override
-  _PatientsRequestsState createState() => _PatientsRequestsState();
+  _AllRequestsState createState() => _AllRequestsState();
 }
 
-class _PatientsRequestsState extends State<PatientsRequests> {
+class _AllRequestsState extends State<AllRequests> {
   Home _home;
   Auth _auth;
   bool loadingBody = true;

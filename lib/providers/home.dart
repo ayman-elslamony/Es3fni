@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:helpme/models/completed_request.dart';
+import 'package:helpme/models/supplying.dart';
+import 'package:helpme/models/user_data.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,20 +20,24 @@ class Home with ChangeNotifier {
   final databaseReference = Firestore.instance;
   final String authToken;
   final String authId;
+
   Home(
-      this.authToken,
-      this.authId,
-      );
+    this.authToken,
+    this.authId,
+  );
 
   List<Service> allService = [];
   List<Analysis> allAnalysis = [];
   List<String> allServicesType =
-  translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
+      translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
   List<String> allAnalysisType = [];
   List<Requests> allPatientsRequests = [];
+  List<Requests> allAcceptedRequests = [];
+  List<Supplying> allNurseSupplies = [];
+  List<CompleteRequest> allCompleteRequests = [];
   Price price = Price(allServiceType: [], servicePrice: 0.0);
-  Coupon coupon =
-  Coupon(docId: '',couponName: '', discountPercentage: '0.0', numberOfUses: '0');
+  Coupon coupon = Coupon(
+      docId: '', couponName: '', discountPercentage: '0.0', numberOfUses: '0');
   double discount = 0.0;
   double priceBeforeDiscount = 0.0;
 
@@ -42,13 +49,15 @@ class Home with ChangeNotifier {
     if (docs.documents.length == 0) {
       return 'false';
     } else {
-      List<String> date  = docs.documents[0].data['expiryDate'].toString().split('-');
+      List<String> date =
+          docs.documents[0].data['expiryDate'].toString().split('-');
       print(date);
-      DateTime time =DateTime(int.parse(date[2]),
-          int.parse(date[1]),
-          int.parse(date[0])
-      );
-      if (price.isAddingDiscount == false && price.servicePrice != 0.0 && docs.documents[0].data['numberOfUses']!='0' && time.isAfter(DateTime.now())) {
+      DateTime time =
+          DateTime(int.parse(date[2]), int.parse(date[1]), int.parse(date[0]));
+      if (price.isAddingDiscount == false &&
+          price.servicePrice != 0.0 &&
+          docs.documents[0].data['numberOfUses'] != '0' &&
+          time.isAfter(DateTime.now())) {
         coupon = Coupon(
           docId: docs.documents[0].documentID,
           couponName: docs.documents[0].data['couponName'],
@@ -68,7 +77,8 @@ class Home with ChangeNotifier {
         return 'true';
       } else if (price.servicePrice == 0.0) {
         return 'add service before discount';
-      }else if(!time.isAfter(DateTime.now())|| docs.documents[0].data['numberOfUses']=='0'){
+      } else if (!time.isAfter(DateTime.now()) ||
+          docs.documents[0].data['numberOfUses'] == '0') {
         return 'Coupon not Avilable';
       } else {
         return 'already discount';
@@ -85,17 +95,18 @@ class Home with ChangeNotifier {
         allServiceType: x);
     notifyListeners();
   }
+
   addToPrice({String type, String serviceType}) {
     if (type == 'analysis') {
       if (!price.allServiceType.contains(serviceType)) {
         int index =
-        allAnalysis.indexWhere((x) => x.analysisName == serviceType);
+            allAnalysis.indexWhere((x) => x.analysisName == serviceType);
         List<String> x = price.allServiceType;
         x.add(serviceType);
 //       priceBeforeDiscount =price.servicePrice + double.parse(allAnalysis[index].price);
         price = Price(
             servicePrice:
-            price.servicePrice + double.parse(allAnalysis[index].price),
+                price.servicePrice + double.parse(allAnalysis[index].price),
             allServiceType: x);
       }
     } else {
@@ -106,15 +117,17 @@ class Home with ChangeNotifier {
         x.add(serviceType);
         price = Price(
             servicePrice:
-            price.servicePrice + double.parse(allService[index].price),
+                price.servicePrice + double.parse(allService[index].price),
             allServiceType: x);
       }
     }
     notifyListeners();
   }
+
   resetPrice() {
     price = Price(allServiceType: [], servicePrice: 0.0);
   }
+
   Future getAllServices() async {
     var services = databaseReference.collection("services");
     var docs = await services.getDocuments();
@@ -131,6 +144,7 @@ class Home with ChangeNotifier {
     }
     notifyListeners();
   }
+
   Future getAllAnalysis() async {
     var analysis = databaseReference.collection("analysis");
     var docs = await analysis.getDocuments();
@@ -150,9 +164,9 @@ class Home with ChangeNotifier {
 
   Future getAllRequests() async {
     var requests;
-    if(Auth().getUserType == 'nurse'){
+    if (Auth().getUserType == 'nurse') {
       requests = databaseReference.collection('analysis request');
-    }else{
+    } else {
       requests = databaseReference.collection('analysis request');
     }
     QuerySnapshot docs = await requests.getDocuments();
@@ -171,7 +185,7 @@ class Home with ChangeNotifier {
                 ? ''
                 : docs.documents[i].data['visitDays'] ?? '',
             suppliesFromPharmacy:
-            docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+                docs.documents[i].data['suppliesFromPharmacy'] ?? '',
             startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
             serviceType: docs.documents[i].data['serviceType'] ?? '',
             picture: docs.documents[i].data['picture'] ?? '',
@@ -184,46 +198,127 @@ class Home with ChangeNotifier {
             time: docs.documents[i].data['time'] ?? '',
             date: docs.documents[i].data['date'] ?? '',
             discountPercentage:
-            docs.documents[i].data['discountPercentage'] ?? '',
+                docs.documents[i].data['discountPercentage'] ?? '',
             nurseGender: docs.documents[i].data['nurseGender'] ?? '',
             numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
             endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
             discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
             priceBeforeDiscount:
-            docs.documents[i].data['priceBeforeDiscount'] ?? '',
+                docs.documents[i].data['priceBeforeDiscount'] ?? '',
             analysisType: docs.documents[i].data['analysisType'] ?? '',
             notes: docs.documents[i].data['notes'] ?? '',
             priceAfterDiscount:
-            docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
+                docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
       }
       print('dfbfdsndd');
       print(allPatientsRequests.length);
       notifyListeners();
     }
   }
+  Future getAllAcceptedRequests() async {
+    var
+      requests = databaseReference.collection('analysis request');
+    QuerySnapshot docs = await requests.getDocuments();
+    allAcceptedRequests.clear();
+    print('A');
+    if (docs.documents.length != 0) {
+      print('B');
+      for (int i = 0; i < docs.documents.length; i++) {
+        allAcceptedRequests.add(Requests(
+            patientId: docs.documents[i].data['patientId'] ?? '',
+            docId: docs.documents[i].documentID,
+            visitTime: docs.documents[i].data['visitTime'] == '[]'
+                ? ''
+                : docs.documents[i].data['visitTime'] ?? '',
+            visitDays: docs.documents[i].data['visitDays'] == '[]'
+                ? ''
+                : docs.documents[i].data['visitDays'] ?? '',
+            suppliesFromPharmacy:
+                docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+            startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
+            serviceType: docs.documents[i].data['serviceType'] ?? '',
+            picture: docs.documents[i].data['picture'] ?? '',
+            patientPhone: docs.documents[i].data['patientPhone'] ?? '',
+            patientName: docs.documents[i].data['patientName'] ?? '',
+            patientLocation: docs.documents[i].data['patientLocation'] ?? '',
+            patientGender: docs.documents[i].data['patientGender'] ?? '',
+            patientAge: docs.documents[i].data['patientAge'] ?? '',
+            servicePrice: docs.documents[i].data['servicePrice'] ?? '',
+            time: docs.documents[i].data['time'] ?? '',
+            date: docs.documents[i].data['date'] ?? '',
+            discountPercentage:
+                docs.documents[i].data['discountPercentage'] ?? '',
+            nurseGender: docs.documents[i].data['nurseGender'] ?? '',
+            numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
+            endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
+            discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
+            priceBeforeDiscount:
+                docs.documents[i].data['priceBeforeDiscount'] ?? '',
+            analysisType: docs.documents[i].data['analysisType'] ?? '',
+            notes: docs.documents[i].data['notes'] ?? '',
+            priceAfterDiscount:
+                docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
+      }
+      print('dfbfdsndd');
+      print(allAcceptedRequests.length);
+      notifyListeners();
+    }
+  }
+  Future getNurseSupplies({String userId}) async {
+    var supplies = databaseReference.collection("nurses").document(userId);
+    var docs = await supplies.collection('supplies').getDocuments();
+    if (docs.documents.length != 0) {
+      allNurseSupplies.clear();
+      for (int i = 0; i < docs.documents.length; i++) {
+        allNurseSupplies.add(Supplying(
+            points: docs.documents[i].data['points'] ?? '',
+            date: docs.documents[i].data['date'] ?? '',
+            time: docs.documents[i].data['time'] ?? ''
+        ));
+      }
+
+    }
+    allNurseSupplies=[
+      Supplying(
+          time: '13:24',
+          date: '12-10-2020',
+          points: '100'
+      ),
+      Supplying(
+          time: '13:24',
+          date: '12-10-2020',
+          points: '10'
+      ),Supplying(
+          time: '13:24',
+          date: '12-10-2020',
+          points: '700'
+      ),
+    ];
+    notifyListeners();
+  }
   Future<bool> addRequest(
       {String analysisType,
-        String patientName,
-        String patientPhone,
-        String patientLocation,
-        String patientAge,
-        String patientGender,
-        String numOfPatients,
-        String serviceType,
-        String nurseGender,
-        String suppliesFromPharmacy,
-        File picture,
-        String discountCoupon,
-        String startVisitDate,
-        String endVisitDate,
-        String visitDays,
-        String visitTime,
-        String notes}) async {
+      String patientName,
+      String patientPhone,
+      String patientLocation,
+      String patientAge,
+      String patientGender,
+      String numOfPatients,
+      String serviceType,
+      String nurseGender,
+      String suppliesFromPharmacy,
+      File picture,
+      String discountCoupon,
+      String startVisitDate,
+      String endVisitDate,
+      String visitDays,
+      String visitTime,
+      String notes}) async {
     String imgUrl = '';
     var users = databaseReference.collection("users");
     var _coupons = databaseReference.collection("coupons");
     var docs =
-    await users.where('phone', isEqualTo: patientPhone).getDocuments();
+        await users.where('phone', isEqualTo: patientPhone).getDocuments();
     if (picture != null) {
       try {
         var storageReference = FirebaseStorage.instance.ref().child(
@@ -242,7 +337,7 @@ class Home with ChangeNotifier {
       print('aaa');
       DocumentReference x = await databaseReference.collection('requests').add({
         'patientId':
-        docs.documents.length != 0 ? docs.documents[0].documentID : '',
+            docs.documents.length != 0 ? docs.documents[0].documentID : '',
         'patientName': patientName,
         'patientPhone': patientPhone,
         'patientLocation': patientLocation,
@@ -269,7 +364,7 @@ class Home with ChangeNotifier {
             ? (double.parse(numOfPatients) * price.servicePrice).toString()
             : (double.parse(numOfPatients) * priceBeforeDiscount).toString(),
         'priceAfterDiscount':
-        (double.parse(numOfPatients) * price.servicePrice).toString(),
+            (double.parse(numOfPatients) * price.servicePrice).toString(),
       });
       if (docs.documents.length != 0) {
         await users
@@ -281,9 +376,9 @@ class Home with ChangeNotifier {
       print('bb');
     } else {
       DocumentReference x =
-      await databaseReference.collection('analysis request').add({
+          await databaseReference.collection('analysis request').add({
         'patientId':
-        docs.documents.length != 0 ? docs.documents[0].documentID : '',
+            docs.documents.length != 0 ? docs.documents[0].documentID : '',
         'patientName': patientName,
         'patientPhone': patientPhone,
         'patientLocation': patientLocation,
@@ -322,10 +417,10 @@ class Home with ChangeNotifier {
             .setData({'docId': x.documentID});
       }
     }
-    if(coupon.docId != ''){
+    if (coupon.docId != '') {
       int x = int.parse(coupon.numberOfUses);
-      if(x != 0){
-        x =x-1;
+      if (x != 0) {
+        x = x - 1;
       }
       _coupons.document(coupon.docId).updateData({
         'numberOfUses': x,
@@ -333,5 +428,65 @@ class Home with ChangeNotifier {
     }
     getAllRequests();
     return true;
+  }
+
+  Future<bool> endRequest({Requests request, UserData userData}) async {
+    var nursesCollection = databaseReference.collection("nurses");
+    int points = int.parse(userData.points);
+    points = points + 50;
+    await nursesCollection
+        .document(userData.docId)
+        .updateData({'points': points});
+    DateTime dateTime = DateTime.now();
+    nursesCollection
+        .document(userData.docId)
+        .collection('archived requests')
+        .document(request.docId)
+        .setData({
+      'serviceType': request.serviceType,
+      'analysisType': request.analysisType,
+      'points': '50',
+      'date': '${dateTime.day}-${dateTime.month}-${dateTime.year}',
+      'time': '${dateTime.hour}:${dateTime.minute}',
+    });
+    //what happend in patient data
+    return true;
+  }
+
+  Future<bool> acceptRequest({Requests request, UserData userData}) async {
+    var nursesCollection = databaseReference.collection("nurses");
+//    int points = int.parse(userData.points);
+//    points = points +50;
+//    await nursesCollection.document(userData.docId).updateData({
+//      'points': points
+//    });
+//    nursesCollection.document().collection('archived requests').document(
+//      request.docId
+//    ).setData({
+//      'serviceType':request.serviceType,
+//      'analysisType': request.analysisType,
+//      'points': '50'
+//    });
+    //what happend in patient data
+    return true;
+  }
+
+  Future getAllCompletedRequests({String userId}) async {
+    var completed = databaseReference.collection("nurses/$userId/archived requests");
+    var docs = await completed.getDocuments();
+    if (docs.documents.length != 0) {
+      allCompleteRequests.clear();
+      for (int i = 0; i < docs.documents.length; i++) {
+        allCompleteRequests.add(CompleteRequest(
+          docId: docs.documents[i].documentID,
+          date: docs.documents[i].data['date'] ?? '',
+          time: docs.documents[i].data['time'] ?? '',
+          points: docs.documents[i].data['points'] ?? '',
+          analysisType: docs.documents[i].data['analysisType'] ?? '',
+          serviceType: docs.documents[i].data['serviceType'] ?? '',
+        ));
+      }
+    }
+    notifyListeners();
   }
 }

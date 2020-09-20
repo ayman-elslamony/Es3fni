@@ -216,7 +216,7 @@ class _EditProfileState extends State<EditProfile> {
                                 gravity: Toast.BOTTOM);
                           }
                         } else {
-                          Toast.show("Please enter your address", context,
+                          Toast.show(translator.currentLanguage == "en" ?"Please enter your address":'من فضلك ادخل العنوان', context,
                               duration: Toast.LENGTH_SHORT,
                               gravity: Toast.BOTTOM);
                         }
@@ -573,6 +573,18 @@ class _EditProfileState extends State<EditProfile> {
                                 : data.userData.phoneNumber,
                             iconData: Icons.phone,
                             infoWidget: infoWidget),
+                        data.userData.email ==''?SizedBox():personalInfo(
+                            title: translator.currentLanguage == "en"
+                                ? 'E-mail'
+                                : 'البريد الالكترونى',
+                            subtitle: translator.currentLanguage == "en"
+                                ? data.userData.email
+                                : data.userData.email,
+                            iconData: Icons.email,
+                            enableEdit: false,
+                            context: context,
+                            infoWidget: infoWidget),
+
                         data.userData.nationalId ==''?SizedBox():personalInfo(
                             context: context,
                             enableEdit: false,

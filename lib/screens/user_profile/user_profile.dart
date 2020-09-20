@@ -118,6 +118,15 @@ class _UserProfileState extends State<UserProfile> {
                         : _auth.userData.phoneNumber,
                     iconData: Icons.phone,
                     infoWidget: infoWidget),
+                _auth.userData.email ==''?SizedBox():personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'E-mail'
+                        : 'البريد الالكترونى',
+                    subtitle: translator.currentLanguage == "en"
+                        ? _auth.userData.email
+                        : _auth.userData.email,
+                    iconData: Icons.email,
+                    infoWidget: infoWidget),
 
                 _auth.userData.nationalId ==''?SizedBox():personalInfo(
                     title: translator.currentLanguage == "en"

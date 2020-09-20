@@ -455,9 +455,9 @@ class Auth with ChangeNotifier {
         } else {
           _userData = UserData(
             name: doc.data['name'] ?? 'Nurse',
-            points: doc.data['points'] ?? '0',
+            points: doc.data['points'].toString() ?? '0',
             docId: doc.documentID,
-            nationalId: doc.data['nationalId'] ?? '',
+            nationalId: doc.data['nationalId'].toString() ?? '',
             gender: doc.data['gender'] ?? '',
             birthDate: doc.data['birthDate'] ?? '',
             address: doc.data['address'] ?? '',
