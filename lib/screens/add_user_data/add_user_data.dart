@@ -18,6 +18,7 @@ import '../../main.dart';
 import '../main_screen.dart';
 
 class AddUserData extends StatefulWidget {
+
   @override
   _AddUserDataState createState() => _AddUserDataState();
 }
@@ -84,8 +85,15 @@ class _AddUserDataState extends State<AddUserData> {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
     _genderList = translator.currentLanguage =='en'?['Male', 'Female']:['ذكر', 'انثى'];
-    nameController.text =_auth.userData.name;
-    _userData['name'] =_auth.userData.name;
+    if(_auth.userData !=null) {
+      nameController.text = _auth.userData.name;
+      _userData['name'] = _auth.userData.name;
+    }
+    if(_auth.phoneNumber !=null){
+      _userData['Phone number']=_auth.phoneNumber.phoneNumber;
+      number = _auth.phoneNumber;
+
+    }
   }
 
   cancel() {
@@ -414,12 +422,12 @@ class _AddUserDataState extends State<AddUserData> {
       });
       try {
         bool isScuess =await Provider.of<Auth>(context, listen: false)
-            .updateNurseData(
+            .updateUserData(
           name: _userData['name'],
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
           gender: _userData['gender'],
-          picture: _userData['UrlImg'],
+          picture: _userData['UrlImg']==''?null:_userData['UrlImg'],
           aboutYou: _userData['aboutYou'],
             location:_userData['Location']
         );
@@ -688,6 +696,7 @@ class _AddUserDataState extends State<AddUserData> {
                                 focusNode: focusNode,
                                 ignoreBlank: true,
                                 autoValidate: false,
+                                isEnabled: _auth.phoneNumber !=null?false:true,
                                 selectorTextStyle: TextStyle(color: Colors.black),
                                 initialValue: number,
                                 inputDecoration: InputDecoration(
@@ -818,7 +827,6 @@ class _AddUserDataState extends State<AddUserData> {
                                               cancelStyle:
                                               TextStyle(color: Colors.black87),
                                             ),
-                                            minTime: DateTime.now(),
                                             maxTime: DateTime(2080, 6, 7),
                                             onChanged: (_) {}, onConfirm: (date) {
                                               print('confirm $date');

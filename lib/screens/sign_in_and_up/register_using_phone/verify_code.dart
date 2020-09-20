@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
@@ -9,7 +10,7 @@ import 'package:toast/toast.dart';
 import '../../main_screen.dart';
 
 class VerifyCode extends StatefulWidget {
-  final String phoneNumber;
+  final PhoneNumber phoneNumber;
 final Function function;
   VerifyCode({this.phoneNumber,this.function});
 
@@ -182,19 +183,22 @@ Auth _auth;
                                   Duration(milliseconds: 1000), (i) => i);
                               _previousStreamValue = 0;
 
-                              String x=await  _auth.signInUsingPhone(
+                              await  _auth.signInUsingPhone(
                                   infoWidget: infoWidget,
                                   context: context,
                                   phone: widget.phoneNumber
                               );
-                              if(x == 'verifysccuess'){
-                                Toast.show(translator.currentLanguage == "en"
+                              Toast.show(translator.currentLanguage == "en"
                                     ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
-                              }else{
-                                Toast.show(translator.currentLanguage == "en"
-                                    ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                              }
+                              print('qqqqqqqq');
+                              // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+
+//                              if(x == 'verifysccuess'){
+//
+//                              }else{
+//                                Toast.show(translator.currentLanguage == "en"
+//                                    ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+//                              }
                             }
                           },
                           child: Row(

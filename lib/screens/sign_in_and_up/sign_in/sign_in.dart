@@ -28,7 +28,7 @@ class _SignInState extends State<SignIn> {
   final TextEditingController controller = TextEditingController();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
-  String phoneNumber;
+  PhoneNumber phoneNumber;
   String errorMessage;
   bool _isSignInUsingFBSuccessful = false;
   bool _isSignInUsingGoogleSuccessful = false;
@@ -306,7 +306,7 @@ class _SignInState extends State<SignIn> {
                                         InternationalPhoneNumberInput(
                                           onInputChanged:
                                               (PhoneNumber number) {
-                                            phoneNumber = number.phoneNumber;
+                                            phoneNumber = number;
                                           },
                                           focusNode: focusNode,
                                           ignoreBlank: false,

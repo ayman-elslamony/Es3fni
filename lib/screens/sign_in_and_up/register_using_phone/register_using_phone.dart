@@ -19,7 +19,7 @@ class _RegisterUsingPhoneState extends State<RegisterUsingPhone> {
   final TextEditingController controller = TextEditingController();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
-  String phoneNumber;
+  PhoneNumber phoneNumber;
 Auth _auth;
 @override
   void initState() {
@@ -81,7 +81,7 @@ Auth _auth;
                               children: <Widget>[
                                 InternationalPhoneNumberInput(
                                   onInputChanged: (PhoneNumber number) {
-                                    phoneNumber= number.phoneNumber;
+                                    phoneNumber= number;
                                   },
                                   focusNode: focusNode,
                                   ignoreBlank: true,

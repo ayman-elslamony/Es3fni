@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,16 +25,8 @@ class Auth with ChangeNotifier {
   String userId = '';
   String signInType = '';
   String _userType = 'patient';
-  UserData _userData = UserData(
-      name: 'ayman',
-      docId: '12345',
-      points: '20',
-      email: 'ayman17@gmail',
-      address: 'mansoura',
-      phoneNumber: '01145523795',
-      gender: 'male',
-      imgUrl:
-          'https://w0.pngwave.com/png/246/366/computer-icons-avatar-user-profile-man-avatars-png-clip-art.png');
+  UserData _userData ;
+  PhoneNumber phoneNumber;
 
   set setUserType(String type) {
     _userType = type;
@@ -305,11 +298,14 @@ class Auth with ChangeNotifier {
     return googleSignInAccount;
   }
 
-  Future<String> signInUsingPhone(
-      {String phone, BuildContext context, DeviceInfo infoWidget}) async {
+  Future<void> signInUsingPhone(
+      {PhoneNumber phone, BuildContext context, DeviceInfo infoWidget}) async {
+    _userType ='patient';
+    phoneNumber =phone;
+    var patientData = databaseReference.collection("users");
     final prefs = await SharedPreferences.getInstance();
     firebaseAuth.verifyPhoneNumber(
-        phoneNumber: phone,
+        phoneNumber: phone.phoneNumber,
         timeout: Duration(seconds: 60),
         verificationCompleted: (AuthCredential credential) async {
           print('dfbfbff');
@@ -334,8 +330,15 @@ class Auth with ChangeNotifier {
                 'phoneToken': _token,
               });
               prefs.setString('signInUsingPhone', _signInUsingPhone);
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => HomeScreen()));
+              print('rytryhrrhr');
+              DocumentSnapshot x =await patientData.document(userId).get();
+              if(!x.exists){
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => AddUserData()));
+              }else{
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => HomeScreen()));
+              }
             }
           } else {
             print("Error");
@@ -378,9 +381,17 @@ class Auth with ChangeNotifier {
                   final _signInUsingPhone = json.encode({
                     'phoneToken': _token,
                   });
+                  print('wtrwetetetetyyyyyyyyyyyyyyyyyyyy');
                   prefs.setString('signInUsingPhone', _signInUsingPhone);
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => HomeScreen()));
+                  DocumentSnapshot x =await patientData.document(userId).get();
+                  if(!x.exists){
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => AddUserData()));
+                  }else{
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => HomeScreen()));
+                  }
+
                 }
               } else {
                 print("Error");
@@ -494,7 +505,7 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<bool> updateNurseData({
+  Future<bool> updateUserData({
     String name = '',
     String location = '',
     String phoneNumber = '',
@@ -504,6 +515,7 @@ class Auth with ChangeNotifier {
     File picture,
   }) async {
     var nurseData = databaseReference.collection("nurses");
+    var patientData = databaseReference.collection("users");
     String imgUrl = '';
     if (picture != null) {
       try {
@@ -519,32 +531,52 @@ class Auth with ChangeNotifier {
         print(e);
       }
     }
-    nurseData.document(userId).setData({
-      'name': name,
-      'address': location,
-      'phoneNumber': phoneNumber,
-      'birthDate': birthDate,
-      'gender': gender,
-      'imgUrl': imgUrl,
-      'aboutYou':aboutYou
-    },
-    merge: true
-    );
-
-    _userType = 'nurse';
-    _token =_temporaryToken;
-    final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('signInUsingEmail')) {
-      final _signInUsingEmail = json.encode({
-        'email': _userData.email,
-        'password': _userData.password,
-      });
-      prefs.setString('signInUsingEmail', _signInUsingEmail);
+    if(_userType == 'nurse') {
+      nurseData.document(userId).setData({
+        'name': name,
+        'address': location,
+        'phoneNumber': phoneNumber,
+        'birthDate': birthDate,
+        'gender': gender,
+        'imgUrl': imgUrl,
+        'aboutYou': aboutYou
+      },
+          merge: true
+      );
+      _userType = 'nurse';
+      _token =_temporaryToken;
+      final prefs = await SharedPreferences.getInstance();
+      if (!prefs.containsKey('signInUsingEmail')) {
+        final _signInUsingEmail = json.encode({
+          'email': _userData.email,
+          'password': _userData.password,
+        });
+        prefs.setString('signInUsingEmail', _signInUsingEmail);
+      }
+    }else {
+      patientData.document(userId).setData({
+        'name': name,
+        'address': location,
+        'phoneNumber': phoneNumber,
+        'birthDate': birthDate,
+        'gender': gender,
+        'imgUrl': imgUrl,
+        'points':'0'
+      },
+          merge: true
+      );
+      _userType ='patient';
     }
-    DocumentSnapshot doc = await nurseData.document(userId).get();
+    DocumentSnapshot doc;
+    if(_userType == 'nurse'){
+     doc = await nurseData.document(userId).get();
+    }else{
+      doc = await patientData.document(userId).get();
+    }
+
     _userData = UserData(
         name: doc.data['name'] ?? 'Nurse',
-        points: doc.data['points'].toString() ?? '0',
+        points: doc.data['points'] ?? '0',
         docId: doc.documentID,
         nationalId: doc.data['nationalId'].toString() ?? '',
         gender: doc.data['gender'] ?? '',
