@@ -32,14 +32,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _pageController = PageController();
     _auth = Provider.of<Auth>(context, listen: false);
-    if(_auth.getUserType == 'patient'){
-    type = translator.currentLanguage == "en"
-        ? ['Current requests', 'Profile']
-        : ['الطلبات الحاليه', 'الملف الشخصي'];
-    }else{
+    if (_auth.getUserType == 'patient') {
       type = translator.currentLanguage == "en"
-          ? ['Accepted requests','All Request', 'Profile']
-          : ['الطلبات المقبوله','كل الطلبات','الملف الشخصي'];
+          ? ['Current requests', 'Profile']
+          : ['الطلبات الحاليه', 'الملف الشخصي'];
+    } else {
+      type = translator.currentLanguage == "en"
+          ? ['Accepted requests', 'All Request', 'Profile']
+          : ['الطلبات المقبوله', 'كل الطلبات', 'الملف الشخصي'];
     }
   }
 
@@ -107,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -184,8 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         });
                         _pageController.jumpToPage(_page);
                       },
-                      accountName:
-                          Text("${_auth.userData.name.toUpperCase()}"),
+                      accountName: Text("${_auth.userData.name.toUpperCase()}"),
                       accountEmail: InkWell(
                         onTap: () {},
                         child: Text(translator.currentLanguage == "en"
@@ -203,47 +201,51 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                   _auth.getUserType!='nurse'? _drawerListTile(
-                        name: translator.currentLanguage == "en"
-                            ? "Current requests"
-                            : 'الطلبات الحاليه',
-                        isIcon: true,
-                        icon: Icons.remove_from_queue,
-                        infoWidget: infoWidget,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            _page = 0;
-                          });
-                          _pageController.jumpToPage(_page);
-                        }):_drawerListTile(
-                       name: translator.currentLanguage == "en"
-                           ? "Accepted requests"
-                           : 'الطلبات المقبوله',
-                       isIcon: true,
-                       icon: Icons.remove_from_queue,
-                       infoWidget: infoWidget,
-                       onTap: () {
-                         Navigator.of(context).pop();
-                         setState(() {
-                           _page = 0;
-                         });
-                         _pageController.jumpToPage(_page);
-                       }),
-                    _auth.getUserType=='nurse'? _drawerListTile(
-                        name: translator.currentLanguage == "en"
-                            ? "All requests"
-                            : 'كل الطلبات',
-                        isIcon: true,
-                        icon: Icons.remove_from_queue,
-                        infoWidget: infoWidget,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            _page = 1;
-                          });
-                          _pageController.jumpToPage(_page);
-                        }):SizedBox(),
+                    _auth.getUserType != 'nurse'
+                        ? _drawerListTile(
+                            name: translator.currentLanguage == "en"
+                                ? "Current requests"
+                                : 'الطلبات الحاليه',
+                            isIcon: true,
+                            icon: Icons.remove_from_queue,
+                            infoWidget: infoWidget,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              setState(() {
+                                _page = 0;
+                              });
+                              _pageController.jumpToPage(_page);
+                            })
+                        : _drawerListTile(
+                            name: translator.currentLanguage == "en"
+                                ? "Accepted requests"
+                                : 'الطلبات المقبوله',
+                            isIcon: true,
+                            icon: Icons.remove_from_queue,
+                            infoWidget: infoWidget,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              setState(() {
+                                _page = 0;
+                              });
+                              _pageController.jumpToPage(_page);
+                            }),
+                    _auth.getUserType == 'nurse'
+                        ? _drawerListTile(
+                            name: translator.currentLanguage == "en"
+                                ? "All requests"
+                                : 'كل الطلبات',
+                            isIcon: true,
+                            icon: Icons.remove_from_queue,
+                            infoWidget: infoWidget,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              setState(() {
+                                _page = 1;
+                              });
+                              _pageController.jumpToPage(_page);
+                            })
+                        : SizedBox(),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
                             ? "Profile"
@@ -254,9 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           Navigator.of(context).pop();
                           setState(() {
-                            if(_auth.getUserType =='nurse'){
+                            if (_auth.getUserType == 'nurse') {
                               _page = 2;
-                            }else{
+                            } else {
                               _page = 1;
                             }
                           });
@@ -269,8 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         isIcon: true,
                         icon: Icons.archive,
                         infoWidget: infoWidget,
-                        onTap: () async {
-                        }),
+                        onTap: () async {}),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
                             ? "Edit Profile"
@@ -328,51 +329,58 @@ class _HomeScreenState extends State<HomeScreen> {
               key: _bottomNavigationKey,
               backgroundColor: Colors.white,
               color: Colors.indigo,
-              items:  _auth.getUserType=='nurse'? <Widget>[
-               _page != 0
-                    ? _iconNavBar(
-                    infoWidget: infoWidget,
-                    iconPath: Icons.remove_from_queue,
-                    title: translator.currentLanguage == "en"
-                        ? "Accepted requests"
-                        : 'الطلبات المقبوله')
-                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.remove_from_queue),
-                _page != 1
-                    ? _iconNavBar(
-                    infoWidget: infoWidget,
-                    iconPath: Icons.redeem,
-                    title: translator.currentLanguage == "en"
-                        ? "All requests"
-                        : 'كل الطلبات')
-                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.redeem),
-
-                _page != 2
-                    ? _iconNavBar(
-                        infoWidget: infoWidget,
-                        iconPath: Icons.person,
-                        title: translator.currentLanguage == "en"
-                            ? 'Profile'
-                            : 'الملف الشخصى')
-                    : _iconNavBar(
-                        infoWidget: infoWidget, iconPath: Icons.person),
-              ]:<Widget>[
-              _page != 0
-                    ? _iconNavBar(
-                    infoWidget: infoWidget,
-                    iconPath: Icons.remove_from_queue,
-                    title: translator.currentLanguage == "en"
-                        ? "Current requests"
-                        : 'الطلبات الحاليه')
-                    : _iconNavBar(infoWidget: infoWidget, iconPath: Icons.remove_from_queue),
-                _page != 1 ?_iconNavBar(
-                    infoWidget: infoWidget,
-                    iconPath: Icons.person,
-                    title: translator.currentLanguage == "en"
-                        ? 'Profile'
-                        : 'الملف الشخصى')
-                    : _iconNavBar(
-                    infoWidget: infoWidget, iconPath: Icons.person),
-              ],
+              items: _auth.getUserType == 'nurse'
+                  ? <Widget>[
+                      _page != 0
+                          ? _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.remove_from_queue,
+                              title: translator.currentLanguage == "en"
+                                  ? "Accepted requests"
+                                  : 'الطلبات المقبوله')
+                          : _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.remove_from_queue),
+                      _page != 1
+                          ? _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.redeem,
+                              title: translator.currentLanguage == "en"
+                                  ? "All requests"
+                                  : 'كل الطلبات')
+                          : _iconNavBar(
+                              infoWidget: infoWidget, iconPath: Icons.redeem),
+                      _page != 2
+                          ? _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.person,
+                              title: translator.currentLanguage == "en"
+                                  ? 'Profile'
+                                  : 'الملف الشخصى')
+                          : _iconNavBar(
+                              infoWidget: infoWidget, iconPath: Icons.person),
+                    ]
+                  : <Widget>[
+                      _page != 0
+                          ? _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.remove_from_queue,
+                              title: translator.currentLanguage == "en"
+                                  ? "Current requests"
+                                  : 'الطلبات الحاليه')
+                          : _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.remove_from_queue),
+                      _page != 1
+                          ? _iconNavBar(
+                              infoWidget: infoWidget,
+                              iconPath: Icons.person,
+                              title: translator.currentLanguage == "en"
+                                  ? 'Profile'
+                                  : 'الملف الشخصى')
+                          : _iconNavBar(
+                              infoWidget: infoWidget, iconPath: Icons.person),
+                    ],
               onTap: (index) {
                 setState(() {
                   _page = index;
@@ -393,7 +401,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       _bottomNavigationKey.currentState;
                   navBarState.setPage(_page);
                 },
-                children: <Widget>[PatientsRequests(),SizedBox(),UserProfile()],
+                children: _auth.getUserType == 'nurse'
+                    ? <Widget>[PatientsRequests(), SizedBox(), UserProfile()]
+                    : <Widget>[PatientsRequests(), UserProfile()],
               ),
             ),
           ),
