@@ -19,6 +19,7 @@ class _NurseSuppliesState extends State<NurseSupplies> {
   Home _home;
   Auth _auth;
   bool loadingBody = true;
+
   Widget content({Supplying supplying, DeviceInfo infoWidget}) {
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -60,6 +61,7 @@ class _NurseSuppliesState extends State<NurseSupplies> {
       ),
     );
   }
+
   getSpecificNurseSupplies() async {
     if (_home.allNurseSupplies.length == 0) {
       await _home.getNurseSupplies(userId: _auth.userId);
@@ -100,25 +102,39 @@ class _NurseSuppliesState extends State<NurseSupplies> {
                       : 'التوريدات',
                   style: infoWidget.titleButton,
                 ),
+                leading: IconButton(icon: Icon(
+                  Icons.arrow_back_ios,
+                  size: infoWidget.orientation == Orientation.portrait
+                      ? infoWidget.screenWidth * 0.05
+                      : infoWidget.screenWidth * 0.035,
+                ),color: Colors.white, onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },),
+                shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30))),
               ),
               body: loadingBody
                   ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: ListView.builder(
-                  itemBuilder: (context, _) => Shimmer.fromColors(
-                    baseColor: Colors.black12.withOpacity(0.1),
-                    highlightColor: Colors.black.withOpacity(0.2),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.blue[100],
+                  itemBuilder: (context, _) =>
+                      Shimmer.fromColors(
+                        baseColor: Colors.black12.withOpacity(0.1),
+                        highlightColor: Colors.black.withOpacity(0.2),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.blue[100],
+                            ),
+                            height: infoWidget.screenHeight * 0.15,
+                          ),
                         ),
-                        height: infoWidget.screenHeight * 0.15,
                       ),
-                    ),
-                  ),
                   itemCount: 5,
                 ),
               )
@@ -137,9 +153,10 @@ class _NurseSuppliesState extends State<NurseSupplies> {
                   } else {
                     return ListView.builder(
                         itemCount: data.allNurseSupplies.length,
-                        itemBuilder: (context, index) => content(
-                            infoWidget: infoWidget,
-                            supplying: data.allNurseSupplies[index]));
+                        itemBuilder: (context, index) =>
+                            content(
+                                infoWidget: infoWidget,
+                                supplying: data.allNurseSupplies[index]));
                   }
                 },
               ),

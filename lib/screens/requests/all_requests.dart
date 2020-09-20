@@ -387,8 +387,16 @@ class _AllRequestsState extends State<AllRequests> {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                RaisedButton(
-                  onPressed: (){},
+                request.isLoading?CircularProgressIndicator(backgroundColor: Colors.indigo,):RaisedButton(
+                  onPressed: ()async{
+                    setState(() {
+                      request.isLoading =true;
+                    });
+                    _home.acceptRequest(request: request,userData: _auth.userData);
+                    setState(() {
+                      request.isLoading =false;
+                    });
+                  },
                   color: Colors.white,
                   child: Text(
                     translator.currentLanguage == "en"

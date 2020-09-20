@@ -448,7 +448,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
   getAllAcceptedRequests() async {
     print('dvdxvx');
     if (_home.allAcceptedRequests.length == 0) {
-      await _home.getAllAcceptedRequests();
+      await _home.getAllAcceptedRequests(userId: _auth.userId);
     }
     setState(() {
       loadingBody = false;
@@ -492,7 +492,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
             color: Colors.indigo,
             backgroundColor: Colors.white,
             onRefresh: () async {
-              _home.getAllRequests();
+              _home.getAllAcceptedRequests(userId: _auth.userId);
             },
             child: Consumer<Home>(
               builder: (context, data, _) {

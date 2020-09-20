@@ -103,9 +103,8 @@ class _CompletedRequestsState extends State<CompletedRequests> {
     );
   }
   getAllCompletedRequest() async {
-    if (_home.allCompleteRequests.length == 0) {
+
       await _home.getAllCompletedRequests(userId: _auth.userId);
-    }
     setState(() {
       loadingBody = false;
     });
@@ -142,6 +141,19 @@ class _CompletedRequestsState extends State<CompletedRequests> {
                       : 'الطلبات المنتهيه',
                   style: infoWidget.titleButton,
                 ),
+                leading: IconButton(icon: Icon(
+                  Icons.arrow_back_ios,
+                  size: infoWidget.orientation == Orientation.portrait
+                      ? infoWidget.screenWidth * 0.05
+                      : infoWidget.screenWidth * 0.035,
+                ),color: Colors.white, onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },),
+                shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30))),
               ),
               body: loadingBody
                   ? Padding(

@@ -435,12 +435,13 @@ class _AddUserDataState extends State<AddUserData> {
               context,
               duration: Toast.LENGTH_SHORT,
               gravity: Toast.BOTTOM);
-
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(context)=>HomeScreen()));
         } else {
           setState(() {
             _isLoading = false;
           });
-          Toast.show("Please try again", context,
+          Toast.show(translator.currentLanguage == "en"
+              ?"Please try again":'من فضلك حاول مره اخرى', context,
               duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
         }
       } catch (e) {
@@ -448,7 +449,8 @@ class _AddUserDataState extends State<AddUserData> {
         setState(() {
           _isLoading = false;
         });
-        Toast.show("Please try again", context,
+        Toast.show(translator.currentLanguage == "en"
+            ?"Please try again":'من فضلك حاول مره اخرى', context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
     }
@@ -509,9 +511,7 @@ class _AddUserDataState extends State<AddUserData> {
                 onTap: () async {
         await Provider.of<Auth>(context, listen: false)
             .logout();
-        Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-        builder: (context) => App()));
+        Navigator.of(context).pop(true);
         },
                 child: Row(
                   children: <Widget>[
@@ -676,6 +676,9 @@ class _AddUserDataState extends State<AddUserData> {
                                     ),
                                   ),
                                   keyboardType: TextInputType.text,
+                                onChanged: (val){
+                                    _userData['Location']=val.trim;
+                                },
                                 ),
                               ),
                               InternationalPhoneNumberInput(

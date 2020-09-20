@@ -416,6 +416,7 @@ class Auth with ChangeNotifier {
     AuthResult auth;
     var users = databaseReference.collection("nurses");
     bool isRegisterData = true;
+    bool isLogout=false;
     try {
       auth = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -439,16 +440,17 @@ class Auth with ChangeNotifier {
             _userData = UserData(
               name: doc.data['name'] ?? 'Nurse',
               docId: doc.documentID,
+              password: password,
               nationalId: doc.data['nationalId'] ?? '',
               gender: doc.data['gender'] ?? '',
               birthDate: doc.data['birthDate'] ?? '',
               address: doc.data['address'] ?? '',
               phoneNumber: doc.data['phoneNumber'] ?? '',
               imgUrl: doc.data['imgUrl'] ?? '',
-              email: doc.data['email'] ?? '',
+              email: email,
               aboutYou: doc.data['aboutYou'] ?? ''
             );
-            await Navigator.of(context).pushReplacement(
+            isLogout =await Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => AddUserData()));
             isRegisterData = false;
           }
@@ -468,13 +470,17 @@ class Auth with ChangeNotifier {
           );
           isRegisterData = true;
         }
-        final prefs = await SharedPreferences.getInstance();
-        if (!prefs.containsKey('signInUsingEmail')) {
-          final _signInUsingEmail = json.encode({
-            'email': email,
-            'password': password,
-          });
-          prefs.setString('signInUsingEmail', _signInUsingEmail);
+        print('isLogout ');
+        print(isLogout );
+        if(isLogout ==false){
+          final prefs = await SharedPreferences.getInstance();
+          if (!prefs.containsKey('signInUsingEmail')) {
+            final _signInUsingEmail = json.encode({
+              'email': email,
+              'password': password,
+            });
+            prefs.setString('signInUsingEmail', _signInUsingEmail);
+          }
         }
       }
       if(isTryToLogin == false){
@@ -524,7 +530,31 @@ class Auth with ChangeNotifier {
     },
     merge: true
     );
+
+    _userType = 'nurse';
     _token =_temporaryToken;
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('signInUsingEmail')) {
+      final _signInUsingEmail = json.encode({
+        'email': _userData.email,
+        'password': _userData.password,
+      });
+      prefs.setString('signInUsingEmail', _signInUsingEmail);
+    }
+    DocumentSnapshot doc = await nurseData.document(userId).get();
+    _userData = UserData(
+        name: doc.data['name'] ?? 'Nurse',
+        points: doc.data['points'].toString() ?? '0',
+        docId: doc.documentID,
+        nationalId: doc.data['nationalId'].toString() ?? '',
+        gender: doc.data['gender'] ?? '',
+        birthDate: doc.data['birthDate'] ?? '',
+        address: doc.data['address'] ?? '',
+        phoneNumber: doc.data['phoneNumber'] ?? '',
+        imgUrl: doc.data['imgUrl'] ?? '',
+        email: doc.data['email'] ?? '',
+        aboutYou: doc.data['aboutYou'] ?? ''
+    );
     notifyListeners();
     return true;
   }

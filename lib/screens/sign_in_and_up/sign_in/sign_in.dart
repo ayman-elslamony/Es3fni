@@ -68,6 +68,9 @@ class _SignInState extends State<SignIn> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => HomeScreen()));
         }
+        setState(() {
+          _isSignInSuccessful = false;
+        });
       } on HttpException catch (error) {
         setState(() {
           _isSignInSuccessful = false;

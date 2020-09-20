@@ -132,6 +132,8 @@ class Home with ChangeNotifier {
     var services = databaseReference.collection("services");
     var docs = await services.getDocuments();
     allService.clear();
+    allServicesType =
+    translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
     if (docs.documents.length != 0) {
       for (int i = 0; i < docs.documents.length; i++) {
         allService.add(Service(
@@ -150,6 +152,7 @@ class Home with ChangeNotifier {
     var docs = await analysis.getDocuments();
     if (docs.documents.length != 0) {
       allAnalysis.clear();
+      allAnalysisType.clear();
       for (int i = 0; i < docs.documents.length; i++) {
         allAnalysis.add(Analysis(
           id: docs.documents[i].documentID,
@@ -163,19 +166,22 @@ class Home with ChangeNotifier {
   }
 
   Future getAllRequests() async {
-    var requests;
-    if (Auth().getUserType == 'nurse') {
-      requests = databaseReference.collection('analysis request');
-    } else {
-      requests = databaseReference.collection('analysis request');
-    }
-    QuerySnapshot docs = await requests.getDocuments();
+    CollectionReference requests = databaseReference.collection('requests');
+//    if (Auth().getUserType == 'nurse') {
+//
+//    } else {
+//      requests = databaseReference.collection('analysis request');
+//    }
+    var docs = await requests.where('nurseId', isEqualTo: '').getDocuments();
+    print(docs.documents);
     allPatientsRequests.clear();
     print('A');
     if (docs.documents.length != 0) {
       print('B');
       for (int i = 0; i < docs.documents.length; i++) {
         allPatientsRequests.add(Requests(
+            isArchived: docs.documents[i].data['isRequestsArchived'] ?? '',
+            nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
             visitTime: docs.documents[i].data['visitTime'] == '[]'
@@ -215,16 +221,21 @@ class Home with ChangeNotifier {
       notifyListeners();
     }
   }
-  Future getAllAcceptedRequests() async {
-    var
-      requests = databaseReference.collection('analysis request');
-    QuerySnapshot docs = await requests.getDocuments();
+
+  Future getAllAcceptedRequests({String userId}) async {
+    var requests = databaseReference.collection('requests');
+    QuerySnapshot docs = await requests
+        .where('nurseId', isEqualTo: userId)
+        .where('isRequestsArchived', isEqualTo: 'false')
+        .getDocuments();
     allAcceptedRequests.clear();
     print('A');
     if (docs.documents.length != 0) {
       print('B');
       for (int i = 0; i < docs.documents.length; i++) {
         allAcceptedRequests.add(Requests(
+            isArchived: docs.documents[i].data['isRequestsArchived'] ?? '',
+            nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
             visitTime: docs.documents[i].data['visitTime'] == '[]'
@@ -264,6 +275,7 @@ class Home with ChangeNotifier {
       notifyListeners();
     }
   }
+
   Future getNurseSupplies({String userId}) async {
     var supplies = databaseReference.collection("nurses").document(userId);
     var docs = await supplies.collection('supplies').getDocuments();
@@ -273,29 +285,12 @@ class Home with ChangeNotifier {
         allNurseSupplies.add(Supplying(
             points: docs.documents[i].data['points'] ?? '',
             date: docs.documents[i].data['date'] ?? '',
-            time: docs.documents[i].data['time'] ?? ''
-        ));
+            time: docs.documents[i].data['time'] ?? ''));
       }
-
     }
-    allNurseSupplies=[
-      Supplying(
-          time: '13:24',
-          date: '12-10-2020',
-          points: '100'
-      ),
-      Supplying(
-          time: '13:24',
-          date: '12-10-2020',
-          points: '10'
-      ),Supplying(
-          time: '13:24',
-          date: '12-10-2020',
-          points: '700'
-      ),
-    ];
     notifyListeners();
   }
+
   Future<bool> addRequest(
       {String analysisType,
       String patientName,
@@ -333,90 +328,54 @@ class Home with ChangeNotifier {
       }
     }
     DateTime dateTime = DateTime.now().toUtc();
-    if (analysisType == '') {
-      print('aaa');
-      DocumentReference x = await databaseReference.collection('requests').add({
-        'patientId':
-            docs.documents.length != 0 ? docs.documents[0].documentID : '',
-        'patientName': patientName,
-        'patientPhone': patientPhone,
-        'patientLocation': patientLocation,
-        'patientAge': patientAge,
-        'patientGender': patientGender,
-        'numOfPatients': numOfPatients,
-        'discountPercentage': coupon.discountPercentage,
-        'serviceType': serviceType,
-        'nurseGender': nurseGender,
-        'suppliesFromPharmacy': suppliesFromPharmacy,
-        'picture': imgUrl,
-        'discountCoupon': discountCoupon,
-        'startVisitDate': startVisitDate,
-        'endVisitDate': endVisitDate,
-        'visitDays': visitDays,
-        'visitTime': visitTime,
-        'notes': notes,
-        'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
-        'time': '${dateTime.hour}:${dateTime.minute}',
-        'servicePrice': discountCoupon == ''
-            ? price.servicePrice.toString()
-            : priceBeforeDiscount.toString(),
-        'priceBeforeDiscount': discountCoupon == ''
-            ? (double.parse(numOfPatients) * price.servicePrice).toString()
-            : (double.parse(numOfPatients) * priceBeforeDiscount).toString(),
-        'priceAfterDiscount':
-            (double.parse(numOfPatients) * price.servicePrice).toString(),
-      });
-      if (docs.documents.length != 0) {
-        await users
-            .document(docs.documents[0].documentID)
-            .collection('requests')
-            .document(x.documentID)
-            .setData({'docId': x.documentID});
-      }
-      print('bb');
-    } else {
-      DocumentReference x =
-          await databaseReference.collection('analysis request').add({
-        'patientId':
-            docs.documents.length != 0 ? docs.documents[0].documentID : '',
-        'patientName': patientName,
-        'patientPhone': patientPhone,
-        'patientLocation': patientLocation,
-        'patientAge': patientAge,
-        'patientGender': patientGender,
-        'numOfPatients': numOfPatients,
-        'serviceType': serviceType,
-        'analysisType': analysisType,
-        'nurseGender': nurseGender,
-        'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
-        'time': '${dateTime.hour}:${dateTime.minute}',
-        'servicePrice': discountCoupon == ''
-            ? price.servicePrice.toString()
-            : priceBeforeDiscount.toString(),
-        'suppliesFromPharmacy': suppliesFromPharmacy,
-        'picture': imgUrl,
-        'discountPercentage': coupon.discountPercentage,
-        'discountCoupon': discountCoupon,
-        'startVisitDate': startVisitDate,
-        'endVisitDate': endVisitDate,
-        'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
-        'time': '${dateTime.hour}:${dateTime.minute}',
-        'visitDays': visitDays,
-        'visitTime': visitTime,
-        'notes': notes,
-        'priceBeforeDiscount': discountCoupon == ''
-            ? price.servicePrice.toString()
-            : priceBeforeDiscount.toString(),
-        'priceAfterDiscount': price.servicePrice,
-      });
-      if (docs.documents.length != 0) {
-        await users
-            .document(docs.documents[0].documentID)
-            .collection('analysis request')
-            .document(x.documentID)
-            .setData({'docId': x.documentID});
-      }
+
+    DocumentReference x = await databaseReference.collection('requests').add({
+      'nurseId': '',
+      'isRequestsArchived': 'false',
+      'patientId':
+          docs.documents.length != 0 ? docs.documents[0].documentID : '',
+      'patientName': patientName,
+      'patientPhone': patientPhone,
+      'patientLocation': patientLocation,
+      'patientAge': patientAge,
+      'patientGender': patientGender,
+      'numOfPatients': numOfPatients,
+      'serviceType': serviceType,
+      'analysisType': analysisType,
+      'nurseGender': nurseGender,
+      'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
+      'time': '${dateTime.hour}:${dateTime.minute}',
+      'servicePrice': discountCoupon == ''
+          ? price.servicePrice.toString()
+          : priceBeforeDiscount.toString(),
+      'suppliesFromPharmacy': suppliesFromPharmacy,
+      'picture': imgUrl,
+      'discountPercentage': coupon.discountPercentage,
+      'discountCoupon': discountCoupon,
+      'startVisitDate': startVisitDate,
+      'endVisitDate': endVisitDate,
+      'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
+      'time': '${dateTime.hour}:${dateTime.minute}',
+      'visitDays': visitDays,
+      'visitTime': visitTime,
+      'notes': notes,
+      'priceBeforeDiscount': discountCoupon == ''
+          ? price.servicePrice.toString()
+          : priceBeforeDiscount.toString(),
+      'priceAfterDiscount': price.servicePrice,
+    });
+    if (docs.documents.length != 0) {
+      await users
+          .document(docs.documents[0].documentID)
+          .collection('requests')
+          .document(x.documentID)
+          .setData({'docId': x.documentID});
     }
+//    if (analysisType == '') {
+//      getAllPatientsRequests();
+//    } else {
+//      getAllAnalysisRequests();
+//    }
     if (coupon.docId != '') {
       int x = int.parse(coupon.numberOfUses);
       if (x != 0) {
@@ -426,19 +385,19 @@ class Home with ChangeNotifier {
         'numberOfUses': x,
       });
     }
-    getAllRequests();
     return true;
   }
 
   Future<bool> endRequest({Requests request, UserData userData}) async {
     var nursesCollection = databaseReference.collection("nurses");
+    CollectionReference allRequests = databaseReference.collection('requests');
     int points = int.parse(userData.points);
     points = points + 50;
     await nursesCollection
         .document(userData.docId)
-        .updateData({'points': points});
+        .updateData({'points': points.toString()});
     DateTime dateTime = DateTime.now();
-    nursesCollection
+    await nursesCollection
         .document(userData.docId)
         .collection('archived requests')
         .document(request.docId)
@@ -449,30 +408,29 @@ class Home with ChangeNotifier {
       'date': '${dateTime.day}-${dateTime.month}-${dateTime.year}',
       'time': '${dateTime.hour}:${dateTime.minute}',
     });
-    //what happend in patient data
+    allRequests
+        .document(request.docId)
+        .updateData({'isRequestsArchived': 'true'});
+    allAcceptedRequests.removeWhere((x)=>x.docId==request.docId);
+    userData.points = points.toString();
+    notifyListeners();
+
     return true;
   }
 
   Future<bool> acceptRequest({Requests request, UserData userData}) async {
-    var nursesCollection = databaseReference.collection("nurses");
-//    int points = int.parse(userData.points);
-//    points = points +50;
-//    await nursesCollection.document(userData.docId).updateData({
-//      'points': points
-//    });
-//    nursesCollection.document().collection('archived requests').document(
-//      request.docId
-//    ).setData({
-//      'serviceType':request.serviceType,
-//      'analysisType': request.analysisType,
-//      'points': '50'
-//    });
-    //what happend in patient data
+    CollectionReference requests = databaseReference.collection('requests');
+    requests.document(request.docId).updateData({'nurseId': userData.docId});
+    allPatientsRequests.removeWhere((x)=>x.docId==request.docId);
+    request.nurseId=userData.docId;
+    allAcceptedRequests.add(request);
+//    getAllCompletedRequests(userId: userData.docId);
     return true;
   }
 
   Future getAllCompletedRequests({String userId}) async {
-    var completed = databaseReference.collection("nurses/$userId/archived requests");
+    var completed =
+        databaseReference.collection("nurses/$userId/archived requests");
     var docs = await completed.getDocuments();
     if (docs.documents.length != 0) {
       allCompleteRequests.clear();

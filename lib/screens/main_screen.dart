@@ -193,9 +193,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       accountName: Text("${_auth.userData.name.toUpperCase()}"),
                       accountEmail: InkWell(
                         onTap: () {},
-                        child: Text(translator.currentLanguage == "en"
-                            ? 'Points: ${_auth.userData.points}'
-                            : ' النقاط: ${_auth.userData.points}'),
+                        child: Consumer<Auth>(
+                          builder: (context,data,_)=>
+                          Text(translator.currentLanguage == "en"
+                              ? 'Points: ${data.userData.points}'
+                              : ' النقاط: ${data.userData.points}'),
+                        ),
                       ),
                       currentAccountPicture: CircleAvatar(
                         backgroundColor:
