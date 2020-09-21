@@ -5,9 +5,12 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/user_profile/show_profile.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'add_request.dart';
 
@@ -52,223 +55,218 @@ class _AllRequestsState extends State<AllRequests> {
                 child: Directionality(
                   textDirection: translator.currentLanguage == "en"
                       ? TextDirection.ltr:TextDirection.rtl,
-                  child: ListView(
-                    children: <Widget>[
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          SizedBox(),
-                          Text(
-                            translator.currentLanguage == "en"
-                                ? 'All Information':'البيانات بالكامل',
-                            style: infoWidget.titleButton
-                                .copyWith(color: Colors.indigo),
-                          ),
+                  child: Container(
+                    width: infoWidget.screenWidth,
+                    height: infoWidget.screenHeight*0.55,
+                    child: ListView(
+                      children: <Widget>[
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            SizedBox(),
+                            Text(
+                              translator.currentLanguage == "en"
+                                  ? 'All Information':'البيانات بالكامل',
+                              style: infoWidget.titleButton
+                                  .copyWith(color: Colors.indigo),
+                            ),
 //                          IconButton(
 //                              icon: Icon(
 //                                Icons.edit,
 //                                color: Colors.indigo,
 //                              ),
 //                              onPressed: () {})
-                          SizedBox(),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      request.patientId != ''
-                          ? InkWell(
-                        onTap: () {},
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            request.patientName != ''
-                                ? rowWidget(
-                                title:
-                                translator.currentLanguage == "en"
-                                    ? 'Patient Name: '
-                                    : 'اسم المريض: ',
-                                content: request.patientName,
-                                infoWidget: infoWidget)
-                                : SizedBox(),
-                            IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){}),
-//                                  RaisedButton(
-//                                    onPressed:
-//                                    (){
-//                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile()));
-//                                    },
-//                                    color: Colors.white,
-//                                    child: Padding(
-//                                      padding: const EdgeInsets.symmetric(
-//                                          vertical: 10, horizontal: 50),
-//                                      child: Text(
-//                                        translator.currentLanguage == "en" ?'Show Profile':'رؤيه الحساب',
-//                                        style: infoWidget.titleButton
-//                                            .copyWith(color: Colors.indigo),
-//                                      ),
-//                                    ),
-//                                    shape: RoundedRectangleBorder(
-//                                        borderRadius: BorderRadius.circular(15),side: BorderSide(color: Colors.indigoAccent)),
-//                                  )
+                            SizedBox(),
                           ],
                         ),
-                      )
-                          : request.patientName != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Patient Name: '
-                              : 'اسم المريض: ',
-                          content: request.patientName,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.patientPhone != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Patient Phone: '
-                              : 'رقم الهاتف: ',
-                          content: request.patientPhone,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.patientLocation != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Patient Location: '
-                              : 'موقع المريض: ',
-                          content: request.patientLocation,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.patientAge != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Patient Age: '
-                              : 'عمر المريض: ',
-                          content: request.patientAge,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.patientGender != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Patient Gender: '
-                              : 'نوع المريض: ',
-                          content: request.patientGender,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.serviceType != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Service Type: '
-                              : 'نوع الخدمه: ',
-                          content: request.serviceType,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.servicePrice != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Service Price: '
-                              : 'سعر الخدمه: ',
-                          content: request.servicePrice,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.analysisType != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Analysis Type: '
-                              : 'نوع التحليل: ',
-                          content: request.analysisType,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.suppliesFromPharmacy != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Supplies From Pharmacy: '
-                              : 'مستلزمات من الصيدليه: ',
-                          content: request.suppliesFromPharmacy,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.startVisitDate != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Start Visit Date: '
-                              : 'بدايه تاريخ الزياره: ',
-                          content: request.startVisitDate,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.endVisitDate != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'End Visit Date: '
-                              : 'انتهاء تاريخ الزياره: ',
-                          content: request.endVisitDate,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      visitDays != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Visit Days: '
-                              : 'ايام الزياره: ',
-                          content: visitDays,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      visitTime != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Visit Time: '
-                              : 'وقت الزياره: ',
-                          content: visitTime,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.discountCoupon != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Discount Coupon: '
-                              : 'كوبون الخصم: ',
-                          content: request.discountCoupon,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.discountPercentage != '0.0'
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Discount Percentage: '
-                              : 'نسبه الخصم: ',
-                          content: '${request.discountPercentage} %',
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.numOfPatients != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Num Of Patients use service: '
-                              : 'عدد مستخدمى الخدمه: ',
-                          content: request.numOfPatients,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.priceBeforeDiscount != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'priceBeforeDiscount: '
-                              : 'السعر قبل الخصم: ',
-                          content: request.priceBeforeDiscount,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.priceAfterDiscount != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Price After Discount: '
-                              : 'السعر بعد الخصم: ',
-                          content: request.priceAfterDiscount,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                      request.notes != ''
-                          ? rowWidget(
-                          title: translator.currentLanguage == "en"
-                              ? 'Notes: '
-                              : 'ملاحظات: ',
-                          content: request.notes,
-                          infoWidget: infoWidget)
-                          : SizedBox(),
-                    ],
+                        SizedBox(
+                          height: 10,
+                        ),
+                        request.patientId != ''
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                request.patientName != ''
+                                    ? Expanded(
+                                      child: rowWidget(
+                                      title:
+                                      translator.currentLanguage == "en"
+                                          ? 'Patient Name: '
+                                          : 'اسم المريض: ',
+                                      content: request.patientName,
+                                      infoWidget: infoWidget),
+                                    )
+                                    : SizedBox(),
+                                request.patientId !=''?IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
+                                    type: 'Patient',
+                                    userId: request.patientId,
+                                  ) ));
+                                }):SizedBox()
+                              ],
+                            )
+                            : request.patientName != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Name: '
+                                : 'اسم المريض: ',
+                            content: request.patientName,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.patientPhone != ''
+                            ? InkWell(
+                          onTap: (){
+                            launch("tel://${request.patientPhone}");
+                          },
+                          child: rowWidget(
+                              title: translator.currentLanguage == "en"
+                                  ? 'Patient Phone: '
+                                  : 'رقم الهاتف: ',
+                              content: request.patientPhone,
+                              infoWidget: infoWidget),
+                        )
+                            : SizedBox(),
+                        request.patientLocation != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Location: '
+                                : 'موقع المريض: ',
+                            content: request.patientLocation,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.patientAge != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Age: '
+                                : 'عمر المريض: ',
+                            content: request.patientAge,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.patientGender != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Gender: '
+                                : 'نوع المريض: ',
+                            content: request.patientGender,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.serviceType != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Service Type: '
+                                : 'نوع الخدمه: ',
+                            content: request.serviceType,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.servicePrice != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Service Price: '
+                                : 'سعر الخدمه: ',
+                            content: request.servicePrice,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.analysisType != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Analysis Type: '
+                                : 'نوع التحليل: ',
+                            content: request.analysisType,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.suppliesFromPharmacy != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Supplies From Pharmacy: '
+                                : 'مستلزمات من الصيدليه: ',
+                            content: request.suppliesFromPharmacy,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.startVisitDate != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Start Visit Date: '
+                                : 'بدايه تاريخ الزياره: ',
+                            content: request.startVisitDate,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.endVisitDate != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'End Visit Date: '
+                                : 'انتهاء تاريخ الزياره: ',
+                            content: request.endVisitDate,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        visitDays != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Visit Days: '
+                                : 'ايام الزياره: ',
+                            content: visitDays,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        visitTime != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Visit Time: '
+                                : 'وقت الزياره: ',
+                            content: visitTime,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.discountCoupon != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Discount Coupon: '
+                                : 'كوبون الخصم: ',
+                            content: request.discountCoupon,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.discountPercentage != '0.0'
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Discount Percentage: '
+                                : 'نسبه الخصم: ',
+                            content: '${request.discountPercentage} %',
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.numOfPatients != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Num Of Patients use service: '
+                                : 'عدد مستخدمى الخدمه: ',
+                            content: request.numOfPatients,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.priceBeforeDiscount != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'priceBeforeDiscount: '
+                                : 'السعر قبل الخصم: ',
+                            content: request.priceBeforeDiscount,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.priceAfterDiscount != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Price After Discount: '
+                                : 'السعر بعد الخصم: ',
+                            content: request.priceAfterDiscount,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.notes != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Notes: '
+                                : 'ملاحظات: ',
+                            content: request.notes,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -283,8 +281,19 @@ class _AllRequestsState extends State<AllRequests> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 child:Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Container(
+                        width: infoWidget.screenWidth*0.06,
+                        height:infoWidget.screenWidth*0.06
+                        ,child: LoadingIndicator(
+                        color: Colors.red,
+                        indicatorType: Indicator.ballScale,
+                      ),
+                      ),
+                    ),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -371,13 +380,6 @@ class _AllRequestsState extends State<AllRequests> {
                         ],
                       ),
                     ),
-                    Column(
-                      children: <Widget>[
-//                  RaisedButton(onPressed: (){},
-//                  child: Text(translator.currentLanguage =='en'?'delete':'حذف',
-//                    style: infoWidget.titleButton,),color: Colors.indigo,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),)
-                      ],
-                    )
                   ],
                 ),
               ),

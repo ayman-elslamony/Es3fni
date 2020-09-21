@@ -7,22 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
-import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
-import '../../main.dart';
 import '../main_screen.dart';
 
 class AddUserData extends StatefulWidget {
-
   @override
   _AddUserDataState createState() => _AddUserDataState();
 }
-
 class _AddUserDataState extends State<AddUserData> {
   GlobalKey<FormState> _newAccountKey = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> _key = GlobalKey();
@@ -31,31 +27,18 @@ class _AddUserDataState extends State<AddUserData> {
   final TextEditingController nationalIdController = TextEditingController();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
-  FocusNode focusNode=FocusNode();
   bool _isLoading = false;
   int currentStep = 0;
   bool complete = false;
   bool _isEditLocationEnable = true;
   bool _selectUserLocationFromMap = false;
   bool _isGenderSelected = false;
-  bool _isAgeSelected = false;
-  bool isSwitched = false;
-  bool enableCoupon = false;
-  bool enableScheduleTheService = false;
   bool enablePicture = false;
-  bool _showWorkingDays = false;
-  String _dateTime='';
-  List<String> _selectedWorkingDays = List<String>();
-  List<bool> _clicked = List<bool>.generate(7, (i) => false);
-  List<String> _sortedWorkingDays = List<String>.generate(7, (i) => '');
   List<bool> values = List.filled(7, false);
   TextEditingController _locationTextEditingController =
   TextEditingController();
   File _imageFile;
-  List<String> _genderList = ['Male', 'Female'];
-  List<String> _ageList = List.generate(100, (index) {
-    return '${1 + index}';
-  });
+  List<String> _genderList = [];
   Map<String, dynamic> _userData = {
     'name': '',
     'Phone number': '',
@@ -66,17 +49,7 @@ class _AddUserDataState extends State<AddUserData> {
     'UrlImg': '',
     'Location': '',
   };
-  List<String> workingDays = [
-    'Saturday',
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-  ];
-  List<String> visitTime=[];
-  final FocusNode _phoneNumberNode = FocusNode();
+
   final ImagePicker _picker = ImagePicker();
   Auth _auth;
 
@@ -84,16 +57,27 @@ class _AddUserDataState extends State<AddUserData> {
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
+    print('_auth.userData.phoneNumber');print(_auth.userData.phoneNumber);
     _genderList = translator.currentLanguage =='en'?['Male', 'Female']:['ذكر', 'انثى'];
     if(_auth.userData !=null) {
       nameController.text = _auth.userData.name;
       _userData['name'] = _auth.userData.name;
+      if(_auth.userData.imgUrl !=''){
+        _userData['UrlImg'] =_auth.userData.imgUrl;
+        enablePicture = true;
+      }
     }
     if(_auth.phoneNumber !=null){
       _userData['Phone number']=_auth.phoneNumber.phoneNumber;
       number = _auth.phoneNumber;
-
     }
+    if(_auth.userData.phoneNumber.contains('+20')){
+        String phoneNumber = _auth.userData.phoneNumber.replaceAll('+20', '');
+        String dialCode = '+20';
+        number = PhoneNumber(isoCode: 'EG',dialCode: dialCode,phoneNumber: phoneNumber);
+    }
+
+
   }
 
   cancel() {
@@ -428,10 +412,9 @@ class _AddUserDataState extends State<AddUserData> {
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
           gender: _userData['gender'],
-          picture: _userData['UrlImg']==''?null:_userData['UrlImg'],
+         picture: _userData['UrlImg']==''?null:_userData['UrlImg'].toString(),
           aboutYou: _userData['aboutYou'],
             location:_userData['Location'],
-
         );
         print('isScuessisScuess$isScuess');
         if (isScuess) {
@@ -475,7 +458,6 @@ class _AddUserDataState extends State<AddUserData> {
     print(currentStep);
       if (_newAccountKey.currentState.validate()) {
         _newAccountKey.currentState.save();
-        _phoneNumberNode.unfocus();
         _incrementStep();
       }
 
@@ -557,7 +539,6 @@ class _AddUserDataState extends State<AddUserData> {
                               _createTextForm(
                                   labelText: 'name',
                                   controller: nameController,
-                                  nextFocusNode: _phoneNumberNode,
                                   // ignore: missing_return
                                   validator: (String val) {
                                     if (val.trim().isEmpty || val.trim().length < 2) {
@@ -695,7 +676,6 @@ class _AddUserDataState extends State<AddUserData> {
                                 onInputChanged: (PhoneNumber number) {
                                   _userData['Phone number']=number.toString();
                                 },
-                                focusNode: focusNode,
                                 ignoreBlank: true,
                                 autoValidate: false,
                                 isEnabled: _auth.phoneNumber !=null?false:true,
@@ -992,7 +972,12 @@ class _AddUserDataState extends State<AddUserData> {
                                       //backgroundColor: Colors.white,
                                       //backgroundImage:
                                       borderRadius: BorderRadius.circular(10),
-                                      child: Image.file(
+                                      child: _userData['UrlImg'].runtimeType == String?Image.network(
+                                          _userData['UrlImg'],
+                                        fit: BoxFit.fill,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ):Image.file(
                                         _imageFile,
                                         fit: BoxFit.fill,
                                         width: double.infinity,

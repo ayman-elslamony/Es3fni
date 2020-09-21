@@ -5,10 +5,12 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/user_profile/show_profile.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'add_request.dart';
 
@@ -84,44 +86,28 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                           height: 10,
                         ),
                         request.patientId != ''
-                            ? InkWell(
-                          onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              request.patientName != ''
-                                  ? Expanded(
-                                    child: rowWidget(
-                                    title:
-                                    translator.currentLanguage == "en"
-                                        ? 'Patient Name: '
-                                        : 'اسم المريض: ',
-                                    content: request.patientName,
-                                    infoWidget: infoWidget),
-                                  )
-                                  : SizedBox(),
-                              IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){}),
-//                                  RaisedButton(
-//                                    onPressed:
-//                                    (){
-//                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile()));
-//                                    },
-//                                    color: Colors.white,
-//                                    child: Padding(
-//                                      padding: const EdgeInsets.symmetric(
-//                                          vertical: 10, horizontal: 50),
-//                                      child: Text(
-//                                        translator.currentLanguage == "en" ?'Show Profile':'رؤيه الحساب',
-//                                        style: infoWidget.titleButton
-//                                            .copyWith(color: Colors.indigo),
-//                                      ),
-//                                    ),
-//                                    shape: RoundedRectangleBorder(
-//                                        borderRadius: BorderRadius.circular(15),side: BorderSide(color: Colors.indigoAccent)),
-//                                  )
-                            ],
-                          ),
-                        )
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                request.patientName != ''
+                                    ? Expanded(
+                                      child: rowWidget(
+                                      title:
+                                      translator.currentLanguage == "en"
+                                          ? 'Patient Name: '
+                                          : 'اسم المريض: ',
+                                      content: request.patientName,
+                                      infoWidget: infoWidget),
+                                    )
+                                    : SizedBox(),
+                                IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
+                                    type: 'Patient',
+                                    userId: request.patientId,
+                                  ) ));
+                                })
+                              ],
+                            )
                             : request.patientName != ''
                             ? rowWidget(
                             title: translator.currentLanguage == "en"
@@ -131,12 +117,17 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                             infoWidget: infoWidget)
                             : SizedBox(),
                         request.patientPhone != ''
-                            ? rowWidget(
-                            title: translator.currentLanguage == "en"
-                                ? 'Patient Phone: '
-                                : 'رقم الهاتف: ',
-                            content: request.patientPhone,
-                            infoWidget: infoWidget)
+                            ? InkWell(
+                            onTap: (){
+                              launch("tel://${request.patientPhone}");
+                            },
+                              child: rowWidget(
+                              title: translator.currentLanguage == "en"
+                                  ? 'Patient Phone: '
+                                  : 'رقم الهاتف: ',
+                              content: request.patientPhone,
+                              infoWidget: infoWidget),
+                            )
                             : SizedBox(),
                         request.patientLocation != ''
                             ? rowWidget(

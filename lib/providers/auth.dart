@@ -21,11 +21,16 @@ import 'package:toast/toast.dart';
 class Auth with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
-  String _token;
-  String userId = '';
+  static String _token;
+  static String _userId = '';
+
+  String get userId => _userId;
+
+
   String signInType = '';
   String _userType = 'patient';
-  UserData _userData ;
+  static  UserData _userData;
+
   PhoneNumber phoneNumber;
 
   set setUserType(String type) {
@@ -35,7 +40,9 @@ class Auth with ChangeNotifier {
   String get getUserType {
     return _userType;
   }
-  String _temporaryToken='';
+
+  String _temporaryToken = '';
+
   UserData get userData => _userData;
 
   bool get isAuth {
@@ -62,15 +69,15 @@ class Auth with ChangeNotifier {
       final dataToSignIn = await json
           .decode(prefs.getString('signInUsingFBorG')) as Map<String, Object>;
       if (dataToSignIn['isSignInUsingFaceBook'] == true) {
-        await signInUsingFBorG('FB').then((x) {
-          if (x) {
+        await signInUsingFBorG(type: 'FB').then((x) {
+          if (x=='true') {
             signInType = 'signInUsingFBorG';
           }
         });
       }
       if (dataToSignIn['isSignInUsingGoogle'] == true) {
-        await signInUsingFBorG('G').then((x) {
-          if (x) {
+        await signInUsingFBorG(type: 'G').then((x) {
+          if (x=='true') {
             signInType = 'signInUsingFBorG';
           }
         });
@@ -92,7 +99,7 @@ class Auth with ChangeNotifier {
           .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
       AuthResult x = await firebaseAuth.signInWithCustomToken(
           token: dataToSignIn['phoneToken']);
-      userId = x.user.uid;
+      _userId = x.user.uid;
       await x.user.getIdToken().then((x) {
         _token = x.token;
       });
@@ -106,31 +113,17 @@ class Auth with ChangeNotifier {
       return false;
     }
   }
-
-  Future<void> createRecord({String userId, UserData userData}) async {
-    var users = databaseReference.collection("users");
-    DocumentSnapshot doc = await users.document(userId).get();
-    if (!doc.exists) {
-      await users.document(userId).setData({
-        'name': userData.name,
-        'email': userData.email,
-        'imgUrl': userData.imgUrl,
-      });
-    }
-  }
-
   Future<bool> editProfile(
       {String type,
       String address,
       String phone,
       File picture,
-        String aboutYou
-      }) async {
+      String aboutYou}) async {
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
 
-    try{
-      if(type == 'image'){
+    try {
+      if (type == 'image') {
         String imgUrl = '';
         if (picture != null) {
           try {
@@ -146,92 +139,64 @@ class Auth with ChangeNotifier {
             print(e);
           }
         }
-        if(_userType == 'nurse'){
-        nurseData.document(userId).setData({
-          'imgUrl': imgUrl,
-        },
-            merge: true
-        );}else{
-
-          patientData.document(userId).setData({
-          'imgUrl': imgUrl,
-        },
-            merge: true
-        );
+        if (_userType == 'nurse') {
+          nurseData.document(_userId).setData({
+            'imgUrl': imgUrl,
+          }, merge: true);
+        } else {
+          patientData.document(_userId).setData({
+            'imgUrl': imgUrl,
+          }, merge: true);
         }
       }
-      if(type == 'Another Info'){
-        nurseData.document(userId).setData({
-          'aboutYou':aboutYou
-        },
-            merge: true
-        );
+      if (type == 'Another Info') {
+        nurseData.document(_userId).setData({'aboutYou': aboutYou}, merge: true);
       }
-      if(type == 'Address'){
-        if(_userType=='nurse'){
-        nurseData.document(userId).setData({
-          'address': address,
-        },
-            merge: true
-        );}else{ patientData.document(userId).setData({
-          'address': address,
-        },
-            merge: true
-        );}
+      if (type == 'Address') {
+        if (_userType == 'nurse') {
+          nurseData.document(_userId).setData({
+            'address': address,
+          }, merge: true);
+        } else {
+          patientData.document(_userId).setData({
+            'address': address,
+          }, merge: true);
+        }
       }
-      if(type == 'Phone Number'){
-        nurseData.document(userId).setData({
+      if (type == 'Phone Number') {
+        nurseData.document(_userId).setData({
           'phoneNumber': phone,
-        },
-            merge: true
-        );
+        }, merge: true);
       }
       DocumentSnapshot doc;
-      if(_userType=='nurse') {
-        doc = await nurseData.document(userId).get();
-      }else {
-        doc = await patientData.document(userId).get();
+      if (_userType == 'nurse') {
+        doc = await nurseData.document(_userId).get();
+      } else {
+        doc = await patientData.document(_userId).get();
       }
       _userData = UserData(
-          name: doc.data['name'],
-          docId: doc.documentID,
-          nationalId: doc.data['nationalId'] ?? '',
-          gender: doc.data['gender'] ?? '',
-          birthDate: doc.data['birthDate'] ?? '',
-          address: doc.data['address'] ?? '',
-          phoneNumber: doc.data['phoneNumber'] ?? '',
-          imgUrl: doc.data['imgUrl'] ?? '',
-          email: doc.data['email'] ?? '',
-          aboutYou: doc.data['aboutYou'] ?? '',
+        name: doc.data['name'],
+        docId: doc.documentID,
+        nationalId: doc.data['nationalId'] ?? '',
+        gender: doc.data['gender'] ?? '',
+        birthDate: doc.data['birthDate'] ?? '',
+        address: doc.data['address'] ?? '',
+        phoneNumber: doc.data['phoneNumber'] ?? '',
+        imgUrl: doc.data['imgUrl'] ?? '',
+        email: doc.data['email'] ?? '',
+        aboutYou: doc.data['aboutYou'] ?? '',
         points: doc.data['points'] ?? '',
       );
       notifyListeners();
       return true;
-    }catch (e){
+    } catch (e) {
       print(e);
       return false;
     }
   }
-
-  createAccount(
-      {String name,
-      String email,
-      String imgUrl,
-      String id,
-      bool isSignUsingEmail = false}) async {
-    if (isSignUsingEmail) {
-      await createRecord(
-          userId: id,
-          userData: UserData(email: email, name: name, imgUrl: imgUrl));
-    } else {
-      await createRecord(
-          userId: id,
-          userData: UserData(email: email, name: name, imgUrl: imgUrl));
-    }
-  }
-
-  Future<bool> signInUsingFBorG(String type) async {
+  Future<String> signInUsingFBorG({String type, BuildContext context}) async {
     final prefs = await SharedPreferences.getInstance();
+    String returns='true';
     try {
       switch (type) {
         case "FB":
@@ -242,7 +207,7 @@ class Auth with ChangeNotifier {
                 FacebookAuthProvider.getCredential(accessToken: accessToken);
             final user =
                 await firebaseAuth.signInWithCredential(facebookAuthCred);
-            userId = user.user.uid;
+            _userId = user.user.uid;
 //         email: googleSignIn.currentUser.email,
 //    name: googleSignIn.currentUser.displayName,
 //    profilePicURL: googleSignIn.currentUser.photoUrl,
@@ -257,10 +222,10 @@ class Auth with ChangeNotifier {
             });
             prefs.setString('signInUsingFBorG', _signInUsingFBorG);
             //  notifyListeners();
-            return true;
+            returns ='true';
           } else
             //notifyListeners();
-            return false;
+            returns ='false';
           break;
         case "G":
           try {
@@ -272,24 +237,57 @@ class Auth with ChangeNotifier {
                 accessToken: googleAuth.accessToken);
             final user =
                 await firebaseAuth.signInWithCredential(googleAuthCred);
-            userId = user.user.uid;
-            await createAccount(
-                imgUrl: user.user.photoUrl,
-                name: user.user.displayName,
-                email: user.user.email,
-                id: user.user.uid);
-            final _signInUsingFBorG = json.encode({
-              'isSignInUsingFaceBook': false,
-              'isSignInUsingGoogle': true,
-            });
-            prefs.setString('signInUsingFBorG', _signInUsingFBorG);
-            return true;
+            _userId = user.user.uid;
+            var patientData = databaseReference.collection("users");
+            DocumentSnapshot doc = await patientData.document(_userId).get();
+            if(!doc.exists || !doc.data.keys.contains('nationalId')){
+              _userData = UserData(
+                  name: user.user.displayName??'',
+                  points: '0',
+                  docId: user.user.uid,
+                  nationalId: '',
+                  gender: '',
+                  birthDate: '',
+                  address: '',
+                  phoneNumber: phoneNumber??'',
+                  imgUrl: user.user.photoUrl??'',
+                  email:user.user.email??'',
+                  aboutYou:'');
+              await user.user.getIdToken().then((x) {
+                _temporaryToken= x.token;
+              });
+              returns = 'GoToRegister';
+            }else{
+              _userData = UserData(
+                  name: doc.data['name'] ?? 'Patient',
+                  points: doc.data['points'] ?? '0',
+                  docId: doc.documentID,
+                  nationalId: doc.data['nationalId'] ?? '',
+                  gender: doc.data['gender'] ?? '',
+                  birthDate: doc.data['birthDate'] ?? '',
+                  address: doc.data['address'] ?? '',
+                  phoneNumber: doc.data['phoneNumber'] ?? '',
+                  imgUrl: doc.data['imgUrl'] ?? '',
+                  email: doc.data['email'] ?? '',
+                  aboutYou: doc.data['aboutYou'] ?? '');
+              await user.user.getIdToken().then((x) {
+                _token = x.token;
+              });
+              final _signInUsingFBorG = json.encode({
+                'isSignInUsingFaceBook': false,
+                'isSignInUsingGoogle': true,
+              });
+              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+              returns = 'true';
+            }
           } catch (error) {
-            return false;
+            returns= 'false';
           }
       }
+      return returns;
     } catch (e) {
-      return false;
+      returns ='false';
+      return returns;
     }
   }
 
@@ -320,8 +318,8 @@ class Auth with ChangeNotifier {
 
   Future<void> signInUsingPhone(
       {PhoneNumber phone, BuildContext context, DeviceInfo infoWidget}) async {
-    _userType ='patient';
-    phoneNumber =phone;
+    _userType = 'patient';
+    phoneNumber = phone;
     var patientData = databaseReference.collection("users");
     final prefs = await SharedPreferences.getInstance();
     firebaseAuth.verifyPhoneNumber(
@@ -334,7 +332,7 @@ class Auth with ChangeNotifier {
           FirebaseUser user = result.user;
 
           if (user != null) {
-            userId = user.uid;
+            _userId = user.uid;
             if (_token == null) {
               await firebaseAuth.currentUser().then((user) async {
                 if (user != null) {
@@ -344,18 +342,18 @@ class Auth with ChangeNotifier {
                   });
                 }
               });
-              print(userId);
+              print(_userId);
               print(_token);
               final _signInUsingPhone = json.encode({
                 'phoneToken': _token,
               });
               prefs.setString('signInUsingPhone', _signInUsingPhone);
               print('rytryhrrhr');
-              DocumentSnapshot doc =await patientData.document(userId).get();
-              if(!doc.exists){
+              DocumentSnapshot doc = await patientData.document(_userId).get();
+              if (!doc.exists) {
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => AddUserData()));
-              }else{
+              } else {
                 _userData = UserData(
                     name: doc.data['name'] ?? 'Nurse',
                     points: doc.data['points'] ?? '0',
@@ -367,8 +365,7 @@ class Auth with ChangeNotifier {
                     phoneNumber: doc.data['phoneNumber'] ?? '',
                     imgUrl: doc.data['imgUrl'] ?? '',
                     email: doc.data['email'] ?? '',
-                    aboutYou: doc.data['aboutYou'] ?? ''
-                );
+                    aboutYou: doc.data['aboutYou'] ?? '');
                 notifyListeners();
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => HomeScreen()));
@@ -400,7 +397,7 @@ class Auth with ChangeNotifier {
               FirebaseUser user = result.user;
               print('etetee');
               if (user != null) {
-                userId = user.uid;
+                _userId = user.uid;
                 if (_token == null) {
                   await firebaseAuth.currentUser().then((user) async {
                     if (user != null) {
@@ -410,36 +407,35 @@ class Auth with ChangeNotifier {
                       });
                     }
                   });
-                  print(userId);
+                  print(_userId);
                   print(_token);
                   final _signInUsingPhone = json.encode({
                     'phoneToken': _token,
                   });
                   print('wtrwetetetetyyyyyyyyyyyyyyyyyyyy');
                   prefs.setString('signInUsingPhone', _signInUsingPhone);
-                  DocumentSnapshot doc =await patientData.document(userId).get();
-                  if(!doc.exists){
+                  DocumentSnapshot doc =
+                      await patientData.document(_userId).get();
+                  if (!doc.exists) {
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => AddUserData()));
-                  }else{
+                  } else {
                     _userData = UserData(
                         name: doc.data['name'],
                         points: doc.data['points'] ?? '0',
                         docId: doc.documentID,
-                        nationalId: doc.data['nationalId']?? '',
+                        nationalId: doc.data['nationalId'] ?? '',
                         gender: doc.data['gender'] ?? '',
                         birthDate: doc.data['birthDate'] ?? '',
                         address: doc.data['address'] ?? '',
                         phoneNumber: doc.data['phoneNumber'] ?? '',
                         imgUrl: doc.data['imgUrl'] ?? '',
                         email: doc.data['email'] ?? '',
-                        aboutYou: doc.data['aboutYou'] ?? ''
-                    );
+                        aboutYou: doc.data['aboutYou'] ?? '');
                     notifyListeners();
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => HomeScreen()));
                   }
-
                 }
               } else {
                 print("Error");
@@ -475,63 +471,61 @@ class Auth with ChangeNotifier {
     AuthResult auth;
     var users = databaseReference.collection("nurses");
     bool isRegisterData = true;
-    bool isLogout=false;
+    bool isLogout = false;
     try {
       auth = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       if (auth != null) {
-        userId = auth.user.uid;
+        _userId = auth.user.uid;
         IdTokenResult x = await auth.user.getIdToken();
-        if(isTryToLogin){
+        if (isTryToLogin) {
           _token = x.token;
-        }else{
+        } else {
           _temporaryToken = x.token;
         }
         _userType = 'nurse';
-        DocumentSnapshot doc = await users.document(userId).get();
+        DocumentSnapshot doc = await users.document(_userId).get();
         print(doc.data);
         if (doc.data['address'] == null ||
             doc.data['phoneNumber'] == null ||
             doc.data['gender'] == null) {
           if (isTryToLogin == false) {
             _userData = UserData(
+                name: doc.data['name'] ?? 'Nurse',
+                docId: doc.documentID,
+                password: password,
+                nationalId: doc.data['nationalId'] ?? '',
+                gender: doc.data['gender'] ?? '',
+                birthDate: doc.data['birthDate'] ?? '',
+                address: doc.data['address'] ?? '',
+                phoneNumber: doc.data['phoneNumber'] ?? '',
+                imgUrl: doc.data['imgUrl'] ?? '',
+                email: email,
+                aboutYou: doc.data['aboutYou'] ?? '');
+            isLogout = await Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => AddUserData()));
+            isRegisterData = false;
+          }
+        } else {
+          _userData = UserData(
               name: doc.data['name'] ?? 'Nurse',
+              points: doc.data['points'].toString() ?? '0',
               docId: doc.documentID,
-              password: password,
-              nationalId: doc.data['nationalId'] ?? '',
+              nationalId: doc.data['nationalId'].toString() ?? '',
               gender: doc.data['gender'] ?? '',
               birthDate: doc.data['birthDate'] ?? '',
               address: doc.data['address'] ?? '',
               phoneNumber: doc.data['phoneNumber'] ?? '',
               imgUrl: doc.data['imgUrl'] ?? '',
-              email: email,
-              aboutYou: doc.data['aboutYou'] ?? ''
-            );
-            isLogout =await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => AddUserData()));
-            isRegisterData = false;
-          }
-        } else {
-          _userData = UserData(
-            name: doc.data['name'] ?? 'Nurse',
-            points: doc.data['points'].toString() ?? '0',
-            docId: doc.documentID,
-            nationalId: doc.data['nationalId'].toString() ?? '',
-            gender: doc.data['gender'] ?? '',
-            birthDate: doc.data['birthDate'] ?? '',
-            address: doc.data['address'] ?? '',
-            phoneNumber: doc.data['phoneNumber'] ?? '',
-            imgUrl: doc.data['imgUrl'] ?? '',
-            email: doc.data['email'] ?? '',
-              aboutYou: doc.data['aboutYou'] ?? ''
-          );
+              email: doc.data['email'] ?? '',
+              aboutYou: doc.data['aboutYou'] ?? '');
           isRegisterData = true;
         }
         print('isLogout ');
-        print(isLogout );
-        if(isLogout ==false){
+        print(isLogout);
+        if (isLogout == false) {
           final prefs = await SharedPreferences.getInstance();
           if (!prefs.containsKey('signInUsingEmail')) {
             final _signInUsingEmail = json.encode({
@@ -542,7 +536,7 @@ class Auth with ChangeNotifier {
           }
         }
       }
-      if(isTryToLogin == false){
+      if (isTryToLogin == false) {
         notifyListeners();
       }
       return isRegisterData;
@@ -560,13 +554,17 @@ class Auth with ChangeNotifier {
     String aboutYou = '',
     String birthDate = '',
     String gender = '',
-    File picture,
+    var picture,
     String nationalId,
   }) async {
+    print('rtr');
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
     String imgUrl = '';
-    if (picture != null) {
+    print('picture');
+    print(picture);
+    final prefs = await SharedPreferences.getInstance();
+    if (!picture.toString().contains('https:')) {
       try {
         var storageReference = FirebaseStorage.instance
             .ref()
@@ -580,21 +578,20 @@ class Auth with ChangeNotifier {
         print(e);
       }
     }
-    if(_userType == 'nurse') {
-      nurseData.document(userId).setData({
+    if (_userType == 'nurse') {
+      nurseData.document(_userId).setData({
         'name': name,
         'address': location,
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
         'gender': gender,
         'imgUrl': imgUrl,
-        'aboutYou': aboutYou
-      },
-          merge: true
-      );
+        'aboutYou': aboutYou,
+        'points': '0'
+      }, merge: true);
       _userType = 'nurse';
-      _token =_temporaryToken;
-      final prefs = await SharedPreferences.getInstance();
+      _token = _temporaryToken;
+
       if (!prefs.containsKey('signInUsingEmail')) {
         final _signInUsingEmail = json.encode({
           'email': _userData.email,
@@ -602,41 +599,45 @@ class Auth with ChangeNotifier {
         });
         prefs.setString('signInUsingEmail', _signInUsingEmail);
       }
-    }else {
-      patientData.document(userId).setData({
+    } else {
+      patientData.document(_userId).setData({
         'name': name,
         'address': location,
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
-        'nationalId':nationalId,
+        'nationalId': nationalId,
         'gender': gender,
-        'imgUrl': imgUrl,
-        'points':'0'
-      },
-          merge: true
-      );
-      _userType ='patient';
+        'imgUrl': picture.toString().contains('https:')?picture:imgUrl,
+        'points': '0'
+      }, merge: true);
+      _token = _temporaryToken;
+      if(this.phoneNumber ==null){
+        final _signInUsingFBorG = json.encode({
+          'isSignInUsingFaceBook': false,
+          'isSignInUsingGoogle': true,
+        });
+        prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+      }
     }
     DocumentSnapshot doc;
-    if(_userType == 'nurse'){
-     doc = await nurseData.document(userId).get();
-    }else{
-      doc = await patientData.document(userId).get();
+    if (_userType == 'nurse') {
+      doc = await nurseData.document(_userId).get();
+    } else {
+      doc = await patientData.document(_userId).get();
     }
 
     _userData = UserData(
         name: doc.data['name'] ?? 'Nurse',
         points: doc.data['points'] ?? '0',
         docId: doc.documentID,
-        nationalId: doc.data['nationalId']?? '',
+        nationalId: doc.data['nationalId'] ?? '',
         gender: doc.data['gender'] ?? '',
         birthDate: doc.data['birthDate'] ?? '',
         address: doc.data['address'] ?? '',
         phoneNumber: doc.data['phoneNumber'] ?? '',
         imgUrl: doc.data['imgUrl'] ?? '',
         email: doc.data['email'] ?? '',
-        aboutYou: doc.data['aboutYou'] ?? ''
-    );
+        aboutYou: doc.data['aboutYou'] ?? '');
     notifyListeners();
     return true;
   }
@@ -645,7 +646,7 @@ class Auth with ChangeNotifier {
     try {
       firebaseAuth.signOut();
       _token = null;
-      userId = null;
+      _userId = null;
       final prefs = await SharedPreferences.getInstance();
       prefs.clear();
       return true;

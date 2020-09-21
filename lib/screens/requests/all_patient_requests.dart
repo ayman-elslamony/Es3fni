@@ -5,10 +5,13 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/user_profile/show_profile.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'add_request.dart';
 
@@ -84,23 +87,26 @@ class _PatientRequestsState extends State<PatientRequests> {
                           height: 10,
                         ),
                         request.patientId != ''
-                            ? InkWell(
-                          onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              request.patientName != ''
-                                  ? Expanded(
-                                child: rowWidget(
-                                    title:
-                                    translator.currentLanguage == "en"
-                                        ? 'Patient Name: '
-                                        : 'اسم المريض: ',
-                                    content: request.patientName,
-                                    infoWidget: infoWidget),
-                              )
-                                  : SizedBox(),
-                              IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){}),
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                request.patientName != ''
+                                    ? Expanded(
+                                  child: rowWidget(
+                                      title:
+                                      translator.currentLanguage == "en"
+                                          ? 'Patient Name: '
+                                          : 'اسم المريض: ',
+                                      content: request.patientName,
+                                      infoWidget: infoWidget),
+                                )
+                                    : SizedBox(),
+                                request.patientId !='' &&request.patientId!=_auth.userId?IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
+                                    type: 'Patient',
+                                    userId: request.patientId,
+                                  ) ));
+                                }):SizedBox(),
 //                                  RaisedButton(
 //                                    onPressed:
 //                                    (){
@@ -119,9 +125,8 @@ class _PatientRequestsState extends State<PatientRequests> {
 //                                    shape: RoundedRectangleBorder(
 //                                        borderRadius: BorderRadius.circular(15),side: BorderSide(color: Colors.indigoAccent)),
 //                                  )
-                            ],
-                          ),
-                        )
+                              ],
+                            )
                             : request.patientName != ''
                             ? rowWidget(
                             title: translator.currentLanguage == "en"
@@ -131,12 +136,17 @@ class _PatientRequestsState extends State<PatientRequests> {
                             infoWidget: infoWidget)
                             : SizedBox(),
                         request.patientPhone != ''
-                            ? rowWidget(
-                            title: translator.currentLanguage == "en"
-                                ? 'Patient Phone: '
-                                : 'رقم الهاتف: ',
-                            content: request.patientPhone,
-                            infoWidget: infoWidget)
+                            ? InkWell(
+                          onTap: request.patientPhone!=_auth.userData.phoneNumber?(){
+                            launch("tel://${request.patientPhone}");
+                          }:null,
+                              child: rowWidget(
+                              title: translator.currentLanguage == "en"
+                                  ? 'Patient Phone: '
+                                  : 'رقم الهاتف: ',
+                              content: request.patientPhone,
+                              infoWidget: infoWidget),
+                            )
                             : SizedBox(),
                         request.patientLocation != ''
                             ? rowWidget(
@@ -286,12 +296,23 @@ class _PatientRequestsState extends State<PatientRequests> {
         child: Stack(
           children: <Widget>[
             Container(
-              color: Colors.blue[100],
+              color:Colors.blue[100],
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 child:Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Container(
+                      width: infoWidget.screenWidth*0.06,
+                      height:infoWidget.screenWidth*0.06
+                      ,child: LoadingIndicator(
+                      color: request.nurseId==''?Colors.red:Colors.indigo,
+                      indicatorType: Indicator.ballScale,
+                    ),
+                    ),
+                ),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -375,21 +396,42 @@ class _PatientRequestsState extends State<PatientRequests> {
                             style: infoWidget.subTitle,
                           )
                               : SizedBox(),
+                          request.nurseId==''?Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Status: pending'
+                                : 'الحاله: قيد الانتظار',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.red),
+                          )
+                              : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                            translator.currentLanguage == 'en'
+                                      ? 'Status: Accepted'
+                                      : 'الحاله: تم القبول',
+                            style: infoWidget.titleButton
+                                      .copyWith(color: Colors.indigo),
+                          ),
+                                  ),
+                                  request.nurseId !=''?IconButton(padding: EdgeInsets.all(0.0),icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
+                                      type: 'Nurse',
+                                      userId: request.nurseId,
+                                    ) ));
+                                  }):SizedBox()
+                                ],
+                              ),
                         ],
                       ),
                     ),
-                    Column(
-                      children: <Widget>[
-//                  RaisedButton(onPressed: (){},
-//                  child: Text(translator.currentLanguage =='en'?'delete':'حذف',
-//                    style: infoWidget.titleButton,),color: Colors.indigo,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),)
-                      ],
-                    )
+
                   ],
                 ),
               ),
             ),
-            Positioned(child:
+        request.nurseId ==''?Positioned(child:
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -420,7 +462,7 @@ class _PatientRequestsState extends State<PatientRequests> {
                       side: BorderSide(color: Colors.indigoAccent)),
                 ),
               ],
-            ),bottom: 8.0,right: 10.0,left: 10.0,)
+            ),bottom: 8.0,right: 10.0,left: 10.0,):SizedBox()
           ],
         ),
       ),

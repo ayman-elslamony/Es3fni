@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
+import 'package:helpme/screens/add_user_data/add_user_data.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/register_using_phone.dart';
 import 'package:helpme/screens/sign_in_and_up/register_using_phone/verify_code.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -418,13 +419,15 @@ class _SignInState extends State<SignIn> {
                                 setState(() {
                                   _isSignInUsingGoogleSuccessful=true;
                                 });
-                                bool x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG('G');
-                                if(x==false){
+                                String x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG(type: 'G',context: context);
+                                if(x=='false'){
                                   Toast.show(translator.currentLanguage == "en"
                                       ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
                                   setState(() {
                                     _isSignInUsingGoogleSuccessful=false;
                                   });
+                                }else if(x=='GoToRegister'){
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AddUserData()));
                                 }else{
                                   Toast.show(translator.currentLanguage == "en"
                                       ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
@@ -453,7 +456,7 @@ class _SignInState extends State<SignIn> {
                                 setState(() {
                                   _isSignInUsingFBSuccessful=true;
                                 });
-                                await Provider.of<Auth>(context, listen: false).signInUsingFBorG("FB").then((x){
+                                await Provider.of<Auth>(context, listen: false).signInUsingFBorG(context: context,type: "FB").then((x){
                                   if(x==false){
                                     Toast.show(translator.currentLanguage == "en"
                                         ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
