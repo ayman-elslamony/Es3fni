@@ -21,21 +21,16 @@ import 'package:toast/toast.dart';
 class Auth with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
-  static String _token;
-  static String _userId = '';
+   String _token;
+  String _userId = '';
 
   String get userId => _userId;
 
 
   String signInType = '';
-  String _userType = 'patient';
-  static  UserData _userData;
-
+  static String _userType = 'patient';
+  UserData _userData;
   PhoneNumber phoneNumber;
-
-  set setUserType(String type) {
-    _userType = type;
-  }
 
   String get getUserType {
     return _userType;
@@ -203,26 +198,26 @@ class Auth with ChangeNotifier {
           FacebookLoginResult facebookLoginResult = await _handleFBSignIn();
           final accessToken = facebookLoginResult.accessToken.token;
           if (facebookLoginResult.status == FacebookLoginStatus.loggedIn) {
-            final facebookAuthCred =
-                FacebookAuthProvider.getCredential(accessToken: accessToken);
-            final user =
-                await firebaseAuth.signInWithCredential(facebookAuthCred);
-            _userId = user.user.uid;
+         //   final facebookAuthCred =
+              //  FacebookAuthProvider.getCredential(accessToken: accessToken);
+           // final user =
+//                await firebaseAuth.signInWithCredential(facebookAuthCred);
+//            _userId = user.user.uid;
 //         email: googleSignIn.currentUser.email,
 //    name: googleSignIn.currentUser.displayName,
 //    profilePicURL: googleSignIn.currentUser.photoUrl,
 //    gender: await getGender()
-            FacebookLogin facebookLogin = FacebookLogin();
+           // FacebookLogin facebookLogin = FacebookLogin();
             //user.additionalUserInfo.profile.
             //createAccount(imgUrl: ,name: user.user.displayName,email: user.user.email,id: user.user.uid)
-            print("User : " + user.user.displayName);
-            final _signInUsingFBorG = json.encode({
-              'isSignInUsingFaceBook': true,
-              'isSignInUsingGoogle': false,
-            });
-            prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+//            print("User : " + user.user.displayName);
+//            final _signInUsingFBorG = json.encode({
+//              'isSignInUsingFaceBook': true,
+//              'isSignInUsingGoogle': false,
+//            });
+//            prefs.setString('signInUsingFBorG', _signInUsingFBorG);
             //  notifyListeners();
-            returns ='true';
+            returns ='false';
           } else
             //notifyListeners();
             returns ='false';
