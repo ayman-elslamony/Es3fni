@@ -24,26 +24,31 @@ class _EditProfileState extends State<EditProfile> {
   String phone;
   bool _isEditLocationEnable = false;
   bool _selectUserLocationFromMap = false;
-  List<String> addList = [
-    'Add Image',
-    'Add Phone',
-  ];
+  List<String> addList = [];
   final GlobalKey<ScaffoldState> _userProfileState = GlobalKey<ScaffoldState>();
-  TextEditingController _anotherInfoTextEditingController = TextEditingController();
+  TextEditingController _anotherInfoTextEditingController =
+      TextEditingController();
   final TextEditingController controller = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
   String phoneNumber;
-  FocusNode focusNode=FocusNode();
+  FocusNode focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
     address = _auth.userData.address;
-    addList = translator.currentLanguage == "en"
-        ? ['Add Image', 'Add Phone','Add Address','Add Another Info']
-        : ['اضافه صوره', 'اضافه هاتف','اضافه عنوان','اضافه معلومات اخرى'];
+    if (_auth.getUserType == 'nurse') {
+      addList = translator.currentLanguage == "en"
+          ? ['Add Image', 'Add Phone', 'Add Address', 'Add Another Info']
+          : ['اضافه صوره', 'اضافه هاتف', 'اضافه عنوان', 'اضافه معلومات اخرى'];
+    } else {
+      addList = translator.currentLanguage == "en"
+          ? ['Add Image','Add Address']
+          : ['اضافه صوره','اضافه عنوان',];
+    }
   }
 
   @override
@@ -64,9 +69,11 @@ class _EditProfileState extends State<EditProfile> {
     if (type == 'image' || type == 'صوره') {
       showDialog(
           context: context,
-          builder: (ctx) => Directionality(
-            textDirection: translator.currentLanguage == "en" ?TextDirection.ltr:TextDirection.rtl,
-            child: AlertDialog(
+          builder: (context) => Directionality(
+                textDirection: translator.currentLanguage == "en"
+                    ? TextDirection.ltr
+                    : TextDirection.rtl,
+                child: AlertDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(25.0))),
                   contentPadding: EdgeInsets.only(top: 10.0),
@@ -82,19 +89,28 @@ class _EditProfileState extends State<EditProfile> {
                       )),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
+                      child: Text(
+                          translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
                       onPressed: () async {
                         if (_imageFile != null) {
                           print(_imageFile);
                           bool x = await _auth.editProfile(
                               type: 'image', picture: _imageFile);
                           if (x) {
-                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Scuessfully Editing"
+                                    : 'نجح التعديل',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
-                            Navigator.of(ctx).pop();
+                            Navigator.of(context).pop();
                           } else {
-                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Please try again later"
+                                    : 'من فضلك حاول مره اخرى',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
@@ -106,21 +122,25 @@ class _EditProfileState extends State<EditProfile> {
                       },
                     ),
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
+                      child: Text(translator.currentLanguage == "en"
+                          ? 'Cancel'
+                          : 'الغاء'),
                       onPressed: () {
-                        Navigator.of(ctx).pop();
+                        Navigator.of(context).pop();
                       },
                     )
                   ],
                 ),
-          ));
+              ));
     }
     if (type == 'Phone Number' || type == 'رقم الهاتف') {
       showDialog(
           context: context,
-          builder: (ctx) => Directionality(
-            textDirection: translator.currentLanguage == "en" ?TextDirection.ltr:TextDirection.rtl,
-            child: AlertDialog(
+          builder: (context) => Directionality(
+                textDirection: translator.currentLanguage == "en"
+                    ? TextDirection.ltr
+                    : TextDirection.rtl,
+                child: AlertDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(25.0))),
                   contentPadding: EdgeInsets.only(top: 10.0),
@@ -128,7 +148,7 @@ class _EditProfileState extends State<EditProfile> {
                     padding: const EdgeInsets.all(8.0),
                     child: InternationalPhoneNumberInput(
                       onInputChanged: (PhoneNumber number) {
-                        phoneNumber= number.phoneNumber;
+                        phoneNumber = number.phoneNumber;
                       },
                       focusNode: focusNode,
                       ignoreBlank: false,
@@ -139,50 +159,69 @@ class _EditProfileState extends State<EditProfile> {
                       inputBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.indigo),
                       ),
-                      hintText: translator.currentLanguage == "en" ?'phone number':'رقم الهاتف',
+                      hintText: translator.currentLanguage == "en"
+                          ? 'phone number'
+                          : 'رقم الهاتف',
                     ),
                   ),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
+                      child: Text(
+                          translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
                       onPressed: () async {
                         focusNode.unfocus();
-                        if(controller.text.trim().length ==12) {
+                        if (controller.text.trim().length == 12) {
                           bool x = await _auth.editProfile(
                             type: 'Phone Number',
                             phone: phoneNumber.toString(),
                           );
                           if (x) {
-                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Scuessfully Editing"
+                                    : 'نجح التعديل',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
-                            Navigator.of(ctx).pop();
+                            Navigator.of(context).pop();
                           } else {
-                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Please try again later"
+                                    : 'من فضلك حاول مره اخرى',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
-                        }else{
-                          Toast.show(translator.currentLanguage == "en" ?'invalid phone number':'الرقم غير صحيح', context);
+                        } else {
+                          Toast.show(
+                              translator.currentLanguage == "en"
+                                  ? 'invalid phone number'
+                                  : 'الرقم غير صحيح',
+                              context);
                         }
                       },
                     ),
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
+                      child: Text(translator.currentLanguage == "en"
+                          ? 'Cancel'
+                          : 'الغاء'),
                       onPressed: () {
-                        Navigator.of(ctx).pop();
+                        Navigator.of(context).pop();
                       },
                     )
                   ],
                 ),
-          ));
+              ));
     }
     if (type == 'Address' || type == 'العنوان') {
       showDialog(
           context: context,
-          builder: (ctx) => Directionality(
-            textDirection: translator.currentLanguage == "en" ?TextDirection.ltr:TextDirection.rtl,
-            child: AlertDialog(
+          builder: (context) => Directionality(
+                textDirection: translator.currentLanguage == "en"
+                    ? TextDirection.ltr
+                    : TextDirection.rtl,
+                child: AlertDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(25.0))),
                   contentPadding: EdgeInsets.only(top: 10.0),
@@ -197,7 +236,8 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
+                      child: Text(
+                          translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
                       onPressed: () async {
                         if (address != null) {
                           print(address);
@@ -206,148 +246,166 @@ class _EditProfileState extends State<EditProfile> {
                             address: address,
                           );
                           if (x) {
-                            Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Scuessfully Editing"
+                                    : 'نجح التعديل',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
-                            Navigator.of(ctx).pop();
+                            Navigator.of(context).pop();
                           } else {
-                            Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Please try again later"
+                                    : 'من فضلك حاول مره اخرى',
+                                context,
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
                         } else {
-                          Toast.show(translator.currentLanguage == "en" ?"Please enter your address":'من فضلك ادخل العنوان', context,
+                          Toast.show(
+                              translator.currentLanguage == "en"
+                                  ? "Please enter your address"
+                                  : 'من فضلك ادخل العنوان',
+                              context,
                               duration: Toast.LENGTH_SHORT,
                               gravity: Toast.BOTTOM);
                         }
                       },
                     ),
                     FlatButton(
-                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
+                      child: Text(translator.currentLanguage == "en"
+                          ? 'Cancel'
+                          : 'الغاء'),
                       onPressed: () {
-                        Navigator.of(ctx).pop();
+                        Navigator.of(context).pop();
                       },
                     )
                   ],
                 ),
-          ));
+              ));
     }
-    if (type ==  'Another Info'
-         || type == 'معلومات اخرى') {
+    if (type == 'Another Info' || type == 'معلومات اخرى') {
       _anotherInfoTextEditingController.text = _auth.userData.aboutYou;
       showDialog(
           context: context,
-          builder: (ctx) => Directionality(
-            textDirection: translator.currentLanguage == "en" ?TextDirection.ltr:TextDirection.rtl,
-            child: AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0))),
-              contentPadding: EdgeInsets.only(top: 10.0),
-              content: StatefulBuilder(
-                builder: (context,setState)=>
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child:  Form(
-                    key: formKey,
-                    child: Container(
-                      height: 90,
-                      padding: EdgeInsets.symmetric(
-                          vertical: 7.0),
-                      child: TextFormField(
-                        controller: _anotherInfoTextEditingController,
-                        autofocus: false,
-                        textInputAction:
-                        TextInputAction.newline,
-                        decoration: InputDecoration(
-                          labelText:
-                          translator.currentLanguage ==
-                              "en"
-                              ? "Another Info"
-                              : 'معلومات اخرى',
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10.0)),
-                            borderSide: BorderSide(
-                              color: Colors.indigo,
+          builder: (context) => Directionality(
+                textDirection: translator.currentLanguage == "en"
+                    ? TextDirection.ltr
+                    : TextDirection.rtl,
+                child: AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25.0))),
+                  contentPadding: EdgeInsets.only(top: 10.0),
+                  content: StatefulBuilder(
+                    builder: (context, setState) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Form(
+                        key: formKey,
+                        child: Container(
+                          height: 90,
+                          padding: EdgeInsets.symmetric(vertical: 7.0),
+                          child: TextFormField(
+                            controller: _anotherInfoTextEditingController,
+                            autofocus: false,
+                            textInputAction: TextInputAction.newline,
+                            decoration: InputDecoration(
+                              labelText: translator.currentLanguage == "en"
+                                  ? "Another Info"
+                                  : 'معلومات اخرى',
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              disabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(color: Colors.indigo),
+                              ),
                             ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10.0)),
-                            borderSide: BorderSide(
-                              color: Colors.indigo,
-                            ),
-                          ),
-                          focusedErrorBorder:
-                          OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10.0)),
-                            borderSide: BorderSide(
-                              color: Colors.indigo,
-                            ),
-                          ),
-                          disabledBorder:
-                          OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10.0)),
-                            borderSide: BorderSide(
-                              color: Colors.indigo,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                                Radius.circular(10.0)),
-                            borderSide: BorderSide(
-                                color: Colors.indigo),
+                            keyboardType: TextInputType.text,
+                            maxLines: 5,
+                            minLines: 2,
+                            // ignore: missing_return
+                            validator: (val) {
+                              if (val.trim().length == 0) {
+                                return 'Please write some info';
+                              }
+                            },
                           ),
                         ),
-                        keyboardType: TextInputType.text,
-                        maxLines: 5,
-                        minLines: 2,
-                        // ignore: missing_return
-                        validator: (val){
-                          if(val.trim().length == 0){
-                            return 'Please write some info';
-                          }
-                        },
                       ),
                     ),
                   ),
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text(translator.currentLanguage == "en" ?'Ok':'موافق'),
-                  onPressed: () async {
-                    if (formKey.currentState.validate()) {
-                      formKey.currentState.save();
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text(
+                          translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
+                      onPressed: () async {
+                        if (formKey.currentState.validate()) {
+                          formKey.currentState.save();
 
-                      bool x = await _auth.editProfile(
-                        type: 'Another Info',
-                        aboutYou: _anotherInfoTextEditingController.text,
-                      );
-                      if (x) {
-                        Toast.show(translator.currentLanguage == "en" ?"Scuessfully Editing":'نجح التعديل', context,
-                            duration: Toast.LENGTH_SHORT,
-                            gravity: Toast.BOTTOM);
-                        Navigator.of(ctx).pop();
-                      } else {
-                        Toast.show(translator.currentLanguage == "en" ?"Please try again later":'من فضلك حاول مره اخرى', context,
-                            duration: Toast.LENGTH_SHORT,
-                            gravity: Toast.BOTTOM);
-                      }
-                    }
-                  },
+                          bool x = await _auth.editProfile(
+                            type: 'Another Info',
+                            aboutYou: _anotherInfoTextEditingController.text,
+                          );
+                          if (x) {
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Scuessfully Editing"
+                                    : 'نجح التعديل',
+                                context,
+                                duration: Toast.LENGTH_SHORT,
+                                gravity: Toast.BOTTOM);
+                            Navigator.of(context).pop();
+                          } else {
+                            Toast.show(
+                                translator.currentLanguage == "en"
+                                    ? "Please try again later"
+                                    : 'من فضلك حاول مره اخرى',
+                                context,
+                                duration: Toast.LENGTH_SHORT,
+                                gravity: Toast.BOTTOM);
+                          }
+                        }
+                      },
+                    ),
+                    FlatButton(
+                      child: Text(translator.currentLanguage == "en"
+                          ? 'Cancel'
+                          : 'الغاء'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
                 ),
-                FlatButton(
-                  child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                  },
-                )
-              ],
-            ),
-          ));
+              ));
     }
   }
 
@@ -420,7 +478,7 @@ class _EditProfileState extends State<EditProfile> {
                     initialValue: '',
                     tooltip:
                         translator.currentLanguage == "en" ? 'Select' : 'اختار',
-                    itemBuilder: (ctx) => addList
+                    itemBuilder: (context) => addList
                         .map((String val) => PopupMenuItem<String>(
                               value: val,
                               child: Center(child: Text(val.toString())),
@@ -436,8 +494,8 @@ class _EditProfileState extends State<EditProfile> {
                       if (val == 'Add Address' || val == 'اضافه عنوان') {
                         editProfile('Address', context);
                       }
-                      if (val ==  'Add Another Info'
-                          || val == 'اضافه معلومات اخرى') {
+                      if (val == 'Add Another Info' ||
+                          val == 'اضافه معلومات اخرى') {
                         editProfile('Another Info', context);
                       }
                     },
@@ -542,90 +600,109 @@ class _EditProfileState extends State<EditProfile> {
                         SizedBox(
                           height: infoWidget.screenHeight * 0.02,
                         ),
-                        data.userData.name ==''?SizedBox():personalInfo(
-                          context: context,
-                            enableEdit: false,
-                            title: translator.currentLanguage == "en"
-                                ? 'Name'
-                                : 'الاسم',
-                            subtitle: translator.currentLanguage == "en"
-                                ? data.userData.name
-                                : data.userData.name,
-                            iconData: Icons.person,
-                            infoWidget: infoWidget),
-                        data.userData.address ==''?SizedBox():personalInfo(
-                            context: context,
-                            title: translator.currentLanguage == "en"
-                                ? 'Address'
-                                : 'العنوان',
-                            subtitle: translator.currentLanguage == "en"
-                                ? data.userData.address
-                                : data.userData.address,
-                            iconData: Icons.my_location,
-                            infoWidget: infoWidget),
-                        data.userData.phoneNumber ==''?SizedBox():personalInfo(
-                            context: context,
-                            title: translator.currentLanguage == "en"
-                                ? 'Phone Number'
-                                : 'رقم الهاتف',
-                            subtitle: translator.currentLanguage == "en"
-                                ? data.userData.phoneNumber
-                                : data.userData.phoneNumber,
-                            iconData: Icons.phone,
-                            infoWidget: infoWidget),
-                        data.userData.email ==''?SizedBox():personalInfo(
-                            title: translator.currentLanguage == "en"
-                                ? 'E-mail'
-                                : 'البريد الالكترونى',
-                            subtitle: translator.currentLanguage == "en"
-                                ? data.userData.email
-                                : data.userData.email,
-                            iconData: Icons.email,
-                            enableEdit: false,
-                            context: context,
-                            infoWidget: infoWidget),
-
-                        data.userData.nationalId ==''?SizedBox():personalInfo(
-                            context: context,
-                            enableEdit: false,
-                            title: translator.currentLanguage == "en"
-                                ? 'National Id'
-                                : 'الرقم القومى',
-                            subtitle: translator.currentLanguage == "en"
-                                ? data.userData.nationalId
-                                : data.userData.nationalId,
-                            iconData: Icons.fingerprint,
-                            infoWidget: infoWidget),
-                        data.userData.birthDate ==''?SizedBox():personalInfo(
-                            context: context,
-                            enableEdit: false,
-                            title: translator.currentLanguage == "en"
-                                ? 'Birth Date'
-                                : 'تاريخ الميلاد',
-                            subtitle: translator.currentLanguage == "en"
-                                ?data.userData.birthDate
-                                : data.userData.birthDate,
-                            iconData: Icons.date_range,
-                            infoWidget: infoWidget),
-                        data.userData.gender ==''?SizedBox():personalInfo(
-                            context: context,
-                            enableEdit: false,
-                            title: translator.currentLanguage == "en"
-                                ? 'Gender'
-                                : 'النوع',
-                            subtitle:
-                                translator.currentLanguage == "en" ? data.userData.gender : data.userData.gender,
-                            iconData: Icons.view_agenda,
-                            infoWidget: infoWidget),
-                        _auth.userData.aboutYou ==''?SizedBox():personalInfo(
-                            title: translator.currentLanguage == "en"
-                                ? 'Another Info'
-                                : 'معلومات اخرى',
-                            subtitle: translator.currentLanguage == "en"
-                                ? _auth.userData.aboutYou
-                                : _auth.userData.aboutYou,
-                            iconData: Icons.info,
-                            infoWidget: infoWidget),
+                        data.userData.name == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                context: context,
+                                enableEdit: false,
+                                title: translator.currentLanguage == "en"
+                                    ? 'Name'
+                                    : 'الاسم',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.name
+                                    : data.userData.name,
+                                iconData: Icons.person,
+                                infoWidget: infoWidget),
+                        data.userData.address == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                context: context,
+                                title: translator.currentLanguage == "en"
+                                    ? 'Address'
+                                    : 'العنوان',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.address
+                                    : data.userData.address,
+                                iconData: Icons.my_location,
+                                infoWidget: infoWidget),
+                         data.userData.phoneNumber == ''
+                                ? SizedBox()
+                                : personalInfo(
+                                    context: context,
+                                    enableEdit: _auth.getUserType == 'nurse'
+                                        ?true:false,
+                                    title: translator.currentLanguage == "en"
+                                        ? 'Phone Number'
+                                        : 'رقم الهاتف',
+                                    subtitle: translator.currentLanguage == "en"
+                                        ? data.userData.phoneNumber
+                                        : data.userData.phoneNumber,
+                                    iconData: Icons.phone,
+                                    infoWidget: infoWidget)
+                            ,
+                        data.userData.email == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                title: translator.currentLanguage == "en"
+                                    ? 'E-mail'
+                                    : 'البريد الالكترونى',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.email
+                                    : data.userData.email,
+                                iconData: Icons.email,
+                                enableEdit: false,
+                                context: context,
+                                infoWidget: infoWidget),
+                        data.userData.nationalId == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                context: context,
+                                enableEdit: false,
+                                title: translator.currentLanguage == "en"
+                                    ? 'National Id'
+                                    : 'الرقم القومى',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.nationalId
+                                    : data.userData.nationalId,
+                                iconData: Icons.fingerprint,
+                                infoWidget: infoWidget),
+                        data.userData.birthDate == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                context: context,
+                                enableEdit: false,
+                                title: translator.currentLanguage == "en"
+                                    ? 'Birth Date'
+                                    : 'تاريخ الميلاد',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.birthDate
+                                    : data.userData.birthDate,
+                                iconData: Icons.date_range,
+                                infoWidget: infoWidget),
+                        data.userData.gender == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                context: context,
+                                enableEdit: false,
+                                title: translator.currentLanguage == "en"
+                                    ? 'Gender'
+                                    : 'النوع',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? data.userData.gender
+                                    : data.userData.gender,
+                                iconData: Icons.view_agenda,
+                                infoWidget: infoWidget),
+                        _auth.userData.aboutYou == ''
+                            ? SizedBox()
+                            : personalInfo(
+                                title: translator.currentLanguage == "en"
+                                    ? 'Another Info'
+                                    : 'معلومات اخرى',
+                                subtitle: translator.currentLanguage == "en"
+                                    ? _auth.userData.aboutYou
+                                    : _auth.userData.aboutYou,
+                                iconData: Icons.info,
+                                infoWidget: infoWidget),
                       ],
                     ))),
       ),

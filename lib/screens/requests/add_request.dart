@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:age/age.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
+import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -60,6 +62,7 @@ class _AddRequestState extends State<AddRequest> {
   });
   static DateTime _dateTimeNow =DateTime.now();
   final TextEditingController controller = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
   String initialCountry = 'EG';
   PhoneNumber number = PhoneNumber(isoCode: 'EG');
   Map<String, dynamic> _paramedicsData = {
@@ -96,6 +99,7 @@ class _AddRequestState extends State<AddRequest> {
 
   //List<Step> steps = [];
   Home _home;
+  Auth _auth;
   bool isAnalysisSelected = false;
 
   getAllServicesAndAnalysis() async {
@@ -107,10 +111,36 @@ class _AddRequestState extends State<AddRequest> {
   void initState() {
     super.initState();
     _home = Provider.of<Home>(context, listen: false);
+    _auth= Provider.of<Auth>(context, listen: false);
+    _paramedicsData['Patient name']=_auth.userData.name ;
+    nameController.text=_auth.userData.name ;
+    _paramedicsData['Phone number']=_auth.userData.phoneNumber ;
+    String phoneNumber;
+    String dialCode;
+    if(_auth.userData.phoneNumber.contains('+20')){
+      phoneNumber = _auth.userData.phoneNumber.replaceAll('+20', '');
+      dialCode = '+20';
+      number = PhoneNumber(isoCode: 'EG',dialCode: dialCode,phoneNumber: phoneNumber);
+    }
+    _paramedicsData['gender']=_auth.userData.gender ;
+    List<String> ageList = _auth.userData.birthDate.split('-');
+    print(ageList);
+    DateTime birthday = DateTime(int.parse(ageList[2]),int.parse(ageList[1]),int.parse(ageList[0]));
+    DateTime today = DateTime.now();
+    AgeDuration age;
+    // Find out your age
+    age = Age.dateDifference(
+    fromDate: birthday, toDate: today, includeToDate: false);
+    _isAgeSelected =true;
+    _isGenderSelected =true;
+    _paramedicsData['age']=age.years.toString();
+    _paramedicsData['Location']=_auth.userData.address ;
+    _locationTextEditingController.text=_auth.userData.address ;
     getAllServicesAndAnalysis();
     if (translator.currentLanguage != "en") {
       _genderList = ['ذكر', 'انثى'];
     }
+
   }
 
   cancel() {
@@ -392,8 +422,16 @@ class _AddRequestState extends State<AddRequest> {
         _isLoading = true;
       });
       try {
+        if(enableScheduleTheService == false){
+          _paramedicsData['startDate'] =
+          '';
+          _paramedicsData['endDate']='';
+          _selectedWorkingDays.clear();
+          visitTime.clear();
+        }
         print('A');
         bool isSccuess = await _home.addRequest(
+          patientId: _auth.userId,
           analysisType: _paramedicsData['analysis type'],
           notes: _paramedicsData['notes'],
           discountCoupon: _paramedicsData['coupon'],
@@ -618,6 +656,7 @@ class _AddRequestState extends State<AddRequest> {
                                 height: 80,
                                 child: TextFormField(
                                   autofocus: false,
+                                  controller: nameController,
                                   decoration: InputDecoration(
                                       labelText:
                                       translator.currentLanguage ==
@@ -1909,6 +1948,7 @@ class _AddRequestState extends State<AddRequest> {
                                                   value;
                                               _paramedicsData['coupon'] =
                                               '';
+
                                             });
                                           }
                                         },

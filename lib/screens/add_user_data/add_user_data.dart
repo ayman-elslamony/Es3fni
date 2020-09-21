@@ -424,12 +424,14 @@ class _AddUserDataState extends State<AddUserData> {
         bool isScuess =await Provider.of<Auth>(context, listen: false)
             .updateUserData(
           name: _userData['name'],
+          nationalId: _userData['National Id'],
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
           gender: _userData['gender'],
           picture: _userData['UrlImg']==''?null:_userData['UrlImg'],
           aboutYou: _userData['aboutYou'],
-            location:_userData['Location']
+            location:_userData['Location'],
+
         );
         print('isScuessisScuess$isScuess');
         if (isScuess) {

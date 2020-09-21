@@ -127,6 +127,7 @@ class Auth with ChangeNotifier {
         String aboutYou
       }) async {
     var nurseData = databaseReference.collection("nurses");
+    var patientData = databaseReference.collection("users");
 
     try{
       if(type == 'image'){
@@ -145,11 +146,19 @@ class Auth with ChangeNotifier {
             print(e);
           }
         }
+        if(_userType == 'nurse'){
         nurseData.document(userId).setData({
           'imgUrl': imgUrl,
         },
             merge: true
+        );}else{
+
+          patientData.document(userId).setData({
+          'imgUrl': imgUrl,
+        },
+            merge: true
         );
+        }
       }
       if(type == 'Another Info'){
         nurseData.document(userId).setData({
@@ -159,11 +168,16 @@ class Auth with ChangeNotifier {
         );
       }
       if(type == 'Address'){
+        if(_userType=='nurse'){
         nurseData.document(userId).setData({
           'address': address,
         },
             merge: true
-        );
+        );}else{ patientData.document(userId).setData({
+          'address': address,
+        },
+            merge: true
+        );}
       }
       if(type == 'Phone Number'){
         nurseData.document(userId).setData({
@@ -172,9 +186,14 @@ class Auth with ChangeNotifier {
             merge: true
         );
       }
-      DocumentSnapshot doc = await nurseData.document(userId).get();
+      DocumentSnapshot doc;
+      if(_userType=='nurse') {
+        doc = await nurseData.document(userId).get();
+      }else {
+        doc = await patientData.document(userId).get();
+      }
       _userData = UserData(
-          name: doc.data['name'] ?? 'Nurse',
+          name: doc.data['name'],
           docId: doc.documentID,
           nationalId: doc.data['nationalId'] ?? '',
           gender: doc.data['gender'] ?? '',
@@ -183,7 +202,8 @@ class Auth with ChangeNotifier {
           phoneNumber: doc.data['phoneNumber'] ?? '',
           imgUrl: doc.data['imgUrl'] ?? '',
           email: doc.data['email'] ?? '',
-          aboutYou: doc.data['aboutYou'] ?? ''
+          aboutYou: doc.data['aboutYou'] ?? '',
+        points: doc.data['points'] ?? '',
       );
       notifyListeners();
       return true;
@@ -331,11 +351,25 @@ class Auth with ChangeNotifier {
               });
               prefs.setString('signInUsingPhone', _signInUsingPhone);
               print('rytryhrrhr');
-              DocumentSnapshot x =await patientData.document(userId).get();
-              if(!x.exists){
+              DocumentSnapshot doc =await patientData.document(userId).get();
+              if(!doc.exists){
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => AddUserData()));
               }else{
+                _userData = UserData(
+                    name: doc.data['name'] ?? 'Nurse',
+                    points: doc.data['points'] ?? '0',
+                    docId: doc.documentID,
+                    nationalId: doc.data['nationalId'] ?? '',
+                    gender: doc.data['gender'] ?? '',
+                    birthDate: doc.data['birthDate'] ?? '',
+                    address: doc.data['address'] ?? '',
+                    phoneNumber: doc.data['phoneNumber'] ?? '',
+                    imgUrl: doc.data['imgUrl'] ?? '',
+                    email: doc.data['email'] ?? '',
+                    aboutYou: doc.data['aboutYou'] ?? ''
+                );
+                notifyListeners();
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => HomeScreen()));
               }
@@ -383,11 +417,25 @@ class Auth with ChangeNotifier {
                   });
                   print('wtrwetetetetyyyyyyyyyyyyyyyyyyyy');
                   prefs.setString('signInUsingPhone', _signInUsingPhone);
-                  DocumentSnapshot x =await patientData.document(userId).get();
-                  if(!x.exists){
+                  DocumentSnapshot doc =await patientData.document(userId).get();
+                  if(!doc.exists){
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => AddUserData()));
                   }else{
+                    _userData = UserData(
+                        name: doc.data['name'],
+                        points: doc.data['points'] ?? '0',
+                        docId: doc.documentID,
+                        nationalId: doc.data['nationalId']?? '',
+                        gender: doc.data['gender'] ?? '',
+                        birthDate: doc.data['birthDate'] ?? '',
+                        address: doc.data['address'] ?? '',
+                        phoneNumber: doc.data['phoneNumber'] ?? '',
+                        imgUrl: doc.data['imgUrl'] ?? '',
+                        email: doc.data['email'] ?? '',
+                        aboutYou: doc.data['aboutYou'] ?? ''
+                    );
+                    notifyListeners();
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => HomeScreen()));
                   }
@@ -513,6 +561,7 @@ class Auth with ChangeNotifier {
     String birthDate = '',
     String gender = '',
     File picture,
+    String nationalId,
   }) async {
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
@@ -559,6 +608,7 @@ class Auth with ChangeNotifier {
         'address': location,
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
+        'nationalId':nationalId,
         'gender': gender,
         'imgUrl': imgUrl,
         'points':'0'
@@ -578,7 +628,7 @@ class Auth with ChangeNotifier {
         name: doc.data['name'] ?? 'Nurse',
         points: doc.data['points'] ?? '0',
         docId: doc.documentID,
-        nationalId: doc.data['nationalId'].toString() ?? '',
+        nationalId: doc.data['nationalId']?? '',
         gender: doc.data['gender'] ?? '',
         birthDate: doc.data['birthDate'] ?? '',
         address: doc.data['address'] ?? '',

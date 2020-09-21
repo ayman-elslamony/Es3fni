@@ -5,7 +5,9 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/requests/add_request.dart';
 import 'package:helpme/screens/requests/acepted_requests.dart';
+import 'package:helpme/screens/requests/all_patient_requests.dart';
 import 'package:helpme/screens/requests/all_requests.dart';
+import 'package:helpme/screens/requests/archived_requests.dart';
 import 'package:helpme/screens/supplies/nurse_supplies.dart';
 import 'package:helpme/screens/user_profile/user_profile.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
@@ -293,8 +295,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             isIcon: true,
                             icon: Icons.archive,
                             infoWidget: infoWidget,
-                            onTap: () async {}),
-                    _drawerListTile(
+                            onTap: () async {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => ArchivedRequests()));
+                            }),
+                    _auth.getUserType=='patient'?SizedBox():_drawerListTile(
                         name: translator.currentLanguage == "en"
                             ? "Supplies"
                             : 'التوريدات',
@@ -436,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 children: _auth.getUserType == 'nurse'
                     ? <Widget>[AcceptedRequests(), AllRequests(), UserProfile()]
-                    : <Widget>[AcceptedRequests(), UserProfile()],
+                    : <Widget>[PatientRequests(), UserProfile()],
               ),
             ),
           ),

@@ -12,12 +12,12 @@ import 'package:toast/toast.dart';
 
 import 'add_request.dart';
 
-class AcceptedRequests extends StatefulWidget {
+class PatientRequests extends StatefulWidget {
   @override
-  _AcceptedRequestsState createState() => _AcceptedRequestsState();
+  _PatientRequestsState createState() => _PatientRequestsState();
 }
 
-class _AcceptedRequestsState extends State<AcceptedRequests> {
+class _PatientRequestsState extends State<PatientRequests> {
   Home _home;
   Auth _auth;
   bool loadingBody = true;
@@ -91,14 +91,14 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                             children: <Widget>[
                               request.patientName != ''
                                   ? Expanded(
-                                    child: rowWidget(
+                                child: rowWidget(
                                     title:
                                     translator.currentLanguage == "en"
                                         ? 'Patient Name: '
                                         : 'اسم المريض: ',
                                     content: request.patientName,
                                     infoWidget: infoWidget),
-                                  )
+                              )
                                   : SizedBox(),
                               IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){}),
 //                                  RaisedButton(
@@ -396,22 +396,22 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
               children: <Widget>[
                 RaisedButton(
                   onPressed: ()async{
-                    bool x =await _home.endRequest(userData: _auth.userData,request: request);
-                      if(x){
-                        Toast.show(translator.currentLanguage == "en" ?"Successfully completed":'تم الانتهاء بنجاح', context,
-                            duration: Toast.LENGTH_SHORT,
-                            gravity: Toast.BOTTOM);
-                      }else{
-                        Toast.show(translator.currentLanguage == "en" ?"Completion failed":'فشل الانتهاء', context,
-                            duration: Toast.LENGTH_SHORT,
-                            gravity: Toast.BOTTOM);
-                      }
-                    },
+                    bool x =await _home.deleteRequest(requestId: request.docId );
+                    if(x){
+                      Toast.show(translator.currentLanguage == "en" ?"Successfully Deleted":'تم الحذف', context,
+                          duration: Toast.LENGTH_SHORT,
+                          gravity: Toast.BOTTOM);
+                    }else{
+                      Toast.show(translator.currentLanguage == "en" ?"Delete failed":'فشل الحذف', context,
+                          duration: Toast.LENGTH_SHORT,
+                          gravity: Toast.BOTTOM);
+                    }
+                  },
                   color: Colors.white,
                   child: Text(
                     translator.currentLanguage == "en"
-                        ? 'End'
-                        : 'انهاء',
+                        ? 'Delete':'حذف'
+                        ,
                     style: infoWidget.titleButton
                         .copyWith(color: Colors.indigo),
                   ),
@@ -451,10 +451,10 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
     );
   }
 
-  getAllAcceptedRequests() async {
+  getAllPatientRequests() async {
     print('dvdxvx');
-    if (_home.allAcceptedRequests.length == 0) {
-      await _home.getAllAcceptedRequests(userId: _auth.userId
+    if (_home.allPatientsRequests.length == 0) {
+      await _home.getAllPatientRequests(userId: _auth.userId
       );
     }
     setState(() {
@@ -466,7 +466,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
     _auth = Provider.of<Auth>(context, listen: false);
-    getAllAcceptedRequests();
+    getAllPatientRequests();
     super.initState();
   }
 
@@ -499,12 +499,12 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
             color: Colors.indigo,
             backgroundColor: Colors.white,
             onRefresh: () async {
-              _home.getAllAcceptedRequests(userId: _auth.userId
+              _home.getAllPatientRequests(userId: _auth.userId
               );
             },
             child: Consumer<Home>(
               builder: (context, data, _) {
-                if (data.allAcceptedRequests.length == 0) {
+                if (data.allPatientsRequests.length == 0) {
                   return Center(
                     child: Text(
                       translator.currentLanguage == "en"
@@ -516,14 +516,28 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                   );
                 } else {
                   return ListView.builder(
-                      itemCount: data.allAcceptedRequests.length,
+                      itemCount: data.allPatientsRequests.length,
                       itemBuilder: (context, index) => content(
                           infoWidget: infoWidget,
-                          request: data.allAcceptedRequests[index]));
+                          request: data.allPatientsRequests[index]));
                 }
               },
             ),
           ),
+          floatingActionButton: _auth.getUserType!='nurse'?FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => AddRequest()));
+            },
+            tooltip: translator.currentLanguage == "en" ? 'add' : 'اضافه',
+            child: Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
+            backgroundColor: Colors.indigo,
+          ):SizedBox(),
+          floatingActionButtonLocation:
+          FloatingActionButtonLocation.endFloat,
         ));
   }
 }
