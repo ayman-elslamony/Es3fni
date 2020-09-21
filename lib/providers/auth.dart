@@ -29,7 +29,7 @@ class Auth with ChangeNotifier {
 
   String signInType = '';
   static String _userType = 'patient';
-  UserData _userData;
+  static UserData _userData;
   PhoneNumber phoneNumber;
 
   String get getUserType {
