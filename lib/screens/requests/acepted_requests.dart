@@ -6,6 +6,7 @@ import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:helpme/screens/user_profile/show_profile.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -281,8 +282,19 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 child:Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Container(
+                        width: infoWidget.screenWidth*0.06,
+                        height:infoWidget.screenWidth*0.06
+                        ,child: LoadingIndicator(
+                        color: Colors.indigo,
+                        indicatorType: Indicator.ballScale,
+                      ),
+                      ),
+                    ),
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -369,13 +381,6 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                         ],
                       ),
                     ),
-                    Column(
-                      children: <Widget>[
-//                  RaisedButton(onPressed: (){},
-//                  child: Text(translator.currentLanguage =='en'?'delete':'حذف',
-//                    style: infoWidget.titleButton,),color: Colors.indigo,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),)
-                      ],
-                    )
                   ],
                 ),
               ),
