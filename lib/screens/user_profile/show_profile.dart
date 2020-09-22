@@ -220,6 +220,14 @@ Widget  personalInfo(
                               translator.currentLanguage == "en" ? _userData.gender : _userData.gender,
                           iconData: Icons.view_agenda,
                           infoWidget: infoWidget),
+                      _userData.aboutYou==''?SizedBox(): personalInfo(
+                          title: translator.currentLanguage == "en"
+                              ? 'Another Info'
+                              : 'معولمات اخرى',
+                          subtitle:
+                              translator.currentLanguage == "en" ? _userData.aboutYou : _userData.aboutYou,
+                          iconData: Icons.view_agenda,
+                          infoWidget: infoWidget),
                       _userData.points==''?SizedBox():personalInfo(
                           title: translator.currentLanguage == "en"
                               ? 'Points'

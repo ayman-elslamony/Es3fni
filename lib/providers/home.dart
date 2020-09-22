@@ -523,6 +523,7 @@ class Home with ChangeNotifier {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
     CollectionReference allRequests = databaseReference.collection('requests');
+    CollectionReference archived = databaseReference.collection('archived');
     CollectionReference allArchived = databaseReference.collection('archived requests');
     int points = int.parse(userData.points);
     points = points + 50;
@@ -547,34 +548,67 @@ class Home with ChangeNotifier {
     });
     allRequests
         .document(request.docId).delete();
-    patientCollection.document(request.patientId).collection('archived requests').document(request.docId).setData({
-      'nurseId': '',
-      'patientId':
-      request.patientId,
-      'patientName': request.patientName,
-      'patientPhone': request.patientPhone,
-      'patientLocation': request.patientLocation,
-      'patientAge': request.patientAge,
-      'patientGender': request.patientGender,
-      'numOfPatients': request.numOfPatients,
-      'serviceType': request.serviceType,
-      'analysisType': request.analysisType,
-      'nurseGender': request.nurseGender,
-      'date': request.date,
-      'time':request.time,
-      'servicePrice': request.servicePrice,
-      'suppliesFromPharmacy':request.suppliesFromPharmacy,
-      'picture': request.picture,
-      'discountPercentage': request.discountPercentage,
-      'discountCoupon': request.discountCoupon,
-      'startVisitDate': request.startVisitDate,
-      'endVisitDate': request.endVisitDate,
-      'visitDays': request.visitDays,
-      'visitTime': request.visitTime,
-      'notes': request.notes,
-      'priceBeforeDiscount': request.priceBeforeDiscount,
-      'priceAfterDiscount': request.priceAfterDiscount,
-    });
+    if(request.patientId != '') {
+    await  patientCollection.document(request.patientId).collection(
+          'archived requests').document(request.docId).setData({
+        'nurseId': '',
+        'patientId':
+        request.patientId,
+        'patientName': request.patientName,
+        'patientPhone': request.patientPhone,
+        'patientLocation': request.patientLocation,
+        'patientAge': request.patientAge,
+        'patientGender': request.patientGender,
+        'numOfPatients': request.numOfPatients,
+        'serviceType': request.serviceType,
+        'analysisType': request.analysisType,
+        'nurseGender': request.nurseGender,
+        'date': request.date,
+        'time': request.time,
+        'servicePrice': request.servicePrice,
+        'suppliesFromPharmacy': request.suppliesFromPharmacy,
+        'picture': request.picture,
+        'discountPercentage': request.discountPercentage,
+        'discountCoupon': request.discountCoupon,
+        'startVisitDate': request.startVisitDate,
+        'endVisitDate': request.endVisitDate,
+        'visitDays': request.visitDays,
+        'visitTime': request.visitTime,
+        'notes': request.notes,
+        'priceBeforeDiscount': request.priceBeforeDiscount,
+        'priceAfterDiscount': request.priceAfterDiscount,
+      });
+    }else{
+      await archived.document(request.patientId).collection(
+          'archived requests').document(request.docId).setData({
+        'nurseId': '',
+        'patientId':
+        request.patientId,
+        'patientName': request.patientName,
+        'patientPhone': request.patientPhone,
+        'patientLocation': request.patientLocation,
+        'patientAge': request.patientAge,
+        'patientGender': request.patientGender,
+        'numOfPatients': request.numOfPatients,
+        'serviceType': request.serviceType,
+        'analysisType': request.analysisType,
+        'nurseGender': request.nurseGender,
+        'date': request.date,
+        'time': request.time,
+        'servicePrice': request.servicePrice,
+        'suppliesFromPharmacy': request.suppliesFromPharmacy,
+        'picture': request.picture,
+        'discountPercentage': request.discountPercentage,
+        'discountCoupon': request.discountCoupon,
+        'startVisitDate': request.startVisitDate,
+        'endVisitDate': request.endVisitDate,
+        'visitDays': request.visitDays,
+        'visitTime': request.visitTime,
+        'notes': request.notes,
+        'priceBeforeDiscount': request.priceBeforeDiscount,
+        'priceAfterDiscount': request.priceAfterDiscount,
+      });
+    }
     allPatientsRequests.removeWhere((x)=>x.docId==request.docId);
     allAcceptedRequests.removeWhere((x)=>x.docId==request.docId);
     userData.points = points.toString();

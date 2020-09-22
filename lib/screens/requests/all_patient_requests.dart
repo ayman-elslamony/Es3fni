@@ -107,24 +107,7 @@ class _PatientRequestsState extends State<PatientRequests> {
                                     userId: request.patientId,
                                   ) ));
                                 }):SizedBox(),
-//                                  RaisedButton(
-//                                    onPressed:
-//                                    (){
-//                                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile()));
-//                                    },
-//                                    color: Colors.white,
-//                                    child: Padding(
-//                                      padding: const EdgeInsets.symmetric(
-//                                          vertical: 10, horizontal: 50),
-//                                      child: Text(
-//                                        translator.currentLanguage == "en" ?'Show Profile':'رؤيه الحساب',
-//                                        style: infoWidget.titleButton
-//                                            .copyWith(color: Colors.indigo),
-//                                      ),
-//                                    ),
-//                                    shape: RoundedRectangleBorder(
-//                                        borderRadius: BorderRadius.circular(15),side: BorderSide(color: Colors.indigoAccent)),
-//                                  )
+//
                               ],
                             )
                             : request.patientName != ''
