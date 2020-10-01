@@ -22,8 +22,8 @@ class AddRequest extends StatefulWidget {
 }
 
 class _AddRequestState extends State<AddRequest> {
-  GlobalKey<FormState> _newAccountKey = GlobalKey<FormState>();
-  GlobalKey<ScaffoldState> _key = GlobalKey();
+ static GlobalKey<FormState> _newAccountKey = GlobalKey<FormState>();
+  static GlobalKey<ScaffoldState> _key = GlobalKey();
   bool _isLoading = false;
   int currentStep = 0;
   bool complete = false;
@@ -48,6 +48,7 @@ class _AddRequestState extends State<AddRequest> {
   FocusNode focusNode = FocusNode();
   FocusNode couponFocusNode = FocusNode();
   FocusNode locationFocusNode = FocusNode();
+  FocusNode notesFocusNode = FocusNode();
   FocusNode nameFocusNode = FocusNode();
   bool isLoadingCoupon = false;
   TextEditingController _locationTextEditingController =
@@ -74,7 +75,7 @@ class _AddRequestState extends State<AddRequest> {
     'coupon': '',
     'accessories': '',
     'notes': '',
-    'nurse type': 'Male',
+    'nurse type': translator.currentLanguage=='en'?'Male':'ذكر',
     'service type': '',
     'analysis type': '',
     'numberOfUsersUseService': '1',
@@ -94,7 +95,7 @@ class _AddRequestState extends State<AddRequest> {
     'Friday',
   ]:['السبت','الاحد','الاثنين','الثلاثاء','الاربعاء','الخميس','الجمعه',];
   List<String> visitTime = [];
-  final FocusNode _phoneNumberNode = FocusNode();
+
   final ImagePicker _picker = ImagePicker();
 
   //List<Step> steps = [];
@@ -557,7 +558,7 @@ class _AddRequestState extends State<AddRequest> {
       }
       if (_newAccountKey.currentState.validate()) {
         _newAccountKey.currentState.save();
-        _phoneNumberNode.unfocus();
+
         _incrementStep();
       }
       return;
@@ -596,7 +597,10 @@ class _AddRequestState extends State<AddRequest> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    notesFocusNode.unfocus();
+    focusNode.unfocus();
+    nameFocusNode.unfocus();
+    locationFocusNode.unfocus();
     return InfoWidget(
       builder: (context, infoWidget) => Directionality(
         textDirection: translator.currentLanguage == "en"
@@ -638,6 +642,25 @@ class _AddRequestState extends State<AddRequest> {
                     ),
                   )
                       : Stepper(
+                    controlsBuilder: (BuildContext context, {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+                      return Row(
+                        children: <Widget>[
+                          FlatButton(
+                            color: Colors.indigo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            onPressed: onStepContinue,
+                            child: Text(translator.currentLanguage=='en'?'Continue':'التالى',style: infoWidget.subTitle.copyWith(color: Colors.white)),
+                          ),
+                          SizedBox(width: 8,)
+                          ,FlatButton(
+                            color: Colors.indigo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            onPressed: onStepCancel,
+                            child:  Text(translator.currentLanguage=='en'?'Cancel':'الغاء',style: infoWidget.subTitle.copyWith(color: Colors.white),),
+                          ),
+                        ],
+                      );
+                    },
                     steps: [
                       Step(
                         title: Text(translator.currentLanguage == "en"
@@ -656,6 +679,7 @@ class _AddRequestState extends State<AddRequest> {
                                 height: 80,
                                 child: TextFormField(
                                   autofocus: false,
+                                  focusNode: nameFocusNode,
                                   controller: nameController,
                                   decoration: InputDecoration(
                                       labelText:
@@ -728,6 +752,7 @@ class _AddRequestState extends State<AddRequest> {
                                   _paramedicsData['Phone number'] =
                                       number.phoneNumber;
                                 },
+                                focusNode: focusNode,
                                 ignoreBlank: true,
                                 autoValidate: false,
                                 selectorTextStyle:
@@ -796,6 +821,7 @@ class _AddRequestState extends State<AddRequest> {
                                 height: 80,
                                 child: TextFormField(
                                   autofocus: false,
+                                  focusNode: locationFocusNode,
                                   style: TextStyle(fontSize: 15),
                                   controller:
                                   _locationTextEditingController,
@@ -909,11 +935,7 @@ class _AddRequestState extends State<AddRequest> {
                                               height: 40,
                                               width: 35,
                                               child: PopupMenuButton(
-                                                initialValue: translator
-                                                    .currentLanguage ==
-                                                    "en"
-                                                    ? 'number'
-                                                    : 'العدد',
+                                                initialValue: _numUsersList[0],
                                                 tooltip: 'Select num',
                                                 itemBuilder: (ctx) =>
                                                     _numUsersList
@@ -934,6 +956,7 @@ class _AddRequestState extends State<AddRequest> {
                                                     _isNumOfUsersSelected =
                                                     true;
                                                   });
+
                                                 },
                                                 icon: Icon(
                                                   Icons
@@ -1128,6 +1151,7 @@ class _AddRequestState extends State<AddRequest> {
                                                     _isGenderSelected =
                                                     true;
                                                   });
+
                                                 },
                                                 icon: Icon(
                                                   Icons
@@ -1234,6 +1258,7 @@ class _AddRequestState extends State<AddRequest> {
                                                             ))
                                                         .toList(),
                                                     onSelected: (val) {
+
                                                       if (val == 'تحاليل' ||
                                                           val == 'Analysis') {
                                                         setState(() {
@@ -1371,6 +1396,7 @@ class _AddRequestState extends State<AddRequest> {
                                                         ))
                                                         .toList(),
                                                     onSelected: (val) {
+
                                                       _home
                                                           .resetPrice();
                                                       _home.addToPrice(
@@ -1476,6 +1502,7 @@ class _AddRequestState extends State<AddRequest> {
                                                       ))
                                                       .toList(),
                                               onSelected: (val) {
+
                                                 setState(() {
                                                   _paramedicsData[
                                                   'nurse type'] =
@@ -2480,6 +2507,7 @@ class _AddRequestState extends State<AddRequest> {
                               EdgeInsets.symmetric(vertical: 7.0),
                               child: TextFormField(
                                 autofocus: false,
+                                focusNode: notesFocusNode,
                                 textInputAction: TextInputAction.newline,
                                 decoration: InputDecoration(
                                   labelText:
