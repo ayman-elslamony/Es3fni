@@ -111,9 +111,13 @@ class Auth with ChangeNotifier {
   Future<bool> editProfile(
       {String type,
       String address,
+        String lat,String lng,
       String phone,
       File picture,
       String aboutYou}) async {
+    print('iam here');
+    print(lat);
+    print(lng);
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
 
@@ -151,10 +155,14 @@ class Auth with ChangeNotifier {
         if (_userType == 'nurse') {
           nurseData.document(_userId).setData({
             'address': address,
+            'lat':lat??'',
+            'lng':lng??''
           }, merge: true);
         } else {
           patientData.document(_userId).setData({
             'address': address,
+            'lat':lat??'',
+            'lng':lng??''
           }, merge: true);
         }
       }
@@ -179,6 +187,8 @@ class Auth with ChangeNotifier {
         phoneNumber: doc.data['phoneNumber'] ?? '',
         imgUrl: doc.data['imgUrl'] ?? '',
         email: doc.data['email'] ?? '',
+        lat: doc.data['lat'] ?? '',
+        lng: doc.data['lng'] ?? '',
         aboutYou: doc.data['aboutYou'] ?? '',
         points: doc.data['points'] ?? '',
       );
