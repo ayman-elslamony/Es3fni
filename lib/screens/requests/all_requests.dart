@@ -101,8 +101,10 @@ class _AllRequestsState extends State<AllRequests> {
                                     )
                                     : SizedBox(),
                                 request.patientId !=''?IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                  print(request.patientId);
                                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                                    type: 'Patient',
+                                    type: translator.currentLanguage == "en"
+                                        ?'Patient':'مريض',
                                     userId: request.patientId,
                                   ) ));
                                 }):SizedBox()

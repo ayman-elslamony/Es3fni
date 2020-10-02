@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoder/model.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -76,205 +77,224 @@ TextEditingController _realAddressController =TextEditingController();
   @override
   Widget build(BuildContext context) {
     createMarker(context);
-    return Scaffold(
-      resizeToAvoidBottomPadding: true,
-      body: Stack(
-        children: <Widget>[
-          GoogleMap(
-            myLocationEnabled: true,
-            compassEnabled: true,
-            markers: markers,
-            myLocationButtonEnabled: true,
-            onTap: (pos) async{
-              print(pos);
-              Marker m =
-              Marker(markerId: MarkerId('1'), icon: customIcon, position: pos);
-              setState(() {
-                markers.add(m);
-              });final coordinates =
-              new Coordinates(pos.latitude, pos.longitude);
-              var addresses =
-                  await Geocoder.local.findAddressesFromCoordinates(coordinates);
-              setState(() {
-                _realAddressController.text =addresses.first.addressLine;
-              });
-              showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(25.0))),
-                contentPadding: EdgeInsets.only(top: 10.0),
-                title: Text(
-                  translator.currentLanguage == "en" ?'Are you sure':'هل انت متأكد',
-                  textAlign: TextAlign.center,
-                ),
-                content: Container(
-                  height: 80,
-                  child: Center(
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(height: 60 ,width: MediaQuery.of(context).size.width/0.85,child: TextFormField(
-                            //style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold),
-                            controller: _realAddressController,
-                            decoration: InputDecoration(
-                            labelText: translator.currentLanguage == "en" ?'this is Your location':'ان هذا موقعك',
-                                labelStyle: TextStyle(color: Colors.indigo),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                                  borderSide: BorderSide(
-                                    color: Colors.indigo,
-                                  ),
-                                ),
-                                disabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                                  borderSide: BorderSide(
-                                    color: Colors.indigo,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                                  borderSide: BorderSide(color: Colors.indigo),
-                                ),
-                            ),
-                            keyboardType: TextInputType.text,
-                          ),)
-                        )
-                    //,Text('this is Your location',style: TextStyle(fontSize: 18,color: Colors.indigo),),
-                      ],
-                    ),
+    return InfoWidget(
+      builder: (context,infoWidget)=>
+      Scaffold(
+        resizeToAvoidBottomPadding: true,
+        appBar: AppBar(
+          shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40))),
+          leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: infoWidget.orientation == Orientation.portrait
+                    ? infoWidget.screenWidth * 0.05
+                    : infoWidget.screenWidth * 0.035,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+        ),
+        body: Stack(
+          children: <Widget>[
+            GoogleMap(
+              myLocationEnabled: true,
+              compassEnabled: true,
+              markers: markers,
+              myLocationButtonEnabled: true,
+              onTap: (pos) async{
+                print(pos);
+                Marker m =
+                Marker(markerId: MarkerId('1'), icon: customIcon, position: pos);
+                setState(() {
+                  markers.add(m);
+                });final coordinates =
+                new Coordinates(pos.latitude, pos.longitude);
+                var addresses =
+                    await Geocoder.local.findAddressesFromCoordinates(coordinates);
+                setState(() {
+                  _realAddressController.text =addresses.first.addressLine;
+                });
+                showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25.0))),
+                  contentPadding: EdgeInsets.only(top: 10.0),
+                  title: Text(
+                    translator.currentLanguage == "en" ?'Are you sure':'هل انت متأكد',
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                    },
-                  ),
-                  FlatButton(
-                    child: Text(translator.currentLanguage == "en" ?'ok':'موافق'),
-                    onPressed: () {
-                      print(_realAddressController.text);
-                       setState(() {
-                         widget.getAddress(_realAddressController.text,pos.latitude,pos.longitude);
-                       });
-                      Navigator.of(ctx).pop();
-                      Navigator.of(ctx).pop();
-                    },
-                  )
-                ],
-              ));
-            },
-            onMapCreated: (controller) {
-              setState(() {
-                _mapController = controller;
-              });
-            },
-            initialCameraPosition:
-            CameraPosition(target: LatLng(36.98, -121.99), zoom: 18),
-          ),
-          Positioned(
-              top: 50,
-              left: 0.0,
-              right: 15,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: <Widget>[
-                    IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.indigo,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        }),
-                    Expanded(
-                      child: TextFormField(
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                        textInputAction: TextInputAction.done,
-                        controller: _textEditingController,
-                        decoration: InputDecoration(
-                            fillColor: Colors.white,
-                            filled: true,
-                            labelStyle: TextStyle(color: Colors.black),
-                            labelText: translator.currentLanguage == "en" ?'Search for Location':'ابحث عن موقع',
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                              borderSide: BorderSide(
-                                color: Colors.indigo,
+                  content: Container(
+                    height: 80,
+                    child: Center(
+                      child: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(height: 60 ,width: MediaQuery.of(context).size.width/0.85,child: TextFormField(
+                              //style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold),
+                              controller: _realAddressController,
+                              decoration: InputDecoration(
+                              labelText: translator.currentLanguage == "en" ?'this is Your location':'ان هذا موقعك',
+                                  labelStyle: TextStyle(color: Colors.indigo),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                    borderSide: BorderSide(
+                                      color: Colors.indigo,
+                                    ),
+                                  ),
+                                  disabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                    borderSide: BorderSide(
+                                      color: Colors.indigo,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                    borderSide: BorderSide(color: Colors.indigo),
+                                  ),
                               ),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                              borderSide: BorderSide(
-                                color: Colors.indigo,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                              borderSide: BorderSide(color: Colors.indigo),
-                            ),
-                            prefixIcon: IconButton(
-                                onPressed: searchChangedNavigate,
-                                icon: Icon(
-                                  Icons.search,
-                                  color: Colors.indigo,
-                                  size: 30,
-                                )),
-                            suffixIcon: _textEditingController.text == null
-                                ? null
-                                : IconButton(
-                                icon: Icon(
-                                  Icons.clear,
-                                  color: Colors.indigo,
-                                  size: 30,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _placePredictions.clear();
-
-                                    _textEditingController.clear();
-                                  });
-                                })),
-                        keyboardType: TextInputType.text,
-                        onChanged: (val) {
-                          setState(() {
-                            _autocompletePlace(val);
-                          });
-                        },
+                              keyboardType: TextInputType.text,
+                            ),)
+                          )
+                      //,Text('this is Your location',style: TextStyle(fontSize: 18,color: Colors.indigo),),
+                        ],
                       ),
                     ),
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                    FlatButton(
+                      child: Text(translator.currentLanguage == "en" ?'ok':'موافق'),
+                      onPressed: () {
+                        print(_realAddressController.text);
+                         setState(() {
+                           widget.getAddress(_realAddressController.text,pos.latitude,pos.longitude);
+                         });
+                        Navigator.of(ctx).pop();
+                        Navigator.of(ctx).pop();
+                      },
+                    )
                   ],
-                ),
-              )),
-          Positioned(
-            top: 120,
-            left: 15,
-            right: 15,
-            child:  _placePredictions.length == 0?SizedBox(height: 1.0,):Material(
-                shadowColor: Colors.indigoAccent,
-                elevation: 8.0,
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                type: MaterialType.card,
-            child:
-            Container(
-                height: 180,
-                child: ListView.builder(itemBuilder: (ctx,index)=>InkWell(
-                    onTap: (){
-                      setState(() {
-                        _textEditingController.text = _placePredictions[index]['description'];
-                        searchChangedNavigate();
-                        _placePredictions.clear();
-                      });
-                    },
-                    child: ListTile(title: Text('${_placePredictions[index]['description']}'),)),itemCount: _placePredictions.length,))
+                ));
+              },
+              onMapCreated: (controller) {
+                setState(() {
+                  _mapController = controller;
+                });
+              },
+              initialCameraPosition:
+              CameraPosition(target: LatLng(30.033333, 31.233334), zoom: 18),
+            ),
+            Positioned(
+                top: 50,
+                left: 0.0,
+                right: 15,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: <Widget>[
+                      IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.indigo,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          }),
+                      Expanded(
+                        child: TextFormField(
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          textInputAction: TextInputAction.done,
+                          controller: _textEditingController,
+                          decoration: InputDecoration(
+                              fillColor: Colors.white,
+                              filled: true,
+                              labelStyle: TextStyle(color: Colors.black),
+                              labelText: translator.currentLanguage == "en" ?'Search for Location':'ابحث عن موقع',
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              disabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                                borderSide: BorderSide(color: Colors.indigo),
+                              ),
+                              prefixIcon: IconButton(
+                                  onPressed: searchChangedNavigate,
+                                  icon: Icon(
+                                    Icons.search,
+                                    color: Colors.indigo,
+                                    size: 30,
+                                  )),
+                              suffixIcon: _textEditingController.text == null
+                                  ? null
+                                  : IconButton(
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: Colors.indigo,
+                                    size: 30,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _placePredictions.clear();
+
+                                      _textEditingController.clear();
+                                    });
+                                  })),
+                          keyboardType: TextInputType.text,
+                          onChanged: (val) {
+                            setState(() {
+                              _autocompletePlace(val);
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            Positioned(
+              top: 120,
+              left: 15,
+              right: 15,
+              child:  _placePredictions.length == 0?SizedBox(height: 1.0,):Material(
+                  shadowColor: Colors.indigoAccent,
+                  elevation: 8.0,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  type: MaterialType.card,
+              child:
+              Container(
+                  height: 180,
+                  child: ListView.builder(itemBuilder: (ctx,index)=>InkWell(
+                      onTap: (){
+                        setState(() {
+                          _textEditingController.text = _placePredictions[index]['description'];
+                          searchChangedNavigate();
+                          _placePredictions.clear();
+                        });
+                      },
+                      child: ListTile(title: Text('${_placePredictions[index]['description']}'),)),itemCount: _placePredictions.length,))
+              )
             )
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

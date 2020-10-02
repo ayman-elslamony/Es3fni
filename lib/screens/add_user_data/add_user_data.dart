@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
+import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,11 @@ class AddUserData extends StatefulWidget {
 class _AddUserDataState extends State<AddUserData> {
   GlobalKey<FormState> _newAccountKey = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> _key = GlobalKey();
+  FocusNode focusNode = FocusNode();
+  FocusNode locationFocusNode = FocusNode();
+  FocusNode anotherInfoFocusNode = FocusNode();
+  FocusNode nameFocusNode = FocusNode();
+  FocusNode idFocusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController nationalIdController = TextEditingController();
@@ -37,6 +43,8 @@ class _AddUserDataState extends State<AddUserData> {
   List<bool> values = List.filled(7, false);
   TextEditingController _locationTextEditingController =
   TextEditingController();
+  String lat;
+  String lng;
   File _imageFile;
   List<String> _genderList = [];
   Map<String, dynamic> _userData = {
@@ -179,11 +187,11 @@ class _AddUserDataState extends State<AddUserData> {
     Position position =
     await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     final coordinates = new Coordinates(position.latitude, position.longitude);
-
+    lat = position.latitude
+    .toString();
+    lng=  position.longitude.toString();
     var addresses =
     await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    _userData['lat'] = position.latitude.toString();
-    _userData['long'] = position.longitude.toString();
     return addresses.first.addressLine;
   }
 
@@ -202,8 +210,9 @@ class _AddUserDataState extends State<AddUserData> {
       _locationTextEditingController.text = address;
     });
     _userData['Location'] = address;
-    _userData['lat'] = lat.toString();
-    _userData['long'] = long.toString();
+    this.lat = lat
+        .toString();
+    this.lng=  long.toString();
   }
 
   void selectUserLocationType() async {
@@ -216,6 +225,13 @@ class _AddUserDataState extends State<AddUserData> {
         title: Text(
           translator.currentLanguage == "en" ? 'Location' : 'الموقع',
           textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize:
+              MediaQuery.of(context).orientation == Orientation.portrait
+                  ? MediaQuery.of(context).size.width * 0.038
+                  : MediaQuery.of(context).size.width * 0.024,
+              color: Colors.indigo,
+              fontWeight: FontWeight.bold),
         ),
         content: Padding(
           padding: const EdgeInsets.only(top: 10),
@@ -224,53 +240,58 @@ class _AddUserDataState extends State<AddUserData> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                InkWell(
-                  onTap: _getUserLocation,
-                  child: Material(
-                      color: Colors.indigo,
+                RaisedButton(
+                    onPressed: _getUserLocation,
+                    color: Colors.indigo,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
-                      type: MaterialType.card,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          translator.currentLanguage == "en"
-                              ? 'Get current Location'
-                              : 'الموقع الحالى',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                      )),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (ctx) => GetUserLocation(
-                          getAddress: selectLocationFromTheMap,
-                        )));
-                    setState(() {
-                      _isEditLocationEnable = true;
-                      _selectUserLocationFromMap = !_selectUserLocationFromMap;
-                    });
-                  },
-                  child: Material(
-                      color: Colors.indigo,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        translator.currentLanguage == "en"
+                            ? 'Get current Location'
+                            : 'الموقع الحالى',
+                        style: TextStyle(
+                            fontSize: MediaQuery.of(context).orientation ==
+                                Orientation.portrait
+                                ? MediaQuery.of(context).size.width * 0.035
+                                : MediaQuery.of(context).size.width * 0.024,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
+                RaisedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (ctx) => GetUserLocation(
+                            getAddress: selectLocationFromTheMap,
+                          )));
+                      setState(() {
+                        _isEditLocationEnable = true;
+                        _selectUserLocationFromMap =
+                        !_selectUserLocationFromMap;
+                      });
+                    },
+                    color: Colors.indigo,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
-                      type: MaterialType.card,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          translator.currentLanguage == "en"
-                              ? 'Select Location from Map'
-                              : 'اختر موقع من الخريطه',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                      )),
-                ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        translator.currentLanguage == "en"
+                            ? 'Select Location from Map'
+                            : 'اختر موقع من الخريطه',
+                        style: TextStyle(
+                            fontSize: MediaQuery.of(context).orientation ==
+                                Orientation.portrait
+                                ? MediaQuery.of(context).size.width * 0.035
+                                : MediaQuery.of(context).size.width * 0.024,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
               ],
             ),
           ),
@@ -408,6 +429,8 @@ class _AddUserDataState extends State<AddUserData> {
         bool isScuess =await Provider.of<Auth>(context, listen: false)
             .updateUserData(
           name: _userData['name'],
+          lat: lat,
+          lng: lng,
           nationalId: _userData['National Id'],
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
@@ -481,7 +504,7 @@ class _AddUserDataState extends State<AddUserData> {
 
   @override
   Widget build(BuildContext context) {
-//    SystemChannels.textInput.invokeMethod('TextInput.hide');
+
     return InfoWidget(
       builder: (context, infoWidget) => Directionality(
         textDirection: translator.currentLanguage == "en"
@@ -498,12 +521,18 @@ class _AddUserDataState extends State<AddUserData> {
                   : 'أدخل معلوماتك',
               style: infoWidget.titleButton,
             ),
+            leading: SizedBox(),
             actions: <Widget>[
               InkWell(
                 onTap: () async {
         await Provider.of<Auth>(context, listen: false)
             .logout();
-        Navigator.of(context).pop(true);
+        if(Navigator.canPop(context)){
+          Navigator.of(context).pop(true);
+        }else {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) =>SignIn()));
+        }
         },
                 child: Row(
                   children: <Widget>[
@@ -524,6 +553,25 @@ class _AddUserDataState extends State<AddUserData> {
                     ),
                   )
                       : Stepper(
+                    controlsBuilder: (BuildContext context, {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
+                      return Row(
+                        children: <Widget>[
+                          FlatButton(
+                            color: Colors.indigo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            onPressed: onStepContinue,
+                            child: Text(translator.currentLanguage=='en'?'Continue':'التالى',style: infoWidget.subTitle.copyWith(color: Colors.white)),
+                          ),
+                          SizedBox(width: 8,)
+                          ,FlatButton(
+                            color: Colors.indigo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            onPressed: onStepCancel,
+                            child:  Text(translator.currentLanguage=='en'?'Cancel':'الغاء',style: infoWidget.subTitle.copyWith(color: Colors.white),),
+                          ),
+                        ],
+                      );
+                    },
                     steps: [
                       Step(
                         title: Text(translator.currentLanguage == "en"
@@ -539,6 +587,8 @@ class _AddUserDataState extends State<AddUserData> {
                               _createTextForm(
                                   labelText: 'name',
                                   controller: nameController,
+                                  currentFocusNode: nameFocusNode,
+                                  nextFocusNode: idFocusNode,
                                   // ignore: missing_return
                                   validator: (String val) {
                                     if (val.trim().isEmpty || val.trim().length < 2) {
@@ -558,6 +608,7 @@ class _AddUserDataState extends State<AddUserData> {
                                 height: 80,
                                 child: TextFormField(
                                   autofocus: false,
+                                  focusNode: idFocusNode,
                                   controller: nationalIdController,
                                   textInputAction: TextInputAction.next,
                                   decoration: InputDecoration(
@@ -615,7 +666,8 @@ class _AddUserDataState extends State<AddUserData> {
 //                    _phoneNumberNode.unfocus();
                                   },
                                   onFieldSubmitted: (_) {
-//                    _phoneNumberNode.unfocus();
+                    idFocusNode.unfocus();
+                    FocusScope.of(context).requestFocus(locationFocusNode);
                                   },
                                 ),
                               ):SizedBox(),
@@ -625,6 +677,7 @@ class _AddUserDataState extends State<AddUserData> {
                                 height: 80,
                                 child: TextFormField(
                                   autofocus: false,
+                                  focusNode: locationFocusNode,
                                   style: TextStyle(fontSize: 15),
                                   controller: _locationTextEditingController,
                                   textInputAction: TextInputAction.done,
@@ -670,14 +723,22 @@ class _AddUserDataState extends State<AddUserData> {
                                 onChanged: (val){
                                     _userData['Location']=val.trim;
                                 },
+                                  onFieldSubmitted: (_) {
+                                    locationFocusNode.unfocus();
+                                    FocusScope.of(context).requestFocus(focusNode);
+                                  },
                                 ),
                               ),
                               InternationalPhoneNumberInput(
                                 onInputChanged: (PhoneNumber number) {
                                   _userData['Phone number']=number.toString();
                                 },
+                                onSubmit: (){
+                                  focusNode.unfocus();
+                                },
                                 ignoreBlank: true,
                                 autoValidate: false,
+                                focusNode: focusNode,
                                 isEnabled: _auth.phoneNumber !=null?false:true,
                                 selectorTextStyle: TextStyle(color: Colors.black),
                                 initialValue: number,
@@ -727,6 +788,7 @@ class _AddUserDataState extends State<AddUserData> {
                             vertical: 7.0),
         child: TextFormField(
           autofocus: false,
+          focusNode: anotherInfoFocusNode,
           textInputAction:
           TextInputAction.newline,
           decoration: InputDecoration(

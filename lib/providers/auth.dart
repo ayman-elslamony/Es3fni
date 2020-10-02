@@ -202,6 +202,7 @@ class Auth with ChangeNotifier {
   Future<String> signInUsingFBorG({String type, BuildContext context}) async {
     final prefs = await SharedPreferences.getInstance();
     String returns='true';
+    _userType = 'patient';
     try {
       switch (type) {
         case "FB":
@@ -271,6 +272,8 @@ class Auth with ChangeNotifier {
                   gender: doc.data['gender'] ?? '',
                   birthDate: doc.data['birthDate'] ?? '',
                   address: doc.data['address'] ?? '',
+                  lat: doc.data['lat'] ?? '',
+                  lng: doc.data['lng'] ?? '',
                   phoneNumber: doc.data['phoneNumber'] ?? '',
                   imgUrl: doc.data['imgUrl'] ?? '',
                   email: doc.data['email'] ?? '',
@@ -367,6 +370,8 @@ class Auth with ChangeNotifier {
                     gender: doc.data['gender'] ?? '',
                     birthDate: doc.data['birthDate'] ?? '',
                     address: doc.data['address'] ?? '',
+                    lat: doc.data['lat'] ?? '',
+                    lng: doc.data['lng'] ?? '',
                     phoneNumber: doc.data['phoneNumber'] ?? '',
                     imgUrl: doc.data['imgUrl'] ?? '',
                     email: doc.data['email'] ?? '',
@@ -433,6 +438,8 @@ class Auth with ChangeNotifier {
                         gender: doc.data['gender'] ?? '',
                         birthDate: doc.data['birthDate'] ?? '',
                         address: doc.data['address'] ?? '',
+                        lat: doc.data['lat'] ?? '',
+                        lng: doc.data['lng'] ?? '',
                         phoneNumber: doc.data['phoneNumber'] ?? '',
                         imgUrl: doc.data['imgUrl'] ?? '',
                         email: doc.data['email'] ?? '',
@@ -505,6 +512,8 @@ class Auth with ChangeNotifier {
                 gender: doc.data['gender'] ?? '',
                 birthDate: doc.data['birthDate'] ?? '',
                 address: doc.data['address'] ?? '',
+                lat: doc.data['lat'] ?? '',
+                lng: doc.data['lng'] ?? '',
                 phoneNumber: doc.data['phoneNumber'] ?? '',
                 imgUrl: doc.data['imgUrl'] ?? '',
                 email: email,
@@ -525,6 +534,8 @@ class Auth with ChangeNotifier {
               phoneNumber: doc.data['phoneNumber'] ?? '',
               imgUrl: doc.data['imgUrl'] ?? '',
               email: doc.data['email'] ?? '',
+              lat: doc.data['lat'] ?? '',
+              lng: doc.data['lng'] ?? '',
               aboutYou: doc.data['aboutYou'] ?? '');
           isRegisterData = true;
         }
@@ -552,9 +563,23 @@ class Auth with ChangeNotifier {
     }
   }
 
+  setIsActive() async {
+    var nurseData = databaseReference.collection("nurses");
+    await nurseData.document(_userId).setData({
+      "isActive": true,
+    },merge: true);
+  }
+  setUnActive() async {
+    var nurseData = databaseReference.collection("nurses");
+    await nurseData.document(_userId).setData({
+      "isActive": false,
+    },merge: true);
+  }
   Future<bool> updateUserData({
     String name = '',
     String location = '',
+    String lat,
+    String lng,
     String phoneNumber = '',
     String aboutYou = '',
     String birthDate = '',
@@ -587,6 +612,8 @@ class Auth with ChangeNotifier {
       nurseData.document(_userId).setData({
         'name': name,
         'address': location,
+        'lat':lat??'',
+        'lng':lng??'',
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
         'gender': gender,
@@ -608,6 +635,8 @@ class Auth with ChangeNotifier {
       patientData.document(_userId).setData({
         'name': name,
         'address': location,
+        'lat':lat??'',
+        'lng':lng??'',
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
         'nationalId': nationalId,
@@ -639,6 +668,8 @@ class Auth with ChangeNotifier {
         gender: doc.data['gender'] ?? '',
         birthDate: doc.data['birthDate'] ?? '',
         address: doc.data['address'] ?? '',
+        lng: doc.data['lng'] ?? '',
+        lat: doc.data['lat'] ?? '',
         phoneNumber: doc.data['phoneNumber'] ?? '',
         imgUrl: doc.data['imgUrl'] ?? '',
         email: doc.data['email'] ?? '',

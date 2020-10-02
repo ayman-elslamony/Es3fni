@@ -5,6 +5,8 @@ class UserData {
   String email;
   String password;
   String address;
+  String lat;
+  String lng;
   String phoneNumber;
   String nationalId;
   String birthDate;
@@ -15,6 +17,7 @@ bool loading;
   UserData(
       {this.docId,
       this.address,
+        this.lat,this.lng,
       this.nationalId,
       this.email,
       this.password,

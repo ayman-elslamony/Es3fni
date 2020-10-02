@@ -24,7 +24,8 @@ class _PatientRequestsState extends State<PatientRequests> {
   Home _home;
   Auth _auth;
   bool loadingBody = true;
-
+  bool _showFloating = true;
+  ScrollController _scrollController;
   Widget content({Requests request, DeviceInfo infoWidget}) {
     String visitDays = '';
     String visitTime = '';
@@ -103,7 +104,8 @@ class _PatientRequestsState extends State<PatientRequests> {
                                     : SizedBox(),
                                 request.patientId !='' &&request.patientId!=_auth.userId?IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
                                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                                    type: 'Patient',
+                                    type: translator.currentLanguage == "en"
+                                        ?'Patient':'مريض',
                                     userId: request.patientId,
                                   ) ));
                                 }):SizedBox(),
@@ -386,30 +388,41 @@ class _PatientRequestsState extends State<PatientRequests> {
                             style: infoWidget.titleButton
                                 .copyWith(color: Colors.red),
                           )
-                              : Row(
+                              : InkWell(
+                            onTap: (){
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
+                                type: translator.currentLanguage == "en"
+                                    ?'Nurse':'ممرض',
+                                userId: request.nurseId,
+                              ) ));
+                            },
+                                child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(
                             translator.currentLanguage == 'en'
-                                      ? 'Status: Accepted'
-                                      : 'الحاله: تم القبول',
+                                        ? 'Status: Accepted'
+                                        : 'الحاله: تم القبول',
                             style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
+                                        .copyWith(color: Colors.indigo),
                           ),
-                                  ),
-                                  request.nurseId !=''?IconButton(padding: EdgeInsets.all(0.0),icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                                      type: 'Nurse',
-                                      userId: request.nurseId,
-                                    ) ));
-                                  }):SizedBox()
-                                ],
+                                    ),
+                                   Icon(Icons.more_horiz,color: Colors.indigo,)
+
+                                  ],
+                                ),
                               ),
+                          request.acceptTime==''?SizedBox():Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Time of acceptance: ${request.acceptTime}'
+                                : ' وقت القبول: ${request.acceptTime}',
+                            style: infoWidget.subTitle
+                                .copyWith(color: Colors.indigo),
+                          )
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -475,7 +488,10 @@ class _PatientRequestsState extends State<PatientRequests> {
       ],
     );
   }
-
+  bool get _isAppBarExpanded {
+    return _scrollController.hasClients &&
+        _scrollController.offset < (MediaQuery.of(context).size.height*0.3 - kToolbarHeight);
+  }
   getAllPatientRequests() async {
     print('dvdxvx');
     if (_home.allPatientsRequests.length == 0) {
@@ -491,6 +507,16 @@ class _PatientRequestsState extends State<PatientRequests> {
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
     _auth = Provider.of<Auth>(context, listen: false);
+    _scrollController = ScrollController()
+      ..addListener(() {
+        _isAppBarExpanded
+            ? setState(() {
+          _showFloating = true;
+        })
+            : setState(() {
+          _showFloating = false;
+        });
+      });
     getAllPatientRequests();
     super.initState();
   }
@@ -541,6 +567,7 @@ class _PatientRequestsState extends State<PatientRequests> {
                   );
                 } else {
                   return ListView.builder(
+                    controller: _scrollController,
                       itemCount: data.allPatientsRequests.length,
                       itemBuilder: (context, index) => content(
                           infoWidget: infoWidget,
@@ -549,7 +576,7 @@ class _PatientRequestsState extends State<PatientRequests> {
               },
             ),
           ),
-          floatingActionButton: _auth.getUserType!='nurse'?FloatingActionButton(
+          floatingActionButton: _showFloating?FloatingActionButton(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => AddRequest()));

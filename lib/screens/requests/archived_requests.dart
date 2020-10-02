@@ -101,7 +101,8 @@ class _ArchivedRequestsState extends State<ArchivedRequests> {
                                     : SizedBox(),
                                 request.patientId !='' &&request.patientId!=_auth.userId?IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
                                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                                    type: 'Patient',
+                                    type: translator.currentLanguage == "en"
+                                        ?'Patient':'مريض',
                                     userId: request.patientId,
                                   ) ));
                                 }):SizedBox()
@@ -378,7 +379,8 @@ class _ArchivedRequestsState extends State<ArchivedRequests> {
                           ),
                           IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
                             Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                              type: 'Nurse',
+                              type: translator.currentLanguage == "en"
+                                  ?'Nurse':'ممرض',
                               userId: request.nurseId,
                             ) ));
                           })

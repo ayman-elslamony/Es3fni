@@ -20,6 +20,8 @@ class _EditProfileState extends State<EditProfile> {
   Auth _auth;
   File _imageFile;
   String address;
+  String lat;
+  String lng;
   String socialStatus;
   String phone;
   bool _isEditLocationEnable = false;
@@ -61,11 +63,13 @@ class _EditProfileState extends State<EditProfile> {
     _imageFile = file;
   }
 
-  getAddress(String add) {
+  getAddress(String add,String lat,String lng) {
     address = add;
+    this.lat =lat;
+    this.lng =lng;
   }
 
-  editProfile(String type, BuildContext context) {
+  editProfile(String type, BuildContext context,DeviceInfo deviceInfo) {
     if (type == 'image' || type == 'صوره') {
       showDialog(
           context: context,
@@ -243,6 +247,8 @@ class _EditProfileState extends State<EditProfile> {
                           print(address);
                           bool x = await _auth.editProfile(
                             type: 'Address',
+                            lat: lat,
+                            lng: lng,
                             address: address,
                           );
                           if (x) {
@@ -432,7 +438,7 @@ class _EditProfileState extends State<EditProfile> {
                 color: Colors.indigo,
               ),
               onPressed: () {
-                editProfile(title, context);
+                editProfile(title, context,infoWidget);
               })
           : null,
       subtitle: Text(
@@ -486,17 +492,17 @@ class _EditProfileState extends State<EditProfile> {
                         .toList(),
                     onSelected: (val) {
                       if (val == 'Add Image' || val == 'اضافه صوره') {
-                        editProfile('image', context);
+                        editProfile('image', context,infoWidget);
                       }
                       if (val == 'Add Phone' || val == 'اضافه هاتف') {
-                        editProfile('Phone Number', context);
+                        editProfile('Phone Number', context,infoWidget);
                       }
                       if (val == 'Add Address' || val == 'اضافه عنوان') {
-                        editProfile('Address', context);
+                        editProfile('Address', context,infoWidget);
                       }
                       if (val == 'Add Another Info' ||
                           val == 'اضافه معلومات اخرى') {
-                        editProfile('Another Info', context);
+                        editProfile('Another Info', context,infoWidget);
                       }
                     },
                     icon: Icon(
@@ -551,7 +557,7 @@ class _EditProfileState extends State<EditProfile> {
                                       left: 0.0,
                                       child: InkWell(
                                         onTap: () {
-                                          editProfile('image', context);
+                                          editProfile('image', context,infoWidget);
                                         },
                                         child: Container(
                                           decoration: BoxDecoration(

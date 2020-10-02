@@ -23,8 +23,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  TextEditingController _textEditingController = TextEditingController();
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   int _page = 0;
   GlobalKey _bottomNavigationKey = GlobalKey();
   final GlobalKey<ScaffoldState> mainKey = GlobalKey<ScaffoldState>();
@@ -46,14 +45,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ? ['Accepted requests', 'All Request', 'Profile']
           : ['الطلبات المقبوله', 'كل الطلبات', 'الملف الشخصي'];
     }
+    if(_auth.getUserType== 'nurse') {
+      WidgetsBinding.instance.addObserver(this);
+    }
   }
 
   @override
   void dispose() {
+    if(_auth.getUserType== 'nurse') {
+      WidgetsBinding.instance.removeObserver(this);
+    }
     _pageController.dispose();
     super.dispose();
   }
-
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(_auth.getUserType == 'nurse'){
+    if (state == AppLifecycleState.resumed)
+      _auth.setIsActive();
+    else
+      _auth.setUnActive();
+    }
+  }
   Widget _iconNavBar({IconData iconPath, String title, DeviceInfo infoWidget}) {
     return title == null
         ? Icon(
@@ -180,7 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Drawer(
                 child: ListView(
                   children: <Widget>[
-                    UserAccountsDrawerHeader(
+                Consumer<Auth>(
+                builder: (context,data,_)=>UserAccountsDrawerHeader(
                       onDetailsPressed: () {
                         Navigator.of(context).pop();
                         setState(() {
@@ -192,27 +206,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         });
                         _pageController.jumpToPage(_page);
                       },
-                      accountName: Text("${_auth.userData.name.toUpperCase()}"),
-                      accountEmail: InkWell(
-                        onTap: () {},
-                        child: Consumer<Auth>(
-                          builder: (context,data,_)=>
-                          Text(translator.currentLanguage == "en"
-                              ? 'Points: ${data.userData.points}'
-                              : ' النقاط: ${data.userData.points}'),
-                        ),
-                      ),
-                      currentAccountPicture: CircleAvatar(
-                        backgroundColor:
-                            Theme.of(context).platform == TargetPlatform.iOS
-                                ? Colors.indigo
-                                : Colors.white,
-                        child: Text(
-                          "${_auth.userData.name.substring(0, 1).toUpperCase().toUpperCase()}",
-                          style: TextStyle(fontSize: 40.0),
-                        ),
-                      ),
-                    ),
+                      accountName: Text("${data.userData.name.toUpperCase()}"),
+                      accountEmail: Text(translator.currentLanguage == "en"
+                          ? 'Points: ${data.userData.points}'
+                          : ' النقاط: ${data.userData.points}'),
+                      currentAccountPicture: ClipRRect(
+                          borderRadius:
+                          BorderRadius.all(Radius.circular(15)),
+                          child: FadeInImage.assetNetwork(
+                              fit: BoxFit.fill,
+                              placeholder: 'assets/user.png',
+                              image: data.userData.imgUrl)),
+                    )),
                     _auth.getUserType != 'nurse'
                         ? _drawerListTile(
                             name: translator.currentLanguage == "en"
@@ -260,21 +265,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         : SizedBox(),
                     _drawerListTile(
                         name: translator.currentLanguage == "en"
-                            ? "Profile"
+                            ? "User Profile"
                             : 'الملف الشخصي',
+                        infoWidget: infoWidget,
                         isIcon: true,
                         icon: Icons.person,
-                        infoWidget: infoWidget,
                         onTap: () {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            if (_auth.getUserType == 'nurse') {
-                              _page = 2;
-                            } else {
-                              _page = 1;
-                            }
-                          });
-                          _pageController.jumpToPage(_page);
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EditProfile()));
                         }),
                     _auth.getUserType == 'nurse'
                         ? _drawerListTile(
@@ -310,20 +308,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => NurseSupplies()));
                         }),
+
                     _drawerListTile(
-                        name: translator.currentLanguage == "en"
-                            ? "Edit Profile"
-                            : 'تعديل الحساب',
-                        infoWidget: infoWidget,
-                        isIcon: true,
-                        icon: Icons.person,
-                        onTap: () {
-                          print('njb');
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EditProfile()));
-                        }),
-                    _drawerListTile(
-                        name: translator.currentLanguage == "en"
+                        name: translator.currentLanguage == "ar"
                             ? "English"
                             : "العربية",
                         isIcon: true,

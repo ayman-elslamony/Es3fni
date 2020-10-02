@@ -32,6 +32,7 @@ dependencies:
   provider:
   age: ^0.0.1
   loading_indicator: ^1.2.0
+  flutter_picker: ^1.1.5
   intl_phone_number_input:
   toast: ^0.1.5
   flutter_verification_code: ^0.2.1

@@ -227,11 +227,14 @@ class Home with ChangeNotifier {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
     UserData user;
-    if(type == 'Patient'){
+    if(type == 'Patient' || type == 'مريض'){
      DocumentSnapshot doc =await patientCollection.document(userId).get();
-            user = UserData(
-              name: doc.data['name'],
-              docId: doc.documentID,
+     if(doc.data !=null ){
+     user = UserData(
+              name: doc.data['name']??'',
+              docId: doc.documentID??'',
+              lat: doc.data['lat'] ?? '',
+              lng: doc.data['lng'] ?? '',
               nationalId: doc.data['nationalId'] ?? '',
               gender: doc.data['gender'] ?? '',
               birthDate: doc.data['birthDate'] ?? '',
@@ -242,11 +245,14 @@ class Home with ChangeNotifier {
               aboutYou: doc.data['aboutYou'] ?? '',
               points: doc.data['points'] ?? '',
             );
+     }
     }else{
       DocumentSnapshot doc =await nursesCollection.document(userId).get();
       user = UserData(
-        name: doc.data['name'],
-        docId: doc.documentID,
+        name: doc.data['name']??'',
+        docId: doc.documentID??'',
+        lat: doc.data['lat'] ?? '',
+        lng: doc.data['lng'] ?? '',
         nationalId: doc.data['nationalId'] ?? '',
         gender: doc.data['gender'] ?? '',
         birthDate: doc.data['birthDate'] ?? '',
@@ -272,7 +278,7 @@ class Home with ChangeNotifier {
       print('B');
       for (int i = 0; i < docs.documents.length; i++) {
         allAcceptedRequests.add(Requests(
-
+            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
             nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
@@ -324,6 +330,7 @@ class Home with ChangeNotifier {
         allPatientsRequests.clear();
         for (int i = 0; i < docs.documents.length; i++) {
           allPatientsRequests.add(Requests(
+            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
               nurseId: docs.documents[i].data['nurseId'] ?? '',
               patientId: docs.documents[i].data['patientId'] ?? '',
               docId: docs.documents[i].documentID,
@@ -376,6 +383,7 @@ class Home with ChangeNotifier {
       print('B');
       for (int i = 0; i < docs.documents.length; i++) {
         allArchivedRequests.add(Requests(
+            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
             nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
@@ -551,10 +559,11 @@ class Home with ChangeNotifier {
     if(request.patientId != '') {
     await  patientCollection.document(request.patientId).collection(
           'archived requests').document(request.docId).setData({
-        'nurseId': '',
+        'nurseId': userData.docId,
         'patientId':
         request.patientId,
         'patientName': request.patientName,
+    'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
@@ -588,6 +597,7 @@ class Home with ChangeNotifier {
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
+        'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientGender': request.patientGender,
         'numOfPatients': request.numOfPatients,
         'serviceType': request.serviceType,
@@ -624,8 +634,10 @@ class Home with ChangeNotifier {
     return true;
   }
   Future<bool> acceptRequest({Requests request, UserData userData}) async {
+    DateTime dateTime = DateTime.now();
     CollectionReference requests = databaseReference.collection('requests');
-    requests.document(request.docId).updateData({'nurseId': userData.docId});
+    requests.document(request.docId).updateData({'nurseId': userData.docId,
+      'acceptTime':'${dateTime.hour}:${dateTime.minute}',});
     allPatientsRequests.removeWhere((x)=>x.docId==request.docId);
     request.nurseId=userData.docId;
     allAcceptedRequests.add(request);

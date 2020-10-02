@@ -427,7 +427,7 @@ class _SignInState extends State<SignIn> {
                                     _isSignInUsingGoogleSuccessful=false;
                                   });
                                 }else if(x=='GoToRegister'){
-                                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>AddUserData()));
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>AddUserData()));
                                 }else{
                                   Toast.show(translator.currentLanguage == "en"
                                       ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);

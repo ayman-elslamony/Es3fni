@@ -3,6 +3,7 @@ import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/user_data.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/shared_widget/show_user_location.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -130,7 +131,22 @@ Widget  personalInfo(
                       backgroundColor: Colors.indigo,
                     ),
                   )
-                : ListView(
+                : _userData ==null? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+
+                  width: infoWidget.screenWidth,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: Center(child: Text(translator.currentLanguage=='en'?'Patient Profile Not Avilable':'الملف الشخصي لهذا المريض غير متاح',style: infoWidget.titleButton.copyWith(color: Colors.indigo),))),
+                    SizedBox()
+                    ],
+                  ),
+                ),
+              ),
+            ) :ListView(
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(
@@ -179,7 +195,15 @@ Widget  personalInfo(
                               translator.currentLanguage == "en" ? _userData.name : _userData.name,
                           iconData: Icons.person,
                           infoWidget: infoWidget),
-                      _userData.address==''?SizedBox():personalInfo(
+                      _userData.address==''?SizedBox():
+                      InkWell(
+                          onTap: _userData.lat !=''?(){
+
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowSpecificUserLocation(userData: _userData,)));
+
+                          }:null,
+                        child:
+                      personalInfo(
                           title: translator.currentLanguage == "en"
                               ? 'Address'
                               : 'العنوان',
@@ -187,7 +211,8 @@ Widget  personalInfo(
                               ? _userData.address
                               : _userData.address,
                           iconData: Icons.my_location,
-                          infoWidget: infoWidget),
+                          infoWidget: infoWidget)),
+
                       _userData.phoneNumber==''?SizedBox():
                           InkWell(
                             onTap: (){

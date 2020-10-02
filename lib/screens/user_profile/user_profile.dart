@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
+import 'package:helpme/screens/shared_widget/show_user_location.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -100,7 +101,14 @@ class _UserProfileState extends State<UserProfile> {
                         : _auth.userData.name,
                     iconData: Icons.person,
                     infoWidget: infoWidget),
-                _auth.userData.address ==''?SizedBox():personalInfo(
+                _auth.userData.address ==''?SizedBox():
+                    InkWell(
+                        onTap: (){
+                      if(_auth.userData.lat !=''){
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowSpecificUserLocation(userData: _auth.userData,)));
+                      }
+                    },child:
+                personalInfo(
                     title: translator.currentLanguage == "en"
                         ? 'Address'
                         : 'العنوان',
@@ -108,7 +116,7 @@ class _UserProfileState extends State<UserProfile> {
                         ? _auth.userData.address
                         : _auth.userData.address,
                     iconData: Icons.my_location,
-                    infoWidget: infoWidget),
+                    infoWidget: infoWidget)),
                 _auth.userData.phoneNumber ==''?SizedBox():personalInfo(
                     title: translator.currentLanguage == "en"
                         ? 'Phone Number'

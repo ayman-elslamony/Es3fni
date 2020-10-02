@@ -102,10 +102,13 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                     )
                                     : SizedBox(),
                                 IconButton(icon: Icon(Icons.more_horiz,color: Colors.indigo,), onPressed: (){
+                                  if(request.patientId !=''){
                                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowUserProfile(
-                                    type: 'Patient',
+                                    type: translator.currentLanguage == "en"
+                                        ?'Patient':'مريض',
                                     userId: request.patientId,
                                   ) ));
+                                  }
                                 })
                               ],
                             )
@@ -362,6 +365,14 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                             style: infoWidget.subTitle,
                           )
                               : SizedBox(),
+
+//              request.acceptTime==''?SizedBox():Text(
+//                translator.currentLanguage == 'en'
+//                    ? 'Time of acceptance: ${request.acceptTime}'
+//                    : ' وقت القبول:${request.acceptTime}',
+//                style: infoWidget.titleButton
+//                    .copyWith(color: Colors.indigo),
+//              )
                           request.priceBeforeDiscount != ''
                               ? Text(
                             translator.currentLanguage == 'en'

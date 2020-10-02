@@ -17,11 +17,13 @@ class EditAddress extends StatefulWidget {
 class _EditAddressState extends State<EditAddress> {
   bool _isEditLocationEnable = false;
   bool _selectUserLocationFromMap = false;
+  String lat;
+  String lng;
   TextEditingController _locationTextEditingController = TextEditingController();
   Future<String> _getLocation() async {
     Position position = await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     final coordinates = new Coordinates(position.latitude, position.longitude);
-
+    lat = position.latitude.toString();lng = position.longitude.toString();
     var addresses =
     await Geocoder.local.findAddressesFromCoordinates(coordinates);
     return addresses.first.addressLine;
@@ -29,7 +31,7 @@ class _EditAddressState extends State<EditAddress> {
 
   void _getUserLocation() async {
     var address = await _getLocation();
-    widget.getAddress(address);
+    widget.getAddress(address,lat,lng);
     setState(() {
       _locationTextEditingController.text = address;
       _isEditLocationEnable = true;
@@ -42,7 +44,7 @@ class _EditAddressState extends State<EditAddress> {
     setState(() {
       _locationTextEditingController.text = addresss;
     });
-    widget.getAddress(addresss);
+    widget.getAddress(addresss,lat.toString(),long.toString());
   }
   void selectUserLocationType() async {
     await showDialog(
@@ -52,8 +54,15 @@ class _EditAddressState extends State<EditAddress> {
             borderRadius: BorderRadius.all(Radius.circular(25.0))),
         contentPadding: EdgeInsets.only(top: 10.0),
         title: Text(
-          translator.currentLanguage == "en" ?'Location':'الموقع',
+          translator.currentLanguage == "en" ? 'Location' : 'الموقع',
           textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize:
+              MediaQuery.of(context).orientation == Orientation.portrait
+                  ? MediaQuery.of(context).size.width * 0.038
+                  : MediaQuery.of(context).size.width * 0.024,
+              color: Colors.indigo,
+              fontWeight: FontWeight.bold),
         ),
         content: Padding(
           padding: const EdgeInsets.only(top: 10),
@@ -62,56 +71,66 @@ class _EditAddressState extends State<EditAddress> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                InkWell(
-                  onTap: _getUserLocation,
-                  child: Material(
-                      color: Colors.indigo,
+                RaisedButton(
+                    onPressed: _getUserLocation,
+                    color: Colors.indigo,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
-                      type: MaterialType.card,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          translator.currentLanguage == "en" ?'Get current Location':'الحصول على الموقع الحالى',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                      )),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (ctx) => GetUserLocation(
-                          getAddress: selectLocationFromTheMap,
-                        )));
-                    setState(() {
-                      _isEditLocationEnable = true;
-                      _selectUserLocationFromMap = !_selectUserLocationFromMap;
-                    });
-                  },
-                  child: Material(
-                      color: Colors.indigo,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        translator.currentLanguage == "en"
+                            ? 'Get current Location'
+                            : 'الموقع الحالى',
+                        style: TextStyle(
+                            fontSize: MediaQuery.of(context).orientation ==
+                                Orientation.portrait
+                                ? MediaQuery.of(context).size.width * 0.035
+                                : MediaQuery.of(context).size.width * 0.024,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
+                RaisedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (ctx) => GetUserLocation(
+                            getAddress: selectLocationFromTheMap,
+                          )));
+                      setState(() {
+                        _isEditLocationEnable = true;
+                        _selectUserLocationFromMap =
+                        !_selectUserLocationFromMap;
+                      });
+                    },
+                    color: Colors.indigo,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
-                      type: MaterialType.card,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          translator.currentLanguage == "en" ?'Select Location from Map':'اختر موقع من الخريطه',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                      )),
-                ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        translator.currentLanguage == "en"
+                            ? 'Select Location from Map'
+                            : 'اختر موقع من الخريطه',
+                        style: TextStyle(
+                            fontSize: MediaQuery.of(context).orientation ==
+                                Orientation.portrait
+                                ? MediaQuery.of(context).size.width * 0.035
+                                : MediaQuery.of(context).size.width * 0.024,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
               ],
             ),
           ),
         ),
         actions: <Widget>[
           FlatButton(
-            child: Text(translator.currentLanguage == "en" ?'Cancel':'الغاء'),
+            child:
+            Text(translator.currentLanguage == "en" ? 'Cancel' : 'الغاء'),
             onPressed: () {
               Navigator.of(ctx).pop();
             },
