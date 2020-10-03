@@ -434,7 +434,7 @@ class _PatientRequestsState extends State<PatientRequests> {
               children: <Widget>[
                 RaisedButton(
                   onPressed: ()async{
-                    bool x =await _home.deleteRequest(requestId: request.docId );
+                    bool x =await _home.deleteRequest(request: request);
                     if(x){
                       Toast.show(translator.currentLanguage == "en" ?"Successfully Deleted":'تم الحذف', context,
                           duration: Toast.LENGTH_SHORT,

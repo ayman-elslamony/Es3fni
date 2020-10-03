@@ -51,6 +51,13 @@ class _EditProfileState extends State<EditProfile> {
           ? ['Add Image','Add Address']
           : ['اضافه صوره','اضافه عنوان',];
     }
+    if(_auth.userData.phoneNumber.contains('+20')){
+      String phoneNumber = _auth.userData.phoneNumber.replaceAll('+20', '');
+      String dialCode = '+20';
+      number = PhoneNumber(isoCode: 'EG',dialCode: dialCode,phoneNumber: phoneNumber);
+    }else{
+      number = PhoneNumber(phoneNumber:  _auth.userData.phoneNumber);
+    }
   }
 
   @override
@@ -138,6 +145,7 @@ class _EditProfileState extends State<EditProfile> {
               ));
     }
     if (type == 'Phone Number' || type == 'رقم الهاتف') {
+
       showDialog(
           context: context,
           builder: (context) => Directionality(
@@ -174,7 +182,7 @@ class _EditProfileState extends State<EditProfile> {
                           translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
                       onPressed: () async {
                         focusNode.unfocus();
-                        if (controller.text.trim().length == 12) {
+                        if (controller.text.trim().length == 12 && phoneNumber != _auth.userData.phoneNumber ) {
                           bool x = await _auth.editProfile(
                             type: 'Phone Number',
                             phone: phoneNumber.toString(),
@@ -197,7 +205,13 @@ class _EditProfileState extends State<EditProfile> {
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
-                        } else {
+                        } else if(phoneNumber == _auth.userData.phoneNumber ){
+                          Toast.show(
+                              translator.currentLanguage == "en"
+                                  ? 'Already exists'
+                                  : 'الرقم موجود بالفعل',
+                              context);
+                        }else {
                           Toast.show(
                               translator.currentLanguage == "en"
                                   ? 'invalid phone number'
@@ -243,7 +257,7 @@ class _EditProfileState extends State<EditProfile> {
                       child: Text(
                           translator.currentLanguage == "en" ? 'Ok' : 'موافق'),
                       onPressed: () async {
-                        if (address != null) {
+                        if (address != null&& address != _auth.userData.address) {
                           print(address);
                           bool x = await _auth.editProfile(
                             type: 'Address',
@@ -269,7 +283,15 @@ class _EditProfileState extends State<EditProfile> {
                                 duration: Toast.LENGTH_SHORT,
                                 gravity: Toast.BOTTOM);
                           }
-                        } else {
+                        }  else if(address == _auth.userData.address){
+                          Toast.show(
+                              translator.currentLanguage == "en"
+                                  ? "Already exists"
+                                  : 'العنوان موجود بالفعل',
+                              context,
+                              duration: Toast.LENGTH_SHORT,
+                              gravity: Toast.BOTTOM);
+                        }else {
                           Toast.show(
                               translator.currentLanguage == "en"
                                   ? "Please enter your address"
@@ -360,7 +382,10 @@ class _EditProfileState extends State<EditProfile> {
                             // ignore: missing_return
                             validator: (val) {
                               if (val.trim().length == 0) {
-                                return 'Please write some info';
+                                return translator.currentLanguage=='en'?'Please write some info':'من فضلك ادخل بعض البيانات';
+                              }
+                              if (val.trim() == _auth.userData.aboutYou) {
+                                return translator.currentLanguage=='en'?'Already exists':'موجود بالفعل';
                               }
                             },
                           ),

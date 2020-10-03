@@ -43,50 +43,7 @@ class Home with ChangeNotifier {
   double discount = 0.0;
   double priceBeforeDiscount = 0.0;
 
-  Future<String> verifyCoupon({String couponName}) async {
-    var services = databaseReference.collection("coupons");
-    QuerySnapshot docs = await services
-        .where('couponName', isEqualTo: couponName)
-        .getDocuments();
-    if (docs.documents.length == 0) {
-      return 'false';
-    } else {
-      List<String> date =
-          docs.documents[0].data['expiryDate'].toString().split('-');
-      print(date);
-      DateTime time =
-          DateTime(int.parse(date[2]), int.parse(date[1]), int.parse(date[0]));
-      if (price.isAddingDiscount == false &&
-          price.servicePrice != 0.0 &&
-          docs.documents[0].data['numberOfUses'] != '0' &&
-          time.isAfter(DateTime.now())) {
-        coupon = Coupon(
-          docId: docs.documents[0].documentID,
-          couponName: docs.documents[0].data['couponName'],
-          discountPercentage: docs.documents[0].data['discountPercentage'],
-          expiryDate: docs.documents[0].data['expiryDate'],
-          numberOfUses: docs.documents[0].data['numberOfUses'],
-        );
-        double prices = price.servicePrice;
-        priceBeforeDiscount = price.servicePrice;
-        discount = prices * (double.parse(coupon.discountPercentage) / 100);
-        List<String> x = price.allServiceType;
-        price = Price(
-            servicePrice: (prices - discount),
-            isAddingDiscount: true,
-            allServiceType: x);
-        notifyListeners();
-        return 'true';
-      } else if (price.servicePrice == 0.0) {
-        return 'add service before discount';
-      } else if (!time.isAfter(DateTime.now()) ||
-          docs.documents[0].data['numberOfUses'] == '0') {
-        return 'Coupon not Avilable';
-      } else {
-        return 'already discount';
-      }
-    }
-  }
+
 
   Future<void> unVerifyCoupon() async {
     double prices = price.servicePrice;
@@ -531,8 +488,8 @@ class Home with ChangeNotifier {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
     CollectionReference allRequests = databaseReference.collection('requests');
-    CollectionReference archived = databaseReference.collection('archived');
-    CollectionReference allArchived = databaseReference.collection('archived requests');
+    CollectionReference archived = databaseReference.collection('archived requests');
+//    CollectionReference allArchived = databaseReference.collection('archived');
     int points = int.parse(userData.points);
     points = points + 50;
     await nursesCollection
@@ -550,10 +507,10 @@ class Home with ChangeNotifier {
       'date': '${dateTime.day}-${dateTime.month}-${dateTime.year}',
       'time': '${dateTime.hour}:${dateTime.minute}',
     });
-    allArchived.document(request.docId).setData({
-      'docId':request.docId,
-      'patientId':request.patientId
-    });
+//    allArchived.document(request.docId).setData({
+//      'docId':request.docId,
+//      'patientId':request.patientId
+//    });
     allRequests
         .document(request.docId).delete();
     if(request.patientId != '') {
@@ -563,7 +520,7 @@ class Home with ChangeNotifier {
         'patientId':
         request.patientId,
         'patientName': request.patientName,
-    'acceptTime':'${dateTime.hour}:${dateTime.minute}',
+         'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
@@ -588,16 +545,15 @@ class Home with ChangeNotifier {
         'priceAfterDiscount': request.priceAfterDiscount,
       });
     }else{
-      await archived.document(request.patientId).collection(
-          'archived requests').document(request.docId).setData({
-        'nurseId': '',
+      await archived.document(request.docId).setData({
+        'nurseId': userData.docId,
         'patientId':
         request.patientId,
         'patientName': request.patientName,
+        'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
-        'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientGender': request.patientGender,
         'numOfPatients': request.numOfPatients,
         'serviceType': request.serviceType,
@@ -625,11 +581,68 @@ class Home with ChangeNotifier {
     notifyListeners();
     return true;
   }
-
-  Future<bool> deleteRequest({String requestId}) async {
+  Future<String> verifyCoupon({String couponName}) async {
+    var services = databaseReference.collection("coupons");
+    QuerySnapshot docs = await services
+        .where('couponName', isEqualTo: couponName)
+        .getDocuments();
+    if (docs.documents.length == 0) {
+      return 'false';
+    } else {
+      List<String> date =
+      docs.documents[0].data['expiryDate'].toString().split('-');
+      print(date);
+      DateTime time =
+      DateTime(int.parse(date[2]), int.parse(date[1]), int.parse(date[0]));
+      if (price.isAddingDiscount == false &&
+          price.servicePrice != 0.0 &&
+          docs.documents[0].data['numberOfUses'] != '0' &&
+          time.isAfter(DateTime.now())) {
+        coupon = Coupon(
+          docId: docs.documents[0].documentID,
+          couponName: docs.documents[0].data['couponName'],
+          discountPercentage: docs.documents[0].data['discountPercentage'],
+          expiryDate: docs.documents[0].data['expiryDate'],
+          numberOfUses: docs.documents[0].data['numberOfUses'],
+        );
+        double prices = price.servicePrice;
+        priceBeforeDiscount = price.servicePrice;
+        discount = prices * (double.parse(coupon.discountPercentage) / 100);
+        List<String> x = price.allServiceType;
+        price = Price(
+            servicePrice: (prices - discount),
+            isAddingDiscount: true,
+            allServiceType: x);
+        notifyListeners();
+        return 'true';
+      } else if (price.servicePrice == 0.0) {
+        return 'add service before discount';
+      } else if (!time.isAfter(DateTime.now()) ||
+          docs.documents[0].data['numberOfUses'] == '0') {
+        return 'Coupon not Avilable';
+      } else {
+        return 'already discount';
+      }
+    }
+  }
+  Future<bool> deleteRequest({Requests request}) async {
     var requests = databaseReference.collection("requests");
-    await requests.document(requestId).delete();
-    allPatientsRequests.removeWhere((x) => x.docId== requestId);
+    await requests.document(request.docId).delete();
+
+    if(request.discountCoupon != ''){
+      var _coupons = databaseReference.collection("coupons");
+      QuerySnapshot docs = await _coupons
+          .where('couponName', isEqualTo: request.discountCoupon)
+          .getDocuments();
+      if (docs.documents.length != 0) {
+        int x = int.parse(docs.documents[0].data['numberOfUses']);
+          x = x + 1;
+        _coupons.document(coupon.docId).updateData({
+          'numberOfUses': x,
+        });
+      }
+    }
+    allPatientsRequests.removeWhere((x) => x.docId== request.docId);
     notifyListeners();
     return true;
   }
