@@ -52,7 +52,8 @@ class _AddUserDataState extends State<AddUserData> {
     'Phone number': '',
     'gender': '',
     'National Id': '',
-    'Birth Date': '',
+    'Birth Date': translator.currentLanguage == "en"
+        ?"Date":'التاريخ',
     'aboutYou': '',
     'UrlImg': '',
     'Location': '',
@@ -65,7 +66,7 @@ class _AddUserDataState extends State<AddUserData> {
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
-    print('_auth.userData.phoneNumber');print(_auth.userData.phoneNumber);
+    print('_auth.userData.phoneNumber');//print(_auth.userData.phoneNumber);
     _genderList = translator.currentLanguage =='en'?['Male', 'Female']:['ذكر', 'انثى'];
     if(_auth.userData !=null) {
       nameController.text = _auth.userData.name;
@@ -435,7 +436,7 @@ class _AddUserDataState extends State<AddUserData> {
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
           gender: _userData['gender'],
-         picture: _userData['UrlImg']==''?null:_userData['UrlImg'].toString(),
+         picture: _userData['UrlImg']==''?null:_userData['UrlImg'],
           aboutYou: _userData['aboutYou'],
             location:_userData['Location'],
         );
@@ -889,8 +890,8 @@ class _AddUserDataState extends State<AddUserData> {
                                           borderRadius: BorderRadius.circular(10)),
                                       child: Text(
                                         translator.currentLanguage == "en"
-                                            ? 'Date ${_userData['Birth Date']}'
-                                            : 'التاريخ ${_userData['Birth Date']}',
+                                            ? '${_userData['Birth Date']}'
+                                            : '${_userData['Birth Date']}',
                                         style:
                                         TextStyle(color: Colors.white, fontSize: 18),
                                       ),

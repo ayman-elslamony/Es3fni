@@ -1,4 +1,5 @@
 
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
@@ -23,9 +24,13 @@ class AcceptedRequests extends StatefulWidget {
 class _AcceptedRequestsState extends State<AcceptedRequests> {
   Home _home;
   Auth _auth;
+  ScanResult codeSanner;
   bool loadingBody = true;
+  bool enableWriteQrCode= false;
+  final GlobalKey<FormState> _formKey = GlobalKey();
+  TextEditingController qrCode = TextEditingController();
 
-  Widget content({Requests request, DeviceInfo infoWidget}) {
+  Widget content({Requests request, DeviceInfo infoWidget,BuildContext context}) {
     String visitDays = '';
     String visitTime = '';
     if (request.visitDays != '[]') {
@@ -403,7 +408,233 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
               children: <Widget>[
                 RaisedButton(
                   onPressed: ()async{
-                    bool x =await _home.endRequest(userData: _auth.userData,request: request);
+
+                    bool isFinish =await _home.sendRequestToFinish(requestId: request.docId);
+                    if(isFinish){
+
+                      await showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (ctx) => StatefulBuilder(
+                            builder: (context, setState)=>
+                            Directionality(
+                              textDirection: translator.currentLanguage == "en"
+                                  ? TextDirection.ltr
+                                  : TextDirection.rtl,
+                              child: AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(25.0))),
+                                contentPadding: EdgeInsets.only(top: 10.0),
+                                title: Text(
+                                  translator.currentLanguage == "en"
+                                      ? 'Finish Request'
+                                      : 'انهاء الطلب',
+                                  textAlign: TextAlign.center,
+                                  style: infoWidget.titleButton.copyWith(color: Colors.indigo),
+                                ),
+                                content: Container(
+                                    height: enableWriteQrCode?infoWidget.screenHeight * 0.24:infoWidget.screenHeight * 0.16,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                    FlatButton(
+                                      padding: EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+
+                                      onPressed: () async {
+                                     codeSanner = await BarcodeScanner.scan();
+                                    print('codeSanner');
+                                    print(codeSanner.type.name);
+                                    print(codeSanner.rawContent);
+                                    print(request.docId);
+                                    if(codeSanner.type == ResultType.Barcode && codeSanner.rawContent == request.docId){
+                                                            bool x =await _home.endRequest(userData: _auth.userData,request: request);
+                      if(x){
+                        Toast.show(translator.currentLanguage == "en" ?"Successfully completed":'تم الانتهاء بنجاح', context,
+                            duration: Toast.LENGTH_SHORT,
+                            gravity: Toast.BOTTOM);
+                        Navigator.of(ctx).pop();
+                      }else{
+                        Toast.show(translator.currentLanguage == "en" ?"Completion failed":'فشل الانتهاء', context,
+                            duration: Toast.LENGTH_SHORT,
+                            gravity: Toast.BOTTOM);
+                      }
+                                    }else{
+                                      Toast.show(
+                                          translator.currentLanguage == "en"
+                                              ? "Invalid QR Code"
+                                              : 'رمز الاستجابة السريعة غير صحيح',
+                                          context,
+                                          duration: Toast.LENGTH_LONG,
+                                          gravity: Toast.BOTTOM);
+                                    }
+                                  },
+                                  child: Text(
+                                    translator.currentLanguage == "en"
+                                        ?'Scan QR CODE':'مسح رمز الاستجابة السريعة',
+                                    style: infoWidget.titleButton.copyWith(color: Colors.indigo,fontWeight: FontWeight.bold),
+                                  ),
+                                      shape: RoundedRectangleBorder(
+                                          side: BorderSide(color: Colors.indigo,width: 2.0),
+                                          borderRadius: BorderRadius.circular(15.0)),
+                                ),
+                                        SizedBox(height: 4.0,),
+                                        enableWriteQrCode?Form(key: _formKey,child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 7.0),
+//                                          height: 75,
+                                          width: infoWidget.screenWidth*0.41,
+                                          child: TextFormField(
+                                            autofocus: false,
+                                            controller: qrCode,
+                                            textInputAction:
+                                            TextInputAction.next,
+                                            style:  TextStyle(
+                                                color: Colors.indigo),
+                                            decoration: InputDecoration(
+                                              labelText: translator
+                                                  .currentLanguage ==
+                                                  "en"
+                                                  ? "QR Code"
+                                                  : 'رمز التحقق',
+                                              focusedBorder:
+                                              OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        10.0)),
+                                                borderSide: BorderSide(
+                                                  color: Colors.indigo,
+                                                ),
+                                              ),
+                                              errorBorder:
+                                              OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        10.0)),
+                                                borderSide: BorderSide(
+                                                  color: Colors.indigo,
+                                                ),
+                                              ),
+                                              focusedErrorBorder:
+                                              OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        10.0)),
+                                                borderSide: BorderSide(
+                                                  color: Colors.indigo,
+                                                ),
+                                              ),
+                                              disabledBorder:
+                                              OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        10.0)),
+                                                borderSide: BorderSide(
+                                                  color: Colors.indigo,
+                                                ),
+                                              ),
+                                              enabledBorder:
+                                              OutlineInputBorder(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        10.0)),
+                                                borderSide: BorderSide(
+                                                    color:
+                                                    Colors.indigo),
+                                              ),
+                                              errorStyle: TextStyle(color: Colors.indigo),
+
+                                              labelStyle: TextStyle(
+                                                  color: Colors.indigo),
+                                            ),
+                                            keyboardType:
+                                            TextInputType.text,
+// ignore: missing_return
+                                            validator: (String value) {
+                                              if (value
+                                                  .trim()
+                                                  .isEmpty) {
+                                                return translator
+                                                    .currentLanguage ==
+                                                    "en"
+                                                    ? "Please enter QR Code!"
+                                                    : 'من فضلك ادخل رمز التحقق';
+                                              }
+                                              if (value.trim().length <
+                                                  6) {
+                                                return translator
+                                                    .currentLanguage ==
+                                                    "en"
+                                                    ? "Invalid QR Code!"
+                                                    : 'رمز التحقق خطاء';
+                                              }
+                                              if(value.trim().toLowerCase() != request.docId.toLowerCase().substring(0,6)){
+                                                return translator
+                                                    .currentLanguage ==
+                                                    "en"
+                                                    ? "Invalid QR Code!"
+                                                    : 'رمز التحقق غير صحيح';
+                                              }
+                                            },
+                                          ),
+                                        )):FlatButton(
+                                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                                  onPressed: () async {
+                                              setState(() {
+                                                enableWriteQrCode =true;
+                                              });
+                                  },
+                                  child: Text(
+                                    translator.currentLanguage == "en"
+                                        ?'Write verification code':'كتابه كود التحقق',
+                                    style: infoWidget.titleButton.copyWith(color: Colors.indigo,fontWeight: FontWeight.bold),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                      side: BorderSide(color: Colors.indigo,width: 2.0),
+                                      borderRadius: BorderRadius.circular(15.0)),
+                                ),
+                                        SizedBox(
+                                          height: 8.0,
+                                        ),
+                                      ],
+                                    )
+                                ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text(
+                    translator.currentLanguage == "en"
+                        ? 'Cancel'
+                        : 'الغاء',
+                    style: infoWidget.subTitle
+                        .copyWith(color: Colors.indigo),
+                  ),
+                  onPressed: () async{
+                   bool isCancel=await _home.sendRequestToCancel(requestId: request.docId);
+                    if(isCancel){
+                      enableWriteQrCode=false;
+                      qrCode.clear();
+                      Navigator.of(ctx).pop();
+                    }
+                  },
+                ),
+                enableWriteQrCode?FlatButton(
+                  child: Text(
+                    translator.currentLanguage == "en"
+                        ? 'Ok'
+                        : 'تحقق',
+                    style: infoWidget.subTitle
+                        .copyWith(color: Colors.indigo),
+                  ),
+                  onPressed: () async{
+                    if(_formKey.currentState.validate()){
+                      print('iam here');
+                      bool x =await _home.endRequest(userData: _auth.userData,request: request);
                       if(x){
                         Toast.show(translator.currentLanguage == "en" ?"Successfully completed":'تم الانتهاء بنجاح', context,
                             duration: Toast.LENGTH_SHORT,
@@ -413,6 +644,16 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                             duration: Toast.LENGTH_SHORT,
                             gravity: Toast.BOTTOM);
                       }
+                    }
+                  },
+                ):SizedBox(),
+
+              ],
+                              ),
+                            ),
+                          ));
+//
+                    }
                     },
                   color: Colors.white,
                   child: Text(
@@ -524,7 +765,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                 } else {
                   return ListView.builder(
                       itemCount: data.allAcceptedRequests.length,
-                      itemBuilder: (context, index) => content(
+                      itemBuilder: (context, index) => content(context: context,
                           infoWidget: infoWidget,
                           request: data.allAcceptedRequests[index]));
                 }

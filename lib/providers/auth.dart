@@ -90,10 +90,13 @@ class Auth with ChangeNotifier {
       });
     }
     if (prefs.containsKey('signInUsingPhone')) {
+      print('bdfbdf');
       final dataToSignIn = await json
           .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
+      print(dataToSignIn['phoneToken']);
       AuthResult x = await firebaseAuth.signInWithCustomToken(
-          token: dataToSignIn['phoneToken']);
+          token: dataToSignIn['phoneToken'].toString());
+      print(x);
       _userId = x.user.uid;
       await x.user.getIdToken().then((x) {
         _token = x.token;
@@ -206,32 +209,69 @@ class Auth with ChangeNotifier {
     try {
       switch (type) {
         case "FB":
-          FacebookLoginResult facebookLoginResult = await _handleFBSignIn();
+         try{
+           FacebookLoginResult facebookLoginResult = await _handleFBSignIn();
+           print('iam');
           final accessToken = facebookLoginResult.accessToken.token;
+          print(accessToken);
           if (facebookLoginResult.status == FacebookLoginStatus.loggedIn) {
-         //   final facebookAuthCred =
-              //  FacebookAuthProvider.getCredential(accessToken: accessToken);
-           // final user =
-//                await firebaseAuth.signInWithCredential(facebookAuthCred);
-//            _userId = user.user.uid;
-//         email: googleSignIn.currentUser.email,
-//    name: googleSignIn.currentUser.displayName,
-//    profilePicURL: googleSignIn.currentUser.photoUrl,
-//    gender: await getGender()
-           // FacebookLogin facebookLogin = FacebookLogin();
-            //user.additionalUserInfo.profile.
-            //createAccount(imgUrl: ,name: user.user.displayName,email: user.user.email,id: user.user.uid)
-//            print("User : " + user.user.displayName);
-//            final _signInUsingFBorG = json.encode({
-//              'isSignInUsingFaceBook': true,
-//              'isSignInUsingGoogle': false,
-//            });
-//            prefs.setString('signInUsingFBorG', _signInUsingFBorG);
-            //  notifyListeners();
-            returns ='false';
-          } else
-            //notifyListeners();
-            returns ='false';
+            print('dvdxvbxdv');
+            final facebookAuthCred =
+                FacebookAuthProvider.getCredential(accessToken: accessToken);
+            final user =
+            await firebaseAuth.signInWithCredential(facebookAuthCred);
+            _userId = user.user.uid;
+            print(_userId);
+
+            var patientData = databaseReference.collection("users");
+            DocumentSnapshot doc = await patientData.document(_userId).get();
+            if(!doc.exists || !doc.data.keys.contains('nationalId')){
+              _userData = UserData(
+                  name: user.user.displayName??'',
+                  points: '0',
+                  docId: user.user.uid,
+                  nationalId: '',
+                  gender: '',
+                  birthDate: '',
+                  address: '',
+                  phoneNumber: phoneNumber??'',
+                  imgUrl: user.user.photoUrl??'',
+                  email:user.user.email??'',
+                  aboutYou:'');
+              IdTokenResult x =await  user.user.getIdToken();
+              print('x.token');print(x.token);
+                _temporaryToken= x.token;
+              returns = 'GoToRegister';
+            }else{
+              _userData = UserData(
+                  name: doc.data['name'] ?? 'Patient',
+                  points: doc.data['points'] ?? '0',
+                  docId: doc.documentID,
+                  nationalId: doc.data['nationalId'] ?? '',
+                  gender: doc.data['gender'] ?? '',
+                  birthDate: doc.data['birthDate'] ?? '',
+                  address: doc.data['address'] ?? '',
+                  lat: doc.data['lat'] ?? '',
+                  lng: doc.data['lng'] ?? '',
+                  phoneNumber: doc.data['phoneNumber'] ?? '',
+                  imgUrl: doc.data['imgUrl'] ?? '',
+                  email: doc.data['email'] ?? '',
+                  aboutYou: doc.data['aboutYou'] ?? '');
+              IdTokenResult x =await  user.user.getIdToken();
+                _token = x.token;
+
+              final _signInUsingFBorG = json.encode({
+                'isSignInUsingFaceBook': true,
+                'isSignInUsingGoogle': false,
+              });
+              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+              returns = 'true';
+            }
+          }}catch (error) {
+           print('error');
+           print(error);
+           returns= 'false';
+         }
           break;
         case "G":
           try {
@@ -300,7 +340,7 @@ class Auth with ChangeNotifier {
   }
 
   Future<FacebookLoginResult> _handleFBSignIn() async {
-    FacebookLogin facebookLogin = FacebookLogin();
+    final facebookLogin = FacebookLogin();
     FacebookLoginResult facebookLoginResult =
         await facebookLogin.logIn(['email']);
     switch (facebookLoginResult.status) {
@@ -359,6 +399,18 @@ class Auth with ChangeNotifier {
               print('rytryhrrhr');
               DocumentSnapshot doc = await patientData.document(_userId).get();
               if (!doc.exists) {
+                _userData = UserData(
+                    name: '',
+                    points: '0',
+                    docId: '',
+                    nationalId: '',
+                    gender: '',
+                    birthDate: '',
+                    address: '',
+                    phoneNumber: phoneNumber.phoneNumber??'',
+                    imgUrl: '',
+                    email:'',
+                    aboutYou:'');
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => AddUserData()));
               } else {
@@ -427,6 +479,18 @@ class Auth with ChangeNotifier {
                   DocumentSnapshot doc =
                       await patientData.document(_userId).get();
                   if (!doc.exists) {
+                    _userData = UserData(
+                        name: '',
+                        points: '0',
+                        docId: '',
+                        nationalId: '',
+                        gender: '',
+                        birthDate: '',
+                        address: '',
+                        phoneNumber: phoneNumber.phoneNumber??'',
+                        imgUrl: '',
+                        email:'',
+                        aboutYou:'');
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => AddUserData()));
                   } else {
@@ -596,7 +660,7 @@ class Auth with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     if (!picture.toString().contains('https:')) {
       try {
-        var storageReference = FirebaseStorage.instance
+        var storageReference =  FirebaseStorage.instance
             .ref()
             .child('$name/${path.basename(picture.path)}');
         StorageUploadTask uploadTask = storageReference.putFile(picture);
@@ -644,6 +708,7 @@ class Auth with ChangeNotifier {
         'imgUrl': picture.toString().contains('https:')?picture:imgUrl,
         'points': '0'
       }, merge: true);
+      _userType = 'patient';
       _token = _temporaryToken;
       if(this.phoneNumber ==null){
         final _signInUsingFBorG = json.encode({
@@ -661,7 +726,7 @@ class Auth with ChangeNotifier {
     }
 
     _userData = UserData(
-        name: doc.data['name'] ?? 'Nurse',
+        name: doc.data['name'] ?? '',
         points: doc.data['points'] ?? '0',
         docId: doc.documentID,
         nationalId: doc.data['nationalId'] ?? '',

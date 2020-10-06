@@ -9,6 +9,7 @@ import 'package:helpme/screens/user_profile/show_profile.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,7 +27,7 @@ class _PatientRequestsState extends State<PatientRequests> {
   bool loadingBody = true;
   bool _showFloating = true;
   ScrollController _scrollController;
-  Widget content({Requests request, DeviceInfo infoWidget}) {
+  Widget content({Requests request, DeviceInfo infoWidget,BuildContext context}) {
     String visitDays = '';
     String visitTime = '';
     if (request.visitDays != '[]') {
@@ -42,7 +43,83 @@ class _PatientRequestsState extends State<PatientRequests> {
     print(request.visitDays);
     print(request.visitTime);
     print(request.discountPercentage);
+    if(request.isFinished ==true&& _auth.getUserType == 'patient'){
+      String qrCode = request.docId.toLowerCase().substring(0,6);
+      print('qrData:');
+      print(qrCode);
+      Future.delayed(Duration.zero, () =>
+          showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => Directionality(
+            textDirection: translator.currentLanguage == "en"
+                ? TextDirection.ltr
+                : TextDirection.rtl,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(25.0))),
+              contentPadding: EdgeInsets.only(top: 10.0),
+              title: Text(
+                translator.currentLanguage == "en"
+                    ? 'Finish Request'
+                    : 'انهاء الطلب',
+                textAlign: TextAlign.center,
+                style: infoWidget.titleButton.copyWith(color: Colors.indigo),
+              ),
+              content: Container(
+                  height: infoWidget.screenHeight * 0.35,
+                  width: infoWidget.screenWidth*0.70,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      QrImage(
+                        size: infoWidget.screenWidth * 0.48,
+                        data: request.docId,
+                      ),
 
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            translator.currentLanguage == "en"
+                                ?"QR Code: ":'كود التحقق: ',
+                            style: infoWidget.subTitle.copyWith(color: Colors.black),
+                          ),
+                          Text(
+                            qrCode,
+                            style: infoWidget.subTitle.copyWith(color: Colors.indigo),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 8.0,
+                      ),
+                    ],
+                  )
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text(
+                    translator.currentLanguage == "en"
+                        ? 'Cancel'
+                        : 'الغاء',
+                    style: infoWidget.subTitle
+                        .copyWith(color: Colors.indigo),
+                  ),
+                  onPressed: () async{
+                    bool isCancel=await _home.sendRequestToCancel(requestId: request.docId);
+                    if(isCancel){
+                      Navigator.of(ctx).pop();
+                    }
+                  },
+                ),
+              ],
+            ),
+          )));
+    }
     return InkWell(
       onTap: () {
         showModalBottomSheet(
@@ -490,12 +567,12 @@ class _PatientRequestsState extends State<PatientRequests> {
   }
   bool get _isAppBarExpanded {
     return _scrollController.hasClients &&
-        _scrollController.offset < (MediaQuery.of(context).size.height*0.3 - kToolbarHeight);
+        _scrollController.offset < (MediaQuery.of(context).size.height*0.1 - kToolbarHeight);
   }
   getAllPatientRequests() async {
     print('dvdxvx');
     if (_home.allPatientsRequests.length == 0) {
-      await _home.getAllPatientRequests(userId: _auth.userId
+      await _home.getAllPatientRequests(userId: _auth.userId,userType: _auth.getUserType
       );
     }
     setState(() {
@@ -550,7 +627,7 @@ class _PatientRequestsState extends State<PatientRequests> {
             color: Colors.indigo,
             backgroundColor: Colors.white,
             onRefresh: () async {
-              _home.getAllPatientRequests(userId: _auth.userId
+              _home.getAllPatientRequests(userId: _auth.userId,userType: _auth.getUserType
               );
             },
             child: Consumer<Home>(
@@ -570,7 +647,7 @@ class _PatientRequestsState extends State<PatientRequests> {
                     controller: _scrollController,
                       itemCount: data.allPatientsRequests.length,
                       itemBuilder: (context, index) => content(
-                          infoWidget: infoWidget,
+                          infoWidget: infoWidget,context: context,
                           request: data.allPatientsRequests[index]));
                 }
               },

@@ -33,12 +33,12 @@ dependencies:
   age: ^0.0.1
   loading_indicator: ^1.2.0
   flutter_picker: ^1.1.5
-  barcode_scan: any
+  barcode_scan:
   qr_flutter: ^3.2.0
-  intl_phone_number_input:
+  intl_phone_number_input: ^0.4.1
   toast: ^0.1.5
-  flutter_verification_code: ^0.2.1
-  firebase_auth: ^0.16.0
+  flutter_verification_code:
+  firebase_auth:
   google_sign_in: ^4.4.4
   flutter_facebook_login: ^3.0.0
   firebase_database:

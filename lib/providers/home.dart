@@ -273,10 +273,11 @@ class Home with ChangeNotifier {
       }
       print('dfbfdsndd');
       print(allAcceptedRequests.length);
-      notifyListeners();
     }
+    notifyListeners();
   }
-  Future getAllPatientRequests({String userId}) async {
+  Future getAllPatientRequests({String userId,String userType}) async {
+    if(userType =='patient'){
     var requests = databaseReference.collection('requests');
     requests
           .where('patientId', isEqualTo: userId)
@@ -287,6 +288,7 @@ class Home with ChangeNotifier {
         allPatientsRequests.clear();
         for (int i = 0; i < docs.documents.length; i++) {
           allPatientsRequests.add(Requests(
+            isFinished: docs.documents[i].data['isFinished'] ?? false,
             acceptTime: docs.documents[i].data['acceptTime'] ?? '',
               nurseId: docs.documents[i].data['nurseId'] ?? '',
               patientId: docs.documents[i].data['patientId'] ?? '',
@@ -329,6 +331,7 @@ class Home with ChangeNotifier {
       }
       notifyListeners();
                 });
+    }
   }
   Future getAllArchivedRequests({String userId}) async {
     var requests = databaseReference.collection('users').document(userId).collection('archived requests');
@@ -581,6 +584,23 @@ class Home with ChangeNotifier {
     notifyListeners();
     return true;
   }
+  Future<bool> sendRequestToFinish({String requestId}) async {
+    CollectionReference allRequests = databaseReference.collection('requests');
+    allRequests
+        .document(requestId).setData({
+      'isFinished':true
+    },merge: true);
+    return true;
+  }
+  Future<bool> sendRequestToCancel({String requestId}) async {
+    CollectionReference allRequests = databaseReference.collection('requests');
+    allRequests
+        .document(requestId).setData({
+      'isFinished':false
+    },merge: true);
+    return true;
+  }
+
   Future<String> verifyCoupon({String couponName}) async {
     var services = databaseReference.collection("coupons");
     QuerySnapshot docs = await services

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
@@ -129,6 +130,7 @@ Auth _auth;
                                         RaisedButton(
                                           onPressed: () {
                                             print(_code);
+                                            SystemChannels.textInput.invokeMethod('TextInput.hide');
                                             if (_code == null) {
                                               Toast.show(
                                                   translator.currentLanguage ==
@@ -169,80 +171,80 @@ Auth _auth;
                                 )),
                           ],
                         ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        InkWell(
-                          onTap: () async{
-                            if (loadingStream == false) {
-                              setState(() {
-                                loadingStream = true;
-                              });
-                              _timerValue = 59;
-                              _periodicStream = Stream.periodic(
-                                  Duration(milliseconds: 1000), (i) => i);
-                              _previousStreamValue = 0;
-
-                              await  _auth.signInUsingPhone(
-                                  infoWidget: infoWidget,
-                                  context: context,
-                                  phone: widget.phoneNumber
-                              );
-                              Toast.show(translator.currentLanguage == "en"
-                                    ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                              print('qqqqqqqq');
-                              // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
-
-//                              if(x == 'verifysccuess'){
+//                        SizedBox(
+//                          height: 20,
+//                        ),
+//                        InkWell(
+//                          onTap: () async{
+//                            if (loadingStream == false) {
+//                              setState(() {
+//                                loadingStream = true;
+//                              });
+//                              _timerValue = 59;
+//                              _periodicStream = Stream.periodic(
+//                                  Duration(milliseconds: 1000), (i) => i);
+//                              _previousStreamValue = 0;
 //
-//                              }else{
-//                                Toast.show(translator.currentLanguage == "en"
-//                                    ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-//                              }
-                            }
-                          },
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            textDirection: translator.currentLanguage == "en"
-                                ? TextDirection.ltr
-                                : TextDirection.rtl,
-                            children: <Widget>[
-                              Text(
-                                  translator.currentLanguage == "en"
-                                      ? 'Re-send Code in '
-                                      : ' اعاده ارسال الكود ',
-                                  style: infoWidget.subTitle
-                                      .copyWith(color: Colors.indigo)),
-                              loadingStream
-                                  ? StreamBuilder(
-                                stream: this._periodicStream,
-                                builder: (context,
-                                    AsyncSnapshot<int> snapshot) {
-                                  if (snapshot.hasData) {
-                                    if (snapshot.data !=
-                                        _previousStreamValue) {
-                                      if (this._timerValue > 0) {
-                                        this._timerValue--;
-                                      }
-                                    }
-                                    if (_timerValue == 0) {
-                                      loadingStream = false;
-                                    }
-                                  }
-                                  return Text(
-                                    ' 0:$_timerValue ',
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    style: infoWidget.subTitle
-                                        .copyWith(color: Colors.indigo),
-                                  );
-                                },
-                              )
-                                  : SizedBox(),
-                            ],
-                          ),
-                        )
+//                              await  _auth.signInUsingPhone(
+//                                  infoWidget: infoWidget,
+//                                  context: context,
+//                                  phone: widget.phoneNumber
+//                              );
+////                              Toast.show(translator.currentLanguage == "en"
+////                                    ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+//                              print('trtryrurtut');
+//                              // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+//
+////                              if(x == 'verifysccuess'){
+////
+////                              }else{
+////                                Toast.show(translator.currentLanguage == "en"
+////                                    ? "$x":'$x', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+////                              }
+//                            }
+//                          },
+//                          child: Row(
+//                            crossAxisAlignment: CrossAxisAlignment.center,
+//                            mainAxisAlignment: MainAxisAlignment.center,
+//                            textDirection: translator.currentLanguage == "en"
+//                                ? TextDirection.ltr
+//                                : TextDirection.rtl,
+//                            children: <Widget>[
+//                              Text(
+//                                  translator.currentLanguage == "en"
+//                                      ? 'Re-send Code in '
+//                                      : ' اعاده ارسال الكود ',
+//                                  style: infoWidget.subTitle
+//                                      .copyWith(color: Colors.indigo)),
+//                              loadingStream
+//                                  ? StreamBuilder(
+//                                stream: this._periodicStream,
+//                                builder: (context,
+//                                    AsyncSnapshot<int> snapshot) {
+//                                  if (snapshot.hasData) {
+//                                    if (snapshot.data !=
+//                                        _previousStreamValue) {
+//                                      if (this._timerValue > 0) {
+//                                        this._timerValue--;
+//                                      }
+//                                    }
+//                                    if (_timerValue == 0) {
+//                                      loadingStream = false;
+//                                    }
+//                                  }
+//                                  return Text(
+//                                    ' 0:$_timerValue ',
+//                                    textAlign: TextAlign.center,
+//                                    maxLines: 1,
+//                                    style: infoWidget.subTitle
+//                                        .copyWith(color: Colors.indigo),
+//                                  );
+//                                },
+//                              )
+//                                  : SizedBox(),
+//                            ],
+//                          ),
+//                        )
                       ],
                     ),
                   ),

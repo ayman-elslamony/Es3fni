@@ -456,19 +456,20 @@ class _SignInState extends State<SignIn> {
                                 setState(() {
                                   _isSignInUsingFBSuccessful=true;
                                 });
-                                await Provider.of<Auth>(context, listen: false).signInUsingFBorG(context: context,type: "FB").then((x){
-                                  if(x==false){
-                                    Toast.show(translator.currentLanguage == "en"
-                                        ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                    setState(() {
-                                      _isSignInUsingFBSuccessful=false;
-                                    });
-                                  }else{
-                                    Toast.show(translator.currentLanguage == "en"
-                                        ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
-                                  }
-                                });
+                                String x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG(type: 'FB',context: context);
+                                if(x=='false'){
+                                  Toast.show(translator.currentLanguage == "en"
+                                      ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                                  setState(() {
+                                    _isSignInUsingFBSuccessful=false;
+                                  });
+                                }else if(x=='GoToRegister'){
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>AddUserData()));
+                                }else{
+                                  Toast.show(translator.currentLanguage == "en"
+                                      ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+                                }
                               },
                               shape: RoundedRectangleBorder(
                                   borderRadius:
