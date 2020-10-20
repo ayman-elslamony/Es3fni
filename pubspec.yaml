@@ -51,7 +51,7 @@ dependencies:
   geolocator: ^6.0.0+1
   google_maps_flutter:
   flutter_time_picker_spinner: ^1.0.6
-  flutter_datetime_picker: ^1.4.0
+  flutter_datetime_picker:
 
 dev_dependencies:
   flutter_test:

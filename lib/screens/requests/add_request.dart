@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:age/age.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/shared_widget/flutter_time_picker_spinner.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
@@ -431,6 +431,13 @@ class _AddRequestState extends State<AddRequest> {
           visitTime.clear();
         }
         print('A');
+        List<String> visitsTime=[];
+        if(visitTime.length !=0) {
+          for (int i = 0; i < visitTime.length; i++) {
+            print('visitTime[i] ${visitTime[i]}');
+            visitsTime.add(_home.convertTimeTo24Hour(time: visitTime[i]));
+          }
+        }
         bool isSccuess = await _home.addRequest(
           patientId: _auth.userId,
           analysisType: _paramedicsData['analysis type'],
@@ -449,7 +456,7 @@ class _AddRequestState extends State<AddRequest> {
           startVisitDate: _paramedicsData['startDate'],
           suppliesFromPharmacy: _paramedicsData['accessories'],
           visitDays: _selectedWorkingDays.toString(),
-          visitTime: visitTime.toString(),
+          visitTime: visitsTime.toString(),
         );
         print('isScuessisScuess$isSccuess');
         if (isSccuess) {
@@ -467,40 +474,6 @@ class _AddRequestState extends State<AddRequest> {
                 gravity: Toast.BOTTOM);
             _home.resetPrice();
             Navigator.of(context).pop();
-//          showDialog(
-//            context: context,
-//            builder: (ctx) => AlertDialog(
-//              shape: RoundedRectangleBorder(
-//                  borderRadius: BorderRadius.all(Radius.circular(25.0))),
-//              contentPadding: EdgeInsets.only(top: 10.0),
-//              title: Text("Profile Created"),
-//              content: Row(
-//                crossAxisAlignment: CrossAxisAlignment.center,
-//                mainAxisAlignment: MainAxisAlignment.center,
-//                children: <Widget>[
-//                  Text(
-//                    "Welcome ${_paramedicsData['First name']}",
-//                  ),
-//                ],
-//              ),
-//              actions: <Widget>[
-//                FlatButton(
-//                  child: Text("Ok"),
-//                  onPressed: () {
-//                    Navigator.of(context).pushReplacement(
-//                        MaterialPageRoute(builder: (context) => HomeScreen()));
-//                  },
-//                ),
-//                FlatButton(
-//                  child: Text("Cancel"),
-//                  onPressed: () {
-//                    Navigator.of(context).pop();
-//                    setState(() => complete = true);
-//                  },
-//                ),
-//              ],
-//            ),
-//          );
           }
         } else {
           setState(() {
@@ -665,7 +638,7 @@ class _AddRequestState extends State<AddRequest> {
                       Step(
                         title: Text(translator.currentLanguage == "en"
                             ? 'Patient Info'
-                            : 'معلومات المريض'),
+                            : 'معلومات المريض',style: infoWidget.subTitle.copyWith(color: Color(0xff484848)),),
                         isActive: true,
                         state: StepState.indexed,
                         content: Form(
@@ -1175,7 +1148,7 @@ class _AddRequestState extends State<AddRequest> {
                         state: StepState.indexed,
                         title: Text(translator.currentLanguage == "en"
                             ? 'Service info'
-                            : 'معلومات الخدمه'),
+                            : 'معلومات الخدمه',style: infoWidget.subTitle.copyWith(color: Color(0xff484848)),),
                         content: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
@@ -1874,7 +1847,7 @@ class _AddRequestState extends State<AddRequest> {
                                                                     setState(() {
                                                                       isLoadingCoupon = true;
                                                                     });
-                                                                    String x = await _home.verifyCoupon(couponName: _paramedicsData['coupon']);
+                                                                    String x = await _home.verifyCoupon(userId: _auth.userId,couponName: _paramedicsData['coupon']);
                                                                     couponFocusNode.unfocus();
                                                                     if (x == 'true') {
                                                                       Toast.show(translator.currentLanguage == "en" ? "Scuessfully Discount" : 'نجح الخصم', context, duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
@@ -1882,6 +1855,8 @@ class _AddRequestState extends State<AddRequest> {
                                                                       Navigator.of(ctx).pop();
                                                                     } else if (x == 'add service before discount') {
                                                                       Toast.show(translator.currentLanguage == "en" ? 'add service before discount' : 'اضف الخدمه قبل الخصم', context, duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+                                                                    }else if (x == 'isUserBefore') {
+                                                                      Toast.show(translator.currentLanguage == "en" ? 'this coupon is used before' : 'تم استخدام الكوبون من قبل', context, duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
                                                                     } else if (x == 'Coupon not Avilable') {
                                                                       Toast.show(translator.currentLanguage == "en" ? 'Coupon not Avilable' : 'الكود غير متاح', context, duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
                                                                     } else if (x == 'false') {
@@ -2054,7 +2029,7 @@ class _AddRequestState extends State<AddRequest> {
                                               setState(() {
                                                 _paramedicsData[
                                                 'startDate'] =
-                                                '${date.day}-${date.month}-${date.year}';
+                                                '${date.year}-${date.month}-${date.day}';
                                               });
                                             },
                                             currentTime:
@@ -2108,7 +2083,7 @@ class _AddRequestState extends State<AddRequest> {
                                               setState(() {
                                                 _paramedicsData[
                                                 'endDate'] =
-                                                '${date.day}-${date.month}-${date.year}';
+                                                '${date.year}-${date.month}-${date.day}';
                                               });
                                             },
                                             currentTime:
@@ -2292,113 +2267,101 @@ class _AddRequestState extends State<AddRequest> {
                                               barrierDismissible:
                                               false,
                                               builder: (ctx) =>
-                                                  Directionality(
-                                                    textDirection:
-                                                    translator.currentLanguage ==
-                                                        "en"
-                                                        ? TextDirection
-                                                        .ltr
-                                                        : TextDirection
-                                                        .rtl,
-                                                    child:
-                                                    AlertDialog(
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(25.0))),
-                                                      contentPadding:
-                                                      EdgeInsets
-                                                          .only(
-                                                          top: 10.0),
-                                                      title: Text(
-                                                        translator.currentLanguage ==
-                                                            "en"
-                                                            ? 'Add time'
-                                                            : 'اضافه وقت',
-                                                        textAlign:
-                                                        TextAlign
-                                                            .center,
-                                                        style: infoWidget
-                                                            .titleButton
-                                                            .copyWith(
-                                                            color:
-                                                            Colors.indigo),
-                                                      ),
-                                                      content:
-                                                      TimePickerSpinner(
-                                                        is24HourMode:
-                                                        true,
-                                                        normalTextStyle: TextStyle(
-                                                            fontSize:
-                                                            18,
-                                                            color: Colors
-                                                                .indigo[200]),
-                                                        highlightedTextStyle: TextStyle(
-                                                            fontSize:
-                                                            18,
-                                                            color: Colors
-                                                                .indigo),
-                                                        spacing: 30,
-                                                        itemHeight:
-                                                        40,
-                                                        isForce2Digits:
-                                                        true,
-                                                        onTimeChange:
-                                                            (time) {
-                                                          // _clinicData['startTime']=time.toIso8601String();
+                                                  AlertDialog(
+                                                    shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(25.0))),
+                                                    contentPadding:
+                                                    EdgeInsets
+                                                        .only(
+                                                        top: 10.0),
+                                                    title: Text(
+                                                      translator.currentLanguage ==
+                                                          "en"
+                                                          ? 'Add time'
+                                                          : 'اضافه وقت',
+                                                      textAlign:
+                                                      TextAlign
+                                                          .center,
+                                                      style: infoWidget
+                                                          .titleButton
+                                                          .copyWith(
+                                                          color:
+                                                          Colors.indigo),
+                                                    ),
+                                                    content:
+                                                    TimePickerSpinner(
+                                                      is24HourMode: false,
+                                                      normalTextStyle: TextStyle(
+                                                          fontSize:
+                                                          18,
+                                                          color: Colors
+                                                              .indigo[200]),
+                                                      highlightedTextStyle: TextStyle(
+                                                          fontSize:
+                                                          18,
+                                                          color: Colors
+                                                              .indigo),
+                                                      spacing: 30,
+                                                      itemHeight:
+                                                      40,
+                                                      onTimeChange:
+                                                          (time) {
+                                                        print(time);
+                                                        // _clinicData['startTime']=time.toIso8601String();
+                                                        _dateTime =
+                                                        _home.convertTimeToAMOrPM(time: '${time.hour}:${time.minute}');
+                                                      },
+                                                    ),
+                                                    actions: <
+                                                        Widget>[
+                                                      FlatButton(
+                                                        child:
+                                                        Text(
+                                                          translator.currentLanguage ==
+                                                              "en"
+                                                              ? 'Cancel'
+                                                              : 'الغاء',
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              16,
+                                                              color:
+                                                              Colors.indigo),
+                                                        ),
+                                                        onPressed:
+                                                            () {
                                                           _dateTime =
-                                                          '${time.hour}:${time.minute}';
+                                                          '';
+                                                          Navigator.of(ctx)
+                                                              .pop();
                                                         },
                                                       ),
-                                                      actions: <
-                                                          Widget>[
-                                                        FlatButton(
-                                                          child:
-                                                          Text(
-                                                            translator.currentLanguage ==
-                                                                "en"
-                                                                ? 'Cancel'
-                                                                : 'الغاء',
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                16,
-                                                                color:
-                                                                Colors.indigo),
-                                                          ),
-                                                          onPressed:
-                                                              () {
-                                                            _dateTime =
-                                                            '';
-                                                            Navigator.of(ctx)
-                                                                .pop();
-                                                          },
+                                                      FlatButton(
+                                                        child:
+                                                        Text(
+                                                          translator.currentLanguage ==
+                                                              "en"
+                                                              ? 'ok'
+                                                              : 'موافق',
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              16,
+                                                              color:
+                                                              Colors.indigo),
                                                         ),
-                                                        FlatButton(
-                                                          child:
-                                                          Text(
-                                                            translator.currentLanguage ==
-                                                                "en"
-                                                                ? 'ok'
-                                                                : 'موافق',
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                16,
-                                                                color:
-                                                                Colors.indigo),
-                                                          ),
-                                                          onPressed:
-                                                              () {
-                                                            setState(
-                                                                    () {
-                                                                  visitTime
-                                                                      .add(_dateTime);
-                                                                });
-                                                            Navigator.of(ctx)
-                                                                .pop();
-                                                          },
-                                                        )
-                                                      ],
-                                                    ),
+                                                        onPressed:
+                                                            () {
+                                                          setState(
+                                                                  () {
+                                                                visitTime
+                                                                    .add(_dateTime);
+                                                              });
+                                                          Navigator.of(ctx)
+                                                              .pop();
+                                                        },
+                                                      )
+                                                    ],
                                                   ));
                                         },
                                         color: Colors.indigo,
@@ -2486,7 +2449,7 @@ class _AddRequestState extends State<AddRequest> {
                                                     .titleButton
                                                     .copyWith(
                                                     color:
-                                                    Color(0xff484848)),
+                                                    Colors.white),
                                               ),
                                             ),
                                           ),

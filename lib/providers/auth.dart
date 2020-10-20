@@ -35,7 +35,6 @@ class Auth with ChangeNotifier {
   String get getUserType {
     return _userType;
   }
-
   String _temporaryToken = '';
 
   UserData get userData => _userData;
@@ -181,6 +180,7 @@ class Auth with ChangeNotifier {
         doc = await patientData.document(_userId).get();
       }
       _userData = UserData(
+        isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
         name: doc.data['name'],
         docId: doc.documentID,
         nationalId: doc.data['nationalId'] ?? '',
@@ -202,8 +202,26 @@ class Auth with ChangeNotifier {
       return false;
     }
   }
+Future<bool>  checkIsPatientVerify()async{
+    CollectionReference patientData = databaseReference.collection("users");
+    DocumentSnapshot doc =await patientData.document(_userId).get();
+    bool isVerify=false;
+    if(doc.data['isVerify']!=null){
+      if(doc.data['isVerify'] == 'false'){
+        isVerify = false;
+      }else if(doc.data['isVerify'] == ''){
+        isVerify = false;
+      }else{
+        isVerify =true;
+      }
+    }
+    return isVerify;
+  }
   Future<String> signInUsingFBorG({String type, BuildContext context}) async {
     final prefs = await SharedPreferences.getInstance();
+    if(prefs.containsKey('savePhoneNumber')){
+      prefs.remove('savePhoneNumber');
+    }
     String returns='true';
     _userType = 'patient';
     try {
@@ -244,6 +262,7 @@ class Auth with ChangeNotifier {
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
+                  isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
                   points: doc.data['points'] ?? '0',
                   docId: doc.documentID,
@@ -305,6 +324,7 @@ class Auth with ChangeNotifier {
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
+                  isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
                   points: doc.data['points'] ?? '0',
                   docId: doc.documentID,
@@ -395,6 +415,12 @@ class Auth with ChangeNotifier {
               final _signInUsingPhone = json.encode({
                 'phoneToken': _token,
               });
+              final _savePhoneNumber = json.encode({
+                'PhoneNumber': phone.phoneNumber,
+                'dialCode':phoneNumber.dialCode,
+                'isoCode':phoneNumber.isoCode,
+              });
+              prefs.setString('savePhoneNumber', _savePhoneNumber);
               prefs.setString('signInUsingPhone', _signInUsingPhone);
               print('rytryhrrhr');
               DocumentSnapshot doc = await patientData.document(_userId).get();
@@ -415,6 +441,7 @@ class Auth with ChangeNotifier {
                     MaterialPageRoute(builder: (context) => AddUserData()));
               } else {
                 _userData = UserData(
+                    isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                     name: doc.data['name'] ?? 'Nurse',
                     points: doc.data['points'] ?? '0',
                     docId: doc.documentID,
@@ -474,6 +501,12 @@ class Auth with ChangeNotifier {
                   final _signInUsingPhone = json.encode({
                     'phoneToken': _token,
                   });
+                  final _savePhoneNumber = json.encode({
+                    'PhoneNumber': phone.phoneNumber,
+                    'dialCode':phoneNumber.dialCode,
+                    'isoCode':phoneNumber.isoCode,
+                  });
+                  prefs.setString('savePhoneNumber', _savePhoneNumber);
                   print('wtrwetetetetyyyyyyyyyyyyyyyyyyyy');
                   prefs.setString('signInUsingPhone', _signInUsingPhone);
                   DocumentSnapshot doc =
@@ -494,7 +527,8 @@ class Auth with ChangeNotifier {
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => AddUserData()));
                   } else {
-                    _userData = UserData(
+                    _userData = UserData(      isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
+
                         name: doc.data['name'],
                         points: doc.data['points'] ?? '0',
                         docId: doc.documentID,
@@ -545,6 +579,10 @@ class Auth with ChangeNotifier {
     print(email);
     print(password);
     AuthResult auth;
+    final prefs = await SharedPreferences.getInstance();
+    if(prefs.containsKey('savePhoneNumber')){
+      prefs.remove('savePhoneNumber');
+    }
     var users = databaseReference.collection("nurses");
     bool isRegisterData = true;
     bool isLogout = false;
@@ -639,8 +677,25 @@ class Auth with ChangeNotifier {
       "isActive": false,
     },merge: true);
   }
+
+  Future<bool>  verifyUniqueId({String id})async{
+    var patientCollection = databaseReference.collection("users");
+    var docs =await patientCollection.getDocuments();
+    bool verify = true;
+    if(docs.documents.length != 0){
+      for(int i=0; i<docs.documents.length; i++){
+        if(docs.documents[i].data['nationalId'] == id){
+          verify = false;
+          break ;
+        }
+      }
+    }
+    return verify;
+  }
+
   Future<bool> updateUserData({
     String name = '',
+    File pictureId,
     String location = '',
     String lat,
     String lng,
@@ -655,6 +710,7 @@ class Auth with ChangeNotifier {
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
     String imgUrl = '';
+    String IdImgUrl = '';
     print('picture');
     print(picture);
     final prefs = await SharedPreferences.getInstance();
@@ -696,11 +752,25 @@ class Auth with ChangeNotifier {
         prefs.setString('signInUsingEmail', _signInUsingEmail);
       }
     } else {
+        try {
+          var storageReference =  FirebaseStorage.instance
+              .ref()
+              .child('$name/${path.basename(pictureId.path)}');
+          StorageUploadTask uploadTask = storageReference.putFile(pictureId);
+          await uploadTask.onComplete;
+          await storageReference.getDownloadURL().then((fileURL) async {
+            IdImgUrl = fileURL;
+          });
+        } catch (e) {
+          print(e);
+        }
       patientData.document(_userId).setData({
         'name': name,
         'address': location,
         'lat':lat??'',
         'lng':lng??'',
+        'isVerify': 'false',
+        'pictureId':IdImgUrl,
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
         'nationalId': nationalId,
@@ -724,8 +794,8 @@ class Auth with ChangeNotifier {
     } else {
       doc = await patientData.document(_userId).get();
     }
-
     _userData = UserData(
+      isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
         name: doc.data['name'] ?? '',
         points: doc.data['points'] ?? '0',
         docId: doc.documentID,

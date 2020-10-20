@@ -13,6 +13,7 @@ class UserData {
   String gender;
   String imgUrl;
   String aboutYou;
+  String isVerify;
 bool loading;
   UserData(
       {this.docId,
@@ -27,6 +28,7 @@ bool loading;
         this.aboutYou,
       this.imgUrl,
       this.gender,
+        this.isVerify,
         this.loading =false,
       this.birthDate});
 }

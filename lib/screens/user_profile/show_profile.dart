@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/user_data.dart';
+import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:helpme/screens/shared_widget/show_user_location.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
@@ -23,7 +24,7 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
   Home _home;
   bool isLoading = true;
   UserData _userData;
-
+Auth _auth;
 Widget  personalInfo(
       {String title,
       String subtitle,
@@ -56,6 +57,7 @@ Widget  personalInfo(
   @override
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
+    _auth = Provider.of<Auth>(context, listen: false);
     getUserData();
     super.initState();
   }
@@ -195,7 +197,7 @@ Widget  personalInfo(
                               translator.currentLanguage == "en" ? _userData.name : _userData.name,
                           iconData: Icons.person,
                           infoWidget: infoWidget),
-                      _userData.address==''?SizedBox():
+                      _auth.getUserType!='nurse'?SizedBox():_userData.address==''?SizedBox():
                       InkWell(
                           onTap: _userData.lat !=''?(){
 
@@ -228,7 +230,7 @@ Widget  personalInfo(
                                   iconData: Icons.phone,
                                   infoWidget: infoWidget),
                           ),
-            _userData.birthDate==''?SizedBox():personalInfo(
+                      _auth.getUserType!='nurse'?SizedBox():_userData.birthDate==''?SizedBox():personalInfo(
                 title: translator.currentLanguage == "en"
                     ? 'Birth Date'
                     : 'تاريخ الميلاد',

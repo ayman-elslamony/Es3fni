@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:helpme/models/completed_request.dart';
 import 'package:helpme/models/supplying.dart';
 import 'package:helpme/models/user_data.dart';
-import 'package:helpme/providers/auth.dart';
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,7 +30,7 @@ class Home with ChangeNotifier {
   List<String> allServicesType =
       translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
   List<String> allAnalysisType = [];
-   List<Requests> allPatientsRequests = [];
+  List<Requests> allPatientsRequests = [];
   List<Requests> allAcceptedRequests = [];
   List<Requests> allPatientRequests = [];
   List<Requests> allArchivedRequests = [];
@@ -42,8 +41,6 @@ class Home with ChangeNotifier {
       docId: '', couponName: '', discountPercentage: '0.0', numberOfUses: '0');
   double discount = 0.0;
   double priceBeforeDiscount = 0.0;
-
-
 
   Future<void> unVerifyCoupon() async {
     double prices = price.servicePrice;
@@ -92,7 +89,7 @@ class Home with ChangeNotifier {
     var docs = await services.getDocuments();
     allService.clear();
     allServicesType =
-    translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
+        translator.currentLanguage == "en" ? ['Analysis'] : ['تحاليل'];
     if (docs.documents.length != 0) {
       for (int i = 0; i < docs.documents.length; i++) {
         allService.add(Service(
@@ -126,26 +123,51 @@ class Home with ChangeNotifier {
 
   Future getAllRequests() async {
     CollectionReference requests = databaseReference.collection('requests');
-    requests.where('nurseId', isEqualTo: '').snapshots().listen((docs){
+    requests.where('nurseId', isEqualTo: '').snapshots().listen((docs) {
       print(docs.documents);
       allPatientsRequests.clear();
       print('A');
       if (docs.documents.length != 0) {
         print('B');
+        String time='';
+        String acceptTime='';
+        List<String> convertAllVisitsTime=[];
         for (int i = 0; i < docs.documents.length; i++) {
+          if(docs.documents[i].data['time'] !=''){
+            time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+          }else{
+            time='';
+          }
+          if(docs.documents[i].data['acceptTime'] !=''){
+            acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
+          }else{
+            acceptTime='';
+          }
+          if (docs.documents[i].data['visitTime'] != '[]') {
+            var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
+           String visitTime = x.replaceAll(']', '');
+           List<String> times=visitTime.split(',');
+           if(times.length !=0){
+             for(int i=0; i<times.length; i++){
+               convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+             }
+           }
+          }else{
+            convertAllVisitsTime=[];
+          }
           allPatientsRequests.add(Requests(
-
+            acceptTime: acceptTime,
               nurseId: docs.documents[i].data['nurseId'] ?? '',
               patientId: docs.documents[i].data['patientId'] ?? '',
               docId: docs.documents[i].documentID,
-              visitTime: docs.documents[i].data['visitTime'] == '[]'
+              visitTime: convertAllVisitsTime.toString() == '[]'
                   ? ''
-                  : docs.documents[i].data['visitTime'] ?? '',
+                  : convertAllVisitsTime.toString(),
               visitDays: docs.documents[i].data['visitDays'] == '[]'
                   ? ''
                   : docs.documents[i].data['visitDays'] ?? '',
               suppliesFromPharmacy:
-              docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+                  docs.documents[i].data['suppliesFromPharmacy'] ?? '',
               startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
               serviceType: docs.documents[i].data['serviceType'] ?? '',
               picture: docs.documents[i].data['picture'] ?? '',
@@ -155,59 +177,59 @@ class Home with ChangeNotifier {
               patientGender: docs.documents[i].data['patientGender'] ?? '',
               patientAge: docs.documents[i].data['patientAge'] ?? '',
               servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-              time: docs.documents[i].data['time'] ?? '',
+              time: time,
               date: docs.documents[i].data['date'] ?? '',
               discountPercentage:
-              docs.documents[i].data['discountPercentage'] ?? '',
+                  docs.documents[i].data['discountPercentage'] ?? '',
               nurseGender: docs.documents[i].data['nurseGender'] ?? '',
               numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
               endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
               discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
               priceBeforeDiscount:
-              docs.documents[i].data['priceBeforeDiscount'] ?? '',
+                  docs.documents[i].data['priceBeforeDiscount'] ?? '',
               analysisType: docs.documents[i].data['analysisType'] ?? '',
               notes: docs.documents[i].data['notes'] ?? '',
               priceAfterDiscount:
-              docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
+                  docs.documents[i].data['priceAfterDiscount'].toString() ??
+                      ''));
         }
         print('dfbfdsndd');
         print(allPatientsRequests.length);
-
-      }else{
+      } else {
         allPatientsRequests.clear();
       }
       notifyListeners();
     });
-
   }
-  Future<UserData> getUserData({String type,String userId})async{
+
+  Future<UserData> getUserData({String type, String userId}) async {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
     UserData user;
-    if(type == 'Patient' || type == 'مريض'){
-     DocumentSnapshot doc =await patientCollection.document(userId).get();
-     if(doc.data !=null ){
-     user = UserData(
-              name: doc.data['name']??'',
-              docId: doc.documentID??'',
-              lat: doc.data['lat'] ?? '',
-              lng: doc.data['lng'] ?? '',
-              nationalId: doc.data['nationalId'] ?? '',
-              gender: doc.data['gender'] ?? '',
-              birthDate: doc.data['birthDate'] ?? '',
-              address: doc.data['address'] ?? '',
-              phoneNumber: doc.data['phoneNumber'] ?? '',
-              imgUrl: doc.data['imgUrl'] ?? '',
-              email: doc.data['email'] ?? '',
-              aboutYou: doc.data['aboutYou'] ?? '',
-              points: doc.data['points'] ?? '',
-            );
-     }
-    }else{
-      DocumentSnapshot doc =await nursesCollection.document(userId).get();
+    if (type == 'Patient' || type == 'مريض') {
+      DocumentSnapshot doc = await patientCollection.document(userId).get();
+      if (doc.data != null) {
+        user = UserData(
+          name: doc.data['name'] ?? '',
+          docId: doc.documentID ?? '',
+          lat: doc.data['lat'] ?? '',
+          lng: doc.data['lng'] ?? '',
+          nationalId: doc.data['nationalId'] ?? '',
+          gender: doc.data['gender'] ?? '',
+          birthDate: doc.data['birthDate'] ?? '',
+          address: doc.data['address'] ?? '',
+          phoneNumber: doc.data['phoneNumber'] ?? '',
+          imgUrl: doc.data['imgUrl'] ?? '',
+          email: doc.data['email'] ?? '',
+          aboutYou: doc.data['aboutYou'] ?? '',
+          points: doc.data['points'] ?? '',
+        );
+      }
+    } else {
+      DocumentSnapshot doc = await nursesCollection.document(userId).get();
       user = UserData(
-        name: doc.data['name']??'',
-        docId: doc.documentID??'',
+        name: doc.data['name'] ?? '',
+        docId: doc.documentID ?? '',
         lat: doc.data['lat'] ?? '',
         lng: doc.data['lng'] ?? '',
         nationalId: doc.data['nationalId'] ?? '',
@@ -223,25 +245,50 @@ class Home with ChangeNotifier {
     }
     return user;
   }
+
   Future getAllAcceptedRequests({String userId}) async {
     var requests = databaseReference.collection('requests');
-    QuerySnapshot docs  = await requests
-        .where('nurseId', isEqualTo: userId)
-        .getDocuments();
+    QuerySnapshot docs =
+        await requests.where('nurseId', isEqualTo: userId).getDocuments();
 
     allAcceptedRequests.clear();
     print('A');
     if (docs.documents.length != 0) {
       print('B');
+      String time='';
+      String acceptTime=''; List<String> convertAllVisitsTime=[];
       for (int i = 0; i < docs.documents.length; i++) {
+        if(docs.documents[i].data['time'] !=''){
+          time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+        }else{
+          time='';
+        }
+        if(docs.documents[i].data['acceptTime'] !=''){
+          acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
+        }else{
+          acceptTime='';
+        }
+
+        if (docs.documents[i].data['visitTime'] != '[]') {
+          var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
+          String visitTime = x.replaceAll(']', '');
+          List<String> times=visitTime.split(',');
+          if(times.length !=0){
+            for(int i=0; i<times.length; i++){
+              convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+            }
+          }
+        }else{
+          convertAllVisitsTime=[];
+        }
         allAcceptedRequests.add(Requests(
-            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
+            acceptTime: acceptTime,
             nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
-            visitTime: docs.documents[i].data['visitTime'] == '[]'
+            visitTime: convertAllVisitsTime.toString() == '[]'
                 ? ''
-                : docs.documents[i].data['visitTime'] ?? '',
+                : convertAllVisitsTime.toString(),
             visitDays: docs.documents[i].data['visitDays'] == '[]'
                 ? ''
                 : docs.documents[i].data['visitDays'] ?? '',
@@ -256,7 +303,7 @@ class Home with ChangeNotifier {
             patientGender: docs.documents[i].data['patientGender'] ?? '',
             patientAge: docs.documents[i].data['patientAge'] ?? '',
             servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-            time: docs.documents[i].data['time'] ?? '',
+            time: time,
             date: docs.documents[i].data['date'] ?? '',
             discountPercentage:
                 docs.documents[i].data['discountPercentage'] ?? '',
@@ -276,80 +323,134 @@ class Home with ChangeNotifier {
     }
     notifyListeners();
   }
-  Future getAllPatientRequests({String userId,String userType}) async {
-    if(userType =='patient'){
-    var requests = databaseReference.collection('requests');
-    requests
-          .where('patientId', isEqualTo: userId)
-          .snapshots().listen((docs){
-      print('A');
-      if (docs.documents.length != 0) {
-        print('B');
-        allPatientsRequests.clear();
-        for (int i = 0; i < docs.documents.length; i++) {
-          allPatientsRequests.add(Requests(
-            isFinished: docs.documents[i].data['isFinished'] ?? false,
-            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
-              nurseId: docs.documents[i].data['nurseId'] ?? '',
-              patientId: docs.documents[i].data['patientId'] ?? '',
-              docId: docs.documents[i].documentID,
-              visitTime: docs.documents[i].data['visitTime'] == '[]'
-                  ? ''
-                  : docs.documents[i].data['visitTime'] ?? '',
-              visitDays: docs.documents[i].data['visitDays'] == '[]'
-                  ? ''
-                  : docs.documents[i].data['visitDays'] ?? '',
-              suppliesFromPharmacy:
-              docs.documents[i].data['suppliesFromPharmacy'] ?? '',
-              startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
-              serviceType: docs.documents[i].data['serviceType'] ?? '',
-              picture: docs.documents[i].data['picture'] ?? '',
-              patientPhone: docs.documents[i].data['patientPhone'] ?? '',
-              patientName: docs.documents[i].data['patientName'] ?? '',
-              patientLocation: docs.documents[i].data['patientLocation'] ?? '',
-              patientGender: docs.documents[i].data['patientGender'] ?? '',
-              patientAge: docs.documents[i].data['patientAge'] ?? '',
-              servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-              time: docs.documents[i].data['time'] ?? '',
-              date: docs.documents[i].data['date'] ?? '',
-              discountPercentage:
-              docs.documents[i].data['discountPercentage'] ?? '',
-              nurseGender: docs.documents[i].data['nurseGender'] ?? '',
-              numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
-              endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
-              discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
-              priceBeforeDiscount:
-              docs.documents[i].data['priceBeforeDiscount'] ?? '',
-              analysisType: docs.documents[i].data['analysisType'] ?? '',
-              notes: docs.documents[i].data['notes'] ?? '',
-              priceAfterDiscount:
-              docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
+
+  Future getAllPatientRequests({String userId, String userType}) async {
+    if (userType == 'patient') {
+      var requests = databaseReference.collection('requests');
+      requests.where('patientId', isEqualTo: userId).snapshots().listen((docs) {
+        print('A');
+        if (docs.documents.length != 0) {
+          print('B');
+          allPatientsRequests.clear();
+          String time='';
+          String acceptTime=''; List<String> convertAllVisitsTime=[];
+          for (int i = 0; i < docs.documents.length; i++) {
+            if(docs.documents[i].data['time'] !=''){
+              time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+            }else{
+              time='';
+            }
+            if(docs.documents[i].data['acceptTime'] !=null){
+              acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
+            }else{
+              acceptTime='';
+            }
+
+            if (docs.documents[i].data['visitTime'] != '[]') {
+              var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
+              String visitTime = x.replaceAll(']', '');
+              List<String> times=visitTime.split(',');
+              if(times.length !=0){
+                for(int i=0; i<times.length; i++){
+                  convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+                }
+              }
+            }else{
+              convertAllVisitsTime=[];
+            }
+            allPatientsRequests.add(Requests(
+                isFinished: docs.documents[i].data['isFinished'] ?? false,
+                acceptTime: acceptTime,
+                nurseId: docs.documents[i].data['nurseId'] ?? '',
+                patientId: docs.documents[i].data['patientId'] ?? '',
+                docId: docs.documents[i].documentID,
+                visitTime: convertAllVisitsTime.toString() == '[]'
+                    ? ''
+                    : convertAllVisitsTime.toString(),
+                visitDays: docs.documents[i].data['visitDays'] == '[]'
+                    ? ''
+                    : docs.documents[i].data['visitDays'] ?? '',
+                suppliesFromPharmacy:
+                    docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+                startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
+                serviceType: docs.documents[i].data['serviceType'] ?? '',
+                picture: docs.documents[i].data['picture'] ?? '',
+                patientPhone: docs.documents[i].data['patientPhone'] ?? '',
+                patientName: docs.documents[i].data['patientName'] ?? '',
+                patientLocation:
+                    docs.documents[i].data['patientLocation'] ?? '',
+                patientGender: docs.documents[i].data['patientGender'] ?? '',
+                patientAge: docs.documents[i].data['patientAge'] ?? '',
+                servicePrice: docs.documents[i].data['servicePrice'] ?? '',
+                time: time,
+                date: docs.documents[i].data['date'] ?? '',
+                discountPercentage:
+                    docs.documents[i].data['discountPercentage'] ?? '',
+                nurseGender: docs.documents[i].data['nurseGender'] ?? '',
+                numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
+                endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
+                discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
+                priceBeforeDiscount:
+                    docs.documents[i].data['priceBeforeDiscount'] ?? '',
+                analysisType: docs.documents[i].data['analysisType'] ?? '',
+                notes: docs.documents[i].data['notes'] ?? '',
+                priceAfterDiscount:
+                    docs.documents[i].data['priceAfterDiscount'].toString() ??
+                        ''));
+          }
+          print(allPatientsRequests.length);
+        } else {
+          allPatientsRequests.clear();
         }
-        print(allPatientsRequests.length);
-      }else{
-        allPatientsRequests.clear();
-      }
-      notifyListeners();
-                });
+        notifyListeners();
+      });
     }
   }
+
   Future getAllArchivedRequests({String userId}) async {
-    var requests = databaseReference.collection('users').document(userId).collection('archived requests');
-    QuerySnapshot docs = await requests
-        .getDocuments();
+    var requests = databaseReference
+        .collection('users')
+        .document(userId)
+        .collection('archived requests');
+    QuerySnapshot docs = await requests.getDocuments();
     allArchivedRequests.clear();
     print('A');
     if (docs.documents.length != 0) {
       print('B');
+      String time='';
+      String acceptTime=''; List<String> convertAllVisitsTime=[];
       for (int i = 0; i < docs.documents.length; i++) {
+        if(docs.documents[i].data['time'] !=''){
+          time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+        }else{
+          time='';
+        }
+        if(docs.documents[i].data['acceptTime'] !=''){
+          acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
+        }else{
+          acceptTime='';
+        }
+
+        if (docs.documents[i].data['visitTime'] != '[]') {
+          var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
+          String visitTime = x.replaceAll(']', '');
+          List<String> times=visitTime.split(',');
+          if(times.length !=0){
+            for(int i=0; i<times.length; i++){
+              convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+            }
+          }
+        }else{
+          convertAllVisitsTime=[];
+        }
         allArchivedRequests.add(Requests(
-            acceptTime: docs.documents[i].data['acceptTime'] ?? '',
+            acceptTime: acceptTime,
             nurseId: docs.documents[i].data['nurseId'] ?? '',
             patientId: docs.documents[i].data['patientId'] ?? '',
             docId: docs.documents[i].documentID,
-            visitTime: docs.documents[i].data['visitTime'] == '[]'
+            visitTime: convertAllVisitsTime.toString() == '[]'
                 ? ''
-                : docs.documents[i].data['visitTime'] ?? '',
+                : convertAllVisitsTime.toString(),
             visitDays: docs.documents[i].data['visitDays'] == '[]'
                 ? ''
                 : docs.documents[i].data['visitDays'] ?? '',
@@ -364,7 +465,7 @@ class Home with ChangeNotifier {
             patientGender: docs.documents[i].data['patientGender'] ?? '',
             patientAge: docs.documents[i].data['patientAge'] ?? '',
             servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-            time: docs.documents[i].data['time'] ?? '',
+            time: time,
             date: docs.documents[i].data['date'] ?? '',
             discountPercentage:
                 docs.documents[i].data['discountPercentage'] ?? '',
@@ -390,11 +491,18 @@ class Home with ChangeNotifier {
     var docs = await supplies.collection('supplies').getDocuments();
     if (docs.documents.length != 0) {
       allNurseSupplies.clear();
+      String time='';
       for (int i = 0; i < docs.documents.length; i++) {
+
+        if(docs.documents[i].data['time'] !=''){
+          time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+        }else{
+          time='';
+        }
         allNurseSupplies.add(Supplying(
             points: docs.documents[i].data['points'] ?? '',
             date: docs.documents[i].data['date'] ?? '',
-            time: docs.documents[i].data['time'] ?? ''));
+            time: time));
       }
     }
     notifyListeners();
@@ -402,7 +510,7 @@ class Home with ChangeNotifier {
 
   Future<bool> addRequest(
       {String analysisType,
-        String patientId,
+      String patientId,
       String patientName,
       String patientPhone,
       String patientLocation,
@@ -439,8 +547,7 @@ class Home with ChangeNotifier {
 
     DocumentReference x = await databaseReference.collection('requests').add({
       'nurseId': '',
-      'patientId':
-      patientId??'',
+      'patientId': patientId ?? '',
       'patientName': patientName,
       'patientPhone': patientPhone,
       'patientLocation': patientLocation,
@@ -470,11 +577,11 @@ class Home with ChangeNotifier {
       'priceAfterDiscount': price.servicePrice,
     });
 
-      await users
-          .document(patientId)
-          .collection('requests')
-          .document(x.documentID)
-          .setData({'docId': x.documentID});
+    await users
+        .document(patientId)
+        .collection('requests')
+        .document(x.documentID)
+        .setData({'docId': x.documentID});
     if (coupon.docId != '') {
       int x = int.parse(coupon.numberOfUses);
       if (x != 0) {
@@ -483,6 +590,11 @@ class Home with ChangeNotifier {
       _coupons.document(coupon.docId).updateData({
         'numberOfUses': x,
       });
+      await users
+          .document(patientId)
+          .collection('coupons')
+          .document(coupon.docId)
+          .setData({'couponName': coupon.couponName});
     }
     return true;
   }
@@ -491,7 +603,8 @@ class Home with ChangeNotifier {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
     CollectionReference allRequests = databaseReference.collection('requests');
-    CollectionReference archived = databaseReference.collection('archived requests');
+    CollectionReference archived =
+        databaseReference.collection('archived requests');
 //    CollectionReference allArchived = databaseReference.collection('archived');
     int points = int.parse(userData.points);
     points = points + 50;
@@ -507,23 +620,47 @@ class Home with ChangeNotifier {
       'serviceType': request.serviceType,
       'analysisType': request.analysisType,
       'points': '50',
-      'date': '${dateTime.day}-${dateTime.month}-${dateTime.year}',
+      'date': '${dateTime.year}-${dateTime.month}-${dateTime.day}',
       'time': '${dateTime.hour}:${dateTime.minute}',
     });
 //    allArchived.document(request.docId).setData({
 //      'docId':request.docId,
 //      'patientId':request.patientId
 //    });
-    allRequests
-        .document(request.docId).delete();
-    if(request.patientId != '') {
-    await  patientCollection.document(request.patientId).collection(
-          'archived requests').document(request.docId).setData({
+
+
+    String acceptTime='';
+    String time=''; List<String> convertAllVisitsTime=[];
+    if(acceptTime !=''){
+      acceptTime = convertTimeTo24Hour(time: request.acceptTime);
+    }
+    if(request.time !=''){
+      time = convertTimeTo24Hour(time: request.time);
+    }
+
+    if (request.visitTime != '[]') {
+      var x = request.visitTime.replaceFirst('[', '').toString();
+      String visitTime = x.replaceAll(']', '');
+      List<String> times=visitTime.split(',');
+      if(times.length !=0){
+        for(int i=0; i<times.length; i++){
+          convertAllVisitsTime.add(convertTimeTo24Hour(time: times[i]));
+        }
+      }
+    }else{
+      convertAllVisitsTime=[];
+    }
+    allRequests.document(request.docId).delete();
+    if (request.patientId != '') {
+      await patientCollection
+          .document(request.patientId)
+          .collection('archived requests')
+          .document(request.docId)
+          .setData({
+        'acceptTime':acceptTime,
         'nurseId': userData.docId,
-        'patientId':
-        request.patientId,
+        'patientId': request.patientId,
         'patientName': request.patientName,
-         'acceptTime':'${dateTime.hour}:${dateTime.minute}',
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
@@ -533,7 +670,7 @@ class Home with ChangeNotifier {
         'analysisType': request.analysisType,
         'nurseGender': request.nurseGender,
         'date': request.date,
-        'time': request.time,
+        'time':time,
         'servicePrice': request.servicePrice,
         'suppliesFromPharmacy': request.suppliesFromPharmacy,
         'picture': request.picture,
@@ -542,18 +679,17 @@ class Home with ChangeNotifier {
         'startVisitDate': request.startVisitDate,
         'endVisitDate': request.endVisitDate,
         'visitDays': request.visitDays,
-        'visitTime': request.visitTime,
+        'visitTime': convertAllVisitsTime.toString(),
         'notes': request.notes,
         'priceBeforeDiscount': request.priceBeforeDiscount,
         'priceAfterDiscount': request.priceAfterDiscount,
       });
-    }else{
+    } else {
       await archived.document(request.docId).setData({
         'nurseId': userData.docId,
-        'patientId':
-        request.patientId,
+        'patientId': request.patientId,
         'patientName': request.patientName,
-        'acceptTime':'${dateTime.hour}:${dateTime.minute}',
+        'acceptTime':acceptTime,
         'patientPhone': request.patientPhone,
         'patientLocation': request.patientLocation,
         'patientAge': request.patientAge,
@@ -563,7 +699,7 @@ class Home with ChangeNotifier {
         'analysisType': request.analysisType,
         'nurseGender': request.nurseGender,
         'date': request.date,
-        'time': request.time,
+        'time':time,
         'servicePrice': request.servicePrice,
         'suppliesFromPharmacy': request.suppliesFromPharmacy,
         'picture': request.picture,
@@ -572,110 +708,440 @@ class Home with ChangeNotifier {
         'startVisitDate': request.startVisitDate,
         'endVisitDate': request.endVisitDate,
         'visitDays': request.visitDays,
-        'visitTime': request.visitTime,
+        'visitTime': convertAllVisitsTime.toString(),
         'notes': request.notes,
         'priceBeforeDiscount': request.priceBeforeDiscount,
         'priceAfterDiscount': request.priceAfterDiscount,
       });
     }
-    allPatientsRequests.removeWhere((x)=>x.docId==request.docId);
-    allAcceptedRequests.removeWhere((x)=>x.docId==request.docId);
+    allPatientsRequests.removeWhere((x) => x.docId == request.docId);
+    allAcceptedRequests.removeWhere((x) => x.docId == request.docId);
     userData.points = points.toString();
     notifyListeners();
     return true;
   }
+
   Future<bool> sendRequestToFinish({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
-    allRequests
-        .document(requestId).setData({
-      'isFinished':true
-    },merge: true);
-    return true;
-  }
-  Future<bool> sendRequestToCancel({String requestId}) async {
-    CollectionReference allRequests = databaseReference.collection('requests');
-    allRequests
-        .document(requestId).setData({
-      'isFinished':false
-    },merge: true);
+    allRequests.document(requestId).setData({'isFinished': true}, merge: true);
     return true;
   }
 
-  Future<String> verifyCoupon({String couponName}) async {
-    var services = databaseReference.collection("coupons");
-    QuerySnapshot docs = await services
-        .where('couponName', isEqualTo: couponName)
-        .getDocuments();
-    if (docs.documents.length == 0) {
-      return 'false';
-    } else {
-      List<String> date =
-      docs.documents[0].data['expiryDate'].toString().split('-');
-      print(date);
-      DateTime time =
-      DateTime(int.parse(date[2]), int.parse(date[1]), int.parse(date[0]));
-      if (price.isAddingDiscount == false &&
-          price.servicePrice != 0.0 &&
-          docs.documents[0].data['numberOfUses'] != '0' &&
-          time.isAfter(DateTime.now())) {
-        coupon = Coupon(
-          docId: docs.documents[0].documentID,
-          couponName: docs.documents[0].data['couponName'],
-          discountPercentage: docs.documents[0].data['discountPercentage'],
-          expiryDate: docs.documents[0].data['expiryDate'],
-          numberOfUses: docs.documents[0].data['numberOfUses'],
-        );
-        double prices = price.servicePrice;
-        priceBeforeDiscount = price.servicePrice;
-        discount = prices * (double.parse(coupon.discountPercentage) / 100);
-        List<String> x = price.allServiceType;
-        price = Price(
-            servicePrice: (prices - discount),
-            isAddingDiscount: true,
-            allServiceType: x);
-        notifyListeners();
-        return 'true';
-      } else if (price.servicePrice == 0.0) {
-        return 'add service before discount';
-      } else if (!time.isAfter(DateTime.now()) ||
-          docs.documents[0].data['numberOfUses'] == '0') {
-        return 'Coupon not Avilable';
+  Future<bool> sendRequestToCancel({String requestId}) async {
+    CollectionReference allRequests = databaseReference.collection('requests');
+    allRequests.document(requestId).setData({'isFinished': false}, merge: true);
+    return true;
+  }
+
+  Future<String> verifyCoupon({String userId,String couponName}) async {
+    CollectionReference services = databaseReference.collection("coupons");
+    CollectionReference users = databaseReference.collection("users");
+    QuerySnapshot isUsedBefore=await users
+        .document(userId)
+        .collection('coupons').where('couponName', isEqualTo: couponName).getDocuments();
+    if(isUsedBefore.documents.length != 0){
+      return 'isUserBefore';
+    }else{
+
+      QuerySnapshot docs = await services
+          .where('couponName', isEqualTo: couponName)
+          .getDocuments();
+      if (docs.documents.length == 0) {
+        return 'false';
       } else {
-        return 'already discount';
+        List<String> date =
+        docs.documents[0].data['expiryDate'].toString().split('-');
+        print(date);
+        DateTime time =
+        DateTime(int.parse(date[0]), int.parse(date[1]), int.parse(date[2]));
+        if (price.isAddingDiscount == false &&
+            price.servicePrice != 0.0 &&
+            docs.documents[0].data['numberOfUses'] != '0' &&
+            time.isAfter(DateTime.now())) {
+          coupon = Coupon(
+            docId: docs.documents[0].documentID,
+            couponName: docs.documents[0].data['couponName'],
+            discountPercentage: docs.documents[0].data['discountPercentage'],
+            expiryDate: docs.documents[0].data['expiryDate'],
+            numberOfUses: docs.documents[0].data['numberOfUses'],
+          );
+          double prices = price.servicePrice;
+          priceBeforeDiscount = price.servicePrice;
+          discount = prices * (double.parse(coupon.discountPercentage) / 100);
+          List<String> x = price.allServiceType;
+          price = Price(
+              servicePrice: (prices - discount),
+              isAddingDiscount: true,
+              allServiceType: x);
+          notifyListeners();
+          return 'true';
+        } else if (price.servicePrice == 0.0) {
+          return 'add service before discount';
+        } else if (!time.isAfter(DateTime.now()) ||
+            docs.documents[0].data['numberOfUses'] == '0') {
+          return 'Coupon not Avilable';
+        } else {
+          return 'already discount';
+        }
       }
     }
   }
-  Future<bool> deleteRequest({Requests request}) async {
+
+  Future<bool> deleteRequest({String patientId,Requests request}) async {
     var requests = databaseReference.collection("requests");
     await requests.document(request.docId).delete();
 
-    if(request.discountCoupon != ''){
-      var _coupons = databaseReference.collection("coupons");
+    if (request.discountCoupon != '') {
+      CollectionReference users = databaseReference.collection("users");
+      CollectionReference _coupons = databaseReference.collection("coupons");
       QuerySnapshot docs = await _coupons
           .where('couponName', isEqualTo: request.discountCoupon)
           .getDocuments();
       if (docs.documents.length != 0) {
         int x = int.parse(docs.documents[0].data['numberOfUses']);
-          x = x + 1;
-        _coupons.document(coupon.docId).updateData({
+        x = x + 1;
+        await _coupons.document(docs.documents[0].documentID).updateData({
           'numberOfUses': x,
         });
+          await users
+              .document(patientId)
+              .collection('coupons')
+              .document(docs.documents[0].documentID)
+              .delete();
       }
     }
-    allPatientsRequests.removeWhere((x) => x.docId== request.docId);
+    allPatientsRequests.removeWhere((x) => x.docId == request.docId);
     notifyListeners();
     return true;
   }
+
   Future<bool> acceptRequest({Requests request, UserData userData}) async {
     DateTime dateTime = DateTime.now();
     CollectionReference requests = databaseReference.collection('requests');
-    requests.document(request.docId).updateData({'nurseId': userData.docId,
-      'acceptTime':'${dateTime.hour}:${dateTime.minute}',});
-    allPatientsRequests.removeWhere((x)=>x.docId==request.docId);
-    request.nurseId=userData.docId;
+    requests.document(request.docId).updateData({
+      'nurseId': userData.docId,
+      'acceptTime': '${dateTime.hour}:${dateTime.minute}',
+    });
+    allPatientsRequests.removeWhere((x) => x.docId == request.docId);
+    request.nurseId = userData.docId;
     allAcceptedRequests.add(request);
 //    getAllCompletedRequests(userId: userData.docId);
     return true;
+  }
+
+  String convertTimeToAMOrPM({String time}) {
+    List<String> split = time.split(':');
+    int clock = int.parse(split[0]);
+    String realTime = '';
+    print('clock: $clock');
+      switch (clock) {
+        case 13:
+          realTime = translator.currentLanguage == 'en'
+              ? '1:${split[1]} PM'
+              : '1:${split[1]} م ';
+          break;
+        case 14:
+          realTime = translator.currentLanguage == 'en'
+              ? '2:${split[1]} PM'
+              : '2:${split[1]} م ';
+          break;
+        case 15:
+          realTime = translator.currentLanguage == 'en'
+              ? '3:${split[1]} PM'
+              : '3:${split[1]} م ';
+          break;
+        case 16:
+          realTime = translator.currentLanguage == 'en'
+              ? '4:${split[1]} PM'
+              : '4:${split[1]} م ';
+          break;
+        case 17:
+          realTime = translator.currentLanguage == 'en'
+              ? '5:${split[1]} PM'
+              : '5:${split[1]} م ';
+          break;
+        case 18:
+          realTime = translator.currentLanguage == 'en'
+              ? '6:${split[1]} PM'
+              : '6:${split[1]} م ';
+          break;
+        case 19:
+          realTime = translator.currentLanguage == 'en'
+              ? '7:${split[1]} PM'
+              : '7:${split[1]} م ';
+          break;
+        case 20:
+          realTime = translator.currentLanguage == 'en'
+              ? '8:${split[1]} PM'
+              : '8:${split[1]} م ';
+          break;
+        case 21:
+          realTime = translator.currentLanguage == 'en'
+              ? '9:${split[1]} PM'
+              : '9:${split[1]} م ';
+          break;
+        case 22:
+          realTime = translator.currentLanguage == 'en'
+              ? '10:${split[1]} PM'
+              : '10:${split[1]} م ';
+          break;
+        case 23:
+          realTime = translator.currentLanguage == 'en'
+              ? '11:${split[1]} PM'
+              : '11:${split[1]} م ';
+          break;
+        case 00:
+        case 0:
+          realTime = translator.currentLanguage == 'en'
+              ? '12:${split[1]} PM'
+              : '12:${split[1]} م ';
+          break;
+        case 01:
+          realTime = translator.currentLanguage == 'en'
+              ? '1:${split[1]} AM'
+              : '1:${split[1]} ص ';
+          break;
+        case 02:
+          realTime = translator.currentLanguage == 'en'
+              ? '2:${split[1]} AM'
+              : '2:${split[1]} ص ';
+          break;
+        case 03:
+          realTime = translator.currentLanguage == 'en'
+              ? '3:${split[1]} AM'
+              : '3:${split[1]} ص ';
+          break;
+        case 04:
+          realTime = translator.currentLanguage == 'en'
+              ? '4:${split[1]} AM'
+              : '4:${split[1]} ص ';
+          break;
+        case 05:
+          realTime = translator.currentLanguage == 'en'
+              ? '5:${split[1]} AM'
+              : '5:${split[1]} ص ';
+          break;
+        case 06:
+          realTime = translator.currentLanguage == 'en'
+              ? '6:${split[1]} AM'
+              : '6:${split[1]} ص ';
+          break;
+        case 07:
+          realTime = translator.currentLanguage == 'en'
+              ? '7:${split[1]} AM'
+              : '7:${split[1]} ص ';
+          break;
+        case 08:
+          realTime = translator.currentLanguage == 'en'
+              ? '8:${split[1]} AM'
+              : '8:${split[1]} ص ';
+          break;
+        case 09:
+          realTime = translator.currentLanguage == 'en'
+              ? '9:${split[1]} AM'
+              : '9:${split[1]} ص ';
+          break;
+        case 10:
+          realTime = translator.currentLanguage == 'en'
+              ? '10:${split[1]} AM'
+              : '10:${split[1]} ص ';
+          break;
+        case 11:
+          realTime = translator.currentLanguage == 'en'
+              ? '11:${split[1]} AM'
+              : '11:${split[1]} ص ';
+          break;
+        case 12:
+          realTime = translator.currentLanguage == 'en'
+              ? '12:${split[1]} AM':'12:${split[1]} ص ';
+          break;
+      }
+    return realTime;
+  }
+  String convertTimeTo24Hour({String time}){
+    String realTime = '';
+    print('time: $time');
+
+    if(translator.currentLanguage == 'en'){
+      if(time.contains('AM')){
+        String splitter = time.replaceAll('AM','').trim();
+        List<String> splitTime = splitter.split(':');
+        print('SplitTime: ${splitTime.toString()} ');
+        switch(int.parse(splitTime[0])){
+          case 1:
+            realTime = '01:${ splitTime[1]}';
+            break;
+          case 2:
+            realTime = '02:${ splitTime[1]}';
+            break;
+          case 3:
+            realTime = '03:${ splitTime[1]}';
+            break;
+          case 4:
+            realTime = '04:${ splitTime[1]}';
+            break;
+          case 5:
+            realTime = '05:${ splitTime[1]}';
+            break;
+          case 6:
+            realTime = '06:${ splitTime[1]}';
+            break;
+          case 7:
+            realTime = '07:${ splitTime[1]}';
+            break;
+          case 8:
+            realTime = '08:${ splitTime[1]}';
+            break;
+          case 9:
+            realTime = '09:${ splitTime[1]}';
+            break;
+          case 10:
+            realTime = '10:${ splitTime[1]}';
+            break;
+          case 11:
+            realTime = '11:${ splitTime[1]}';
+            break;
+          case 12:
+            realTime = '12:${ splitTime[1]}';
+            break;
+        }
+        print('realTime:: $realTime');
+      }
+      if(time.contains('PM')){
+        String splitter = time.replaceAll('PM','').trim();
+        List<String> splitTime = splitter.split(':');
+        print('SplitTime: ${splitTime.toString()} ');
+        switch(int.parse(splitTime[0])){
+          case 1:
+            realTime = '13:${ splitTime[1]}';
+            break;
+          case 2:
+            realTime = '14:${ splitTime[1]}';
+            break;
+          case 3:
+            realTime = '15:${ splitTime[1]}';
+            break;
+          case 4:
+            realTime = '16:${ splitTime[1]}';
+            break;
+          case 5:
+            realTime = '17:${ splitTime[1]}';
+            break;
+          case 6:
+            realTime = '18:${ splitTime[1]}';
+            break;
+          case 7:
+            realTime = '19:${ splitTime[1]}';
+            break;
+          case 8:
+            realTime = '20:${ splitTime[1]}';
+            break;
+          case 9:
+            realTime = '21:${ splitTime[1]}';
+            break;
+          case 10:
+            realTime = '22:${ splitTime[1]}';
+            break;
+          case 11:
+            realTime = '23:${ splitTime[1]}';
+            break;
+          case 12:
+            realTime = '00:${ splitTime[1]}';
+            break;
+        }
+        print('realTime:: $realTime');
+      }
+    }else{
+      if(time.contains('ص')){
+        String splitter = time.replaceAll('ص','').trim();
+        List<String> splitTime = splitter.split(':');
+        print('SplitTime: ${splitTime.toString()} ');
+        switch(int.parse(splitTime[0])){
+          case 1:
+            realTime = '01:${ splitTime[1]}';
+            break;
+          case 2:
+            realTime = '02:${ splitTime[1]}';
+            break;
+          case 3:
+            realTime = '03:${ splitTime[1]}';
+            break;
+          case 4:
+            realTime = '04:${ splitTime[1]}';
+            break;
+          case 5:
+            realTime = '05:${ splitTime[1]}';
+            break;
+          case 6:
+            realTime = '06:${ splitTime[1]}';
+            break;
+          case 7:
+            realTime = '07:${ splitTime[1]}';
+            break;
+          case 8:
+            realTime = '08:${ splitTime[1]}';
+            break;
+          case 9:
+            realTime = '09:${ splitTime[1]}';
+            break;
+          case 10:
+            realTime = '10:${ splitTime[1]}';
+            break;
+          case 11:
+            realTime = '11:${ splitTime[1]}';
+            break;
+          case 12:
+            realTime = '12:${ splitTime[1]}';
+            break;
+        }
+        print('realTime:: $realTime');
+      }
+      if(time.contains('م')){
+        String splitter = time.replaceAll('م','').trim();
+        List<String> splitTime = splitter.split(':');
+        print('SplitTime: ${splitTime.toString()} ');
+        switch(int.parse(splitTime[0])){
+          case 1:
+            realTime = '13:${ splitTime[1]}';
+            break;
+          case 2:
+            realTime = '14:${ splitTime[1]}';
+            break;
+          case 3:
+            realTime = '15:${ splitTime[1]}';
+            break;
+          case 4:
+            realTime = '16:${ splitTime[1]}';
+            break;
+          case 5:
+            realTime = '17:${ splitTime[1]}';
+            break;
+          case 6:
+            realTime = '18:${ splitTime[1]}';
+            break;
+          case 7:
+            realTime = '19:${ splitTime[1]}';
+            break;
+          case 8:
+            realTime = '20:${ splitTime[1]}';
+            break;
+          case 9:
+            realTime = '21:${ splitTime[1]}';
+            break;
+          case 10:
+            realTime = '22:${ splitTime[1]}';
+            break;
+          case 11:
+            realTime = '23:${ splitTime[1]}';
+            break;
+          case 12:
+            realTime = '00:${ splitTime[1]}';
+            break;
+        }
+        print('realTime:: $realTime');
+      }
+    }
+    return realTime;
   }
 
   Future getAllCompletedRequests({String userId}) async {
@@ -684,11 +1150,17 @@ class Home with ChangeNotifier {
     var docs = await completed.getDocuments();
     if (docs.documents.length != 0) {
       allCompleteRequests.clear();
+      String time='';
       for (int i = 0; i < docs.documents.length; i++) {
+        if(docs.documents[i].data['time'] !=''){
+          time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+        }else{
+          time='';
+        }
         allCompleteRequests.add(CompleteRequest(
           docId: docs.documents[i].documentID,
           date: docs.documents[i].data['date'] ?? '',
-          time: docs.documents[i].data['time'] ?? '',
+          time: time,
           points: docs.documents[i].data['points'] ?? '',
           analysisType: docs.documents[i].data['analysisType'] ?? '',
           serviceType: docs.documents[i].data['serviceType'] ?? '',

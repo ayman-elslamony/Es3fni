@@ -511,7 +511,7 @@ class _PatientRequestsState extends State<PatientRequests> {
               children: <Widget>[
                 RaisedButton(
                   onPressed: ()async{
-                    bool x =await _home.deleteRequest(request: request);
+                    bool x =await _home.deleteRequest(patientId: _auth.userId,request: request);
                     if(x){
                       Toast.show(translator.currentLanguage == "en" ?"Successfully Deleted":'تم الحذف', context,
                           duration: Toast.LENGTH_SHORT,
@@ -654,9 +654,26 @@ class _PatientRequestsState extends State<PatientRequests> {
             ),
           ),
           floatingActionButton: _showFloating?FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => AddRequest()));
+            onPressed: () async{
+              print('_auth.userData.isVerify: ${_auth.userData.isVerify}');
+              if(_auth.userData.isVerify == '' || _auth.userData.isVerify == 'false'){
+bool x =await  _auth.checkIsPatientVerify();
+              if(x){
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddRequest()));
+              }else{
+                Toast.show(
+                    translator.currentLanguage == "en"
+                        ? "Your account has not been reviewed yet"
+                        : 'لم يتم مراجعه الحساب بعد',
+                    context,
+                    gravity: Toast.BOTTOM);
+              }
+              }else{
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddRequest()));
+              }
+
             },
             tooltip: translator.currentLanguage == "en" ? 'add' : 'اضافه',
             child: Icon(

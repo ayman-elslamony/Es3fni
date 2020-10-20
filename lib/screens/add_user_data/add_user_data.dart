@@ -1,6 +1,8 @@
 import 'dart:io';
 
+
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:flutter/material.dart';
@@ -40,12 +42,14 @@ class _AddUserDataState extends State<AddUserData> {
   bool _selectUserLocationFromMap = false;
   bool _isGenderSelected = false;
   bool enablePicture = false;
+  bool enablePictureID = false;
   List<bool> values = List.filled(7, false);
   TextEditingController _locationTextEditingController =
   TextEditingController();
   String lat;
   String lng;
-  File _imageFile;
+  File _imageFileForPersonalImage;
+  File _imageFileForId;
   List<String> _genderList = [];
   Map<String, dynamic> _userData = {
     'name': '',
@@ -55,7 +59,8 @@ class _AddUserDataState extends State<AddUserData> {
     'Birth Date': translator.currentLanguage == "en"
         ?"Date":'التاريخ',
     'aboutYou': '',
-    'UrlImg': '',
+    'UrlImgForUser': '',
+    'UrlImgForId': '',
     'Location': '',
   };
 
@@ -72,7 +77,7 @@ class _AddUserDataState extends State<AddUserData> {
       nameController.text = _auth.userData.name;
       _userData['name'] = _auth.userData.name;
       if(_auth.userData.imgUrl !=''){
-        _userData['UrlImg'] =_auth.userData.imgUrl;
+        _userData['UrlImgForUser'] =_auth.userData.imgUrl;
         enablePicture = true;
       }
     }
@@ -310,23 +315,31 @@ class _AddUserDataState extends State<AddUserData> {
     );
   }
 
-  Future<void> _getImage(ImageSource source) async {
+  Future<void> _getImage(ImageSource source,String type) async {
     await _picker
         .getImage(source: source, maxWidth: 400.0)
         .then((PickedFile image) {
       if (image != null) {
         File x = File(image.path);
-        _userData['UrlImg'] = x;
-        setState(() {
-          _imageFile = x;
-          enablePicture = true;
-        });
+        if(type=='ID') {
+          _userData['UrlImgForId'] = x;
+          setState(() {
+            _imageFileForId = x;
+            enablePictureID = true;
+          });
+        }else{
+          _userData['UrlImgForUser'] = x;
+          setState(() {
+            _imageFileForPersonalImage = x;
+            enablePicture = true;
+          });
+        }
       }
       Navigator.pop(context);
     });
   }
 
-  void _openImagePicker() {
+  void _openImagePicker({String type='ID'}) {
     showModalBottomSheet(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
@@ -381,7 +394,7 @@ class _AddUserDataState extends State<AddUserData> {
                           fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
-                      _getImage(ImageSource.camera);
+                      _getImage(ImageSource.camera,type);
                       // Navigator.of(context).pop();
                     },
                   ),
@@ -411,7 +424,7 @@ class _AddUserDataState extends State<AddUserData> {
                           fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
-                      _getImage(ImageSource.gallery);
+                      _getImage(ImageSource.gallery,type);
                       // Navigator.of(context).pop();
                     },
                   ),
@@ -426,17 +439,23 @@ class _AddUserDataState extends State<AddUserData> {
       setState(() {
         _isLoading = true;
       });
+      bool isVerify = true;
+      if(_auth.getUserType !='nurse'){
+        isVerify =await Provider.of<Auth>(context, listen: false).verifyUniqueId(id: _userData['National Id']);
+      }
+      if(isVerify){
       try {
         bool isScuess =await Provider.of<Auth>(context, listen: false)
             .updateUserData(
           name: _userData['name'],
           lat: lat,
           lng: lng,
+          pictureId: _userData['UrlImgForId']==''?null:_userData['UrlImgForId'],
           nationalId: _userData['National Id'],
           phoneNumber: _userData['Phone number'],
           birthDate: _userData['Birth Date'],
           gender: _userData['gender'],
-         picture: _userData['UrlImg']==''?null:_userData['UrlImg'],
+         picture: _userData['UrlImgForUser']==''?null:_userData['UrlImgForUser'],
           aboutYou: _userData['aboutYou'],
             location:_userData['Location'],
         );
@@ -447,10 +466,9 @@ class _AddUserDataState extends State<AddUserData> {
           });
           Toast.show(
               translator.currentLanguage == "en"
-                  ? "Welcome ${_auth.userData.name} 😃"
-                  : 'مرحبا ${_auth.userData.name} 😃',
+                  ? "Welcome ${_auth.userData.name}"
+                  : 'مرحبا ${_auth.userData.name}',
               context,
-              duration: Toast.LENGTH_SHORT,
               gravity: Toast.BOTTOM);
             Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(context)=>HomeScreen()));
         } else {
@@ -470,6 +488,18 @@ class _AddUserDataState extends State<AddUserData> {
             ?"Please try again":'من فضلك حاول مره اخرى', context,
             duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       }
+      }else{
+        setState(() {
+          _isLoading = false;
+        });
+        Toast.show(
+            translator.currentLanguage == "en"
+                ? "National Id is used by another account"
+                : 'الرقم القومى مستخدم بواسطه حساب اخر',
+            context,
+            duration: Toast.LENGTH_LONG,
+            gravity: Toast.BOTTOM);
+      }
     }
 
   _incrementStep() {
@@ -486,19 +516,37 @@ class _AddUserDataState extends State<AddUserData> {
       }
 
     if (currentStep == 0) {
-      if (_userData['Birth Date'] == '' ||
-          _userData['gender'] == '' ||
-          _userData['Location'] == ''
-         ) {
-        Toast.show(
-            translator.currentLanguage == "en"
-                ? "Please Complete data"
-                : 'من فضلك اكمل البيانات',
-            context,
-            duration: Toast.LENGTH_SHORT,
-            gravity: Toast.BOTTOM);
-      } else {
-        verifyUserData();
+      if(_auth.getUserType == 'nurse') {
+        if (_userData['Birth Date'] == '' ||
+            _userData['gender'] == '' ||
+            _userData['Location'] == ''
+        ) {
+          Toast.show(
+              translator.currentLanguage == "en"
+                  ? "Please Complete data"
+                  : 'من فضلك اكمل البيانات',
+              context,
+              duration: Toast.LENGTH_SHORT,
+              gravity: Toast.BOTTOM);
+        } else {
+          verifyUserData();
+        }
+      }else{
+        if (_userData['Birth Date'] == '' ||
+            _userData['gender'] == '' ||
+            _userData['Location'] == ''||
+            _userData['UrlImgForUser'] == ''||_userData['UrlImgForId'] == ''
+        ) {
+          Toast.show(
+              translator.currentLanguage == "en"
+                  ? "Please Complete data"
+                  : 'من فضلك اكمل البيانات',
+              context,
+              duration: Toast.LENGTH_SHORT,
+              gravity: Toast.BOTTOM);
+        } else {
+          verifyUserData();
+        }
       }
     }
   }
@@ -576,8 +624,8 @@ class _AddUserDataState extends State<AddUserData> {
                     steps: [
                       Step(
                         title: Text(translator.currentLanguage == "en"
-                            ? 'Information'
-                            : 'معلوماتك'),
+                            ? 'Personal Information'
+                            : 'المعلومات الشخصيه',style: infoWidget.subTitle.copyWith(color: Color(0xff484848)),),
                         isActive: true,
                         state: StepState.indexed,
                         content: Form(
@@ -856,7 +904,7 @@ class _AddUserDataState extends State<AddUserData> {
                                       padding: const EdgeInsets.symmetric(vertical: 7),
                                       child: Text(
                                         translator.currentLanguage == "en" ? 'Birth Date:  ' : 'تاريخ الميلاد:  ',
-                                        style: TextStyle(fontSize: 18),
+                                          style: infoWidget.subTitle.copyWith(color: Color(0xff484848))
                                       ),
                                     ),
                                     RaisedButton(
@@ -877,7 +925,7 @@ class _AddUserDataState extends State<AddUserData> {
                                               print('confirm $date');
                                               setState(() {
                                                 _userData['Birth Date'] =
-                                                '${date.day}-${date.month}-${date.year}';
+                                                '${date.year}-${date.month}-${date.day}';
                                               });
                                             },
                                             currentTime: DateTime.now(),
@@ -892,8 +940,7 @@ class _AddUserDataState extends State<AddUserData> {
                                         translator.currentLanguage == "en"
                                             ? '${_userData['Birth Date']}'
                                             : '${_userData['Birth Date']}',
-                                        style:
-                                        TextStyle(color: Colors.white, fontSize: 18),
+                                          style: infoWidget.subTitle.copyWith(color: Colors.white)
                                       ),
                                     ),
                                   ],
@@ -909,8 +956,7 @@ class _AddUserDataState extends State<AddUserData> {
                                       child: Text(
                                         translator.currentLanguage == "en"
                                             ? 'Gender:'
-                                            : 'النوع:',
-                                        style: TextStyle(fontSize: 18),
+                                            : 'النوع:',style: infoWidget.subTitle.copyWith(color: Color(0xff484848))
                                       ),
                                     ),
                                     Padding(
@@ -932,10 +978,7 @@ class _AddUserDataState extends State<AddUserData> {
                                                       ? translator.currentLanguage == "en"
                                                       ? 'gender'
                                                       : 'النوع'
-                                                      : _userData['gender'],
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold)),
+                                                      : _userData['gender'],style: infoWidget.subTitle.copyWith(color: Color(0xff484848))),
                                             ),
                                             Container(
                                               height: 40,
@@ -969,7 +1012,7 @@ class _AddUserDataState extends State<AddUserData> {
                                   ],
                                 ),
                               ),
-                              Padding(
+                              _auth.getUserType!='nurse'?Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0, top: 17),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -979,14 +1022,14 @@ class _AddUserDataState extends State<AddUserData> {
                                         padding: const EdgeInsets.symmetric(vertical: 7),
                                         child: Text(
                                           translator.currentLanguage == "en"
-                                              ? 'Add picture:'
-                                              : 'اضافه صوره:',
-                                          style: TextStyle(fontSize: 18),
+                                              ? 'A photo of the ID from the front :'
+                                              : 'صوره البطاقه الشخصيه من الامام:',
+                                            style: infoWidget.subTitle.copyWith(color: Color(0xff484848)),
                                           maxLines: 2,
                                         ),
                                       ),
                                     ),
-                                    enablePicture
+                                    enablePictureID
                                         ? SizedBox()
                                         : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1009,12 +1052,99 @@ class _AddUserDataState extends State<AddUserData> {
                                                   translator.currentLanguage == "en"
                                                       ? " Select Image "
                                                       : ' اختر صوره ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .display1
-                                                      .copyWith(
-                                                      color: Colors.white,
-                                                      fontSize: 17),
+                                                    style: infoWidget.subTitle.copyWith(color: Colors.white)
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ):SizedBox(),
+                              enablePictureID
+                                  ? Container(
+                                width: double.infinity,
+                                height: 200,
+                                child: Stack(
+                                  children: <Widget>[
+                                    ClipRRect(
+                                      //backgroundColor: Colors.white,
+                                      //backgroundImage:
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: _userData['UrlImgForId'].runtimeType == String?Image.network(
+                                          _userData['UrlImgForId'],
+                                        fit: BoxFit.fill,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ):Image.file(
+                                        _imageFileForId,
+                                        fit: BoxFit.fill,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ),
+                                    ),
+                                    Positioned(
+                                        top: 3.0,
+                                        right: 3.0,
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Colors.indigo,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _userData['UrlImgForId'] = '';
+                                                _imageFileForId = null;
+                                                enablePictureID = false;
+                                              });
+                                            }))
+                                  ],
+                                ),
+                              )
+                                  : SizedBox(),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0, top: 17),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 7),
+                                        child: Text(
+                                          translator.currentLanguage == "en"
+                                              ? 'Add picture:'
+                                              : 'اضافه صوره شخصيه:'
+                                            ,style: infoWidget.subTitle.copyWith(color: Color(0xff484848))
+                                          ,maxLines: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    enablePicture
+                                        ? SizedBox()
+                                        : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding:
+                                          const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              _openImagePicker(type: 'w');
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(4.0),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.indigo,
+                                                  borderRadius: BorderRadius.circular(10)),
+                                              child: Center(
+                                                child: Text(
+                                                  translator.currentLanguage == "en"
+                                                      ? " Select Image "
+                                                      : ' اختر صوره ',
+                                                    style: infoWidget.subTitle.copyWith(color: Colors.white)
                                                 ),
                                               ),
                                             ),
@@ -1035,13 +1165,13 @@ class _AddUserDataState extends State<AddUserData> {
                                       //backgroundColor: Colors.white,
                                       //backgroundImage:
                                       borderRadius: BorderRadius.circular(10),
-                                      child: _userData['UrlImg'].runtimeType == String?Image.network(
-                                          _userData['UrlImg'],
+                                      child: _userData['UrlImgForUser'].runtimeType == String?Image.network(
+                                          _userData['UrlImgForUser'],
                                         fit: BoxFit.fill,
                                         width: double.infinity,
                                         height: 200,
                                       ):Image.file(
-                                        _imageFile,
+                                        _imageFileForPersonalImage,
                                         fit: BoxFit.fill,
                                         width: double.infinity,
                                         height: 200,
@@ -1057,8 +1187,8 @@ class _AddUserDataState extends State<AddUserData> {
                                             ),
                                             onPressed: () {
                                               setState(() {
-                                                _userData['UrlImg'] = '';
-                                                _imageFile = null;
+                                                _userData['UrlImgForUser'] = '';
+                                                _imageFileForPersonalImage = null;
                                                 enablePicture = false;
                                               });
                                             }))

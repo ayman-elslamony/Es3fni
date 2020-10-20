@@ -7,9 +7,12 @@ import 'package:helpme/screens/sign_in_and_up/register_using_phone/verify_code.d
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 import '../../../models/http_exception.dart';
 import '../../main_screen.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class SignIn extends StatefulWidget {
   @override
@@ -24,7 +27,6 @@ class _SignInState extends State<SignIn> {
   bool _showPassword = false;
   bool _isSignInSuccessful = false;
   Auth _auth;
-
   FocusNode focusNode = FocusNode();
   final TextEditingController controller = TextEditingController();
   String initialCountry = 'EG';
@@ -36,6 +38,7 @@ class _SignInState extends State<SignIn> {
   bool _isSignInUsingPhoneSuccessful = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
   var loggedIn = false;
+
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -53,6 +56,7 @@ class _SignInState extends State<SignIn> {
       ),
     );
   }
+
   Future<void> _submitForm({BuildContext context}) async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
@@ -60,12 +64,14 @@ class _SignInState extends State<SignIn> {
         _isSignInSuccessful = true;
       });
       try {
-        bool auth = await Provider.of<Auth>(context, listen: false).signInUsingEmailForNurse(
-            email: email.trim(), password: password.trim(),context: context);
+        bool auth = await Provider.of<Auth>(context, listen: false)
+            .signInUsingEmailForNurse(
+                email: email.trim(),
+                password: password.trim(),
+                context: context);
         if (auth == true) {
-          Toast.show(
-              "successfully Sign In", context, duration: Toast.LENGTH_SHORT,
-              gravity: Toast.BOTTOM);
+          Toast.show("successfully Sign In", context,
+              duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => HomeScreen()));
         }
@@ -108,13 +114,38 @@ class _SignInState extends State<SignIn> {
         _showErrorDialog(errorMessage);
       }
     }
-
   }
 
   @override
   void initState() {
     _auth = Provider.of<Auth>(context, listen: false);
+    getPhoneNumber();
     super.initState();
+  }
+
+  getPhoneNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    //prefs.remove('savePhoneNumber');
+    if (prefs.containsKey('savePhoneNumber')) {
+      final phoneData = await json.decode(prefs.getString('savePhoneNumber'))
+          as Map<String, Object>;
+      _isSignInUsingPhoneSuccessful = true;
+      phoneNumber = PhoneNumber(
+        phoneNumber: phoneData['PhoneNumber'],
+        dialCode: phoneData['dialCode'],
+        isoCode: phoneData['isoCode'],
+      );
+      number = PhoneNumber(
+        phoneNumber: phoneData['PhoneNumber'],
+        dialCode: phoneData['dialCode'],
+        isoCode: phoneData['isoCode'],
+      );
+      print(phoneData['PhoneNumber']);
+      controller.text = phoneData['PhoneNumber'].toString();
+     setState(() {
+
+     });
+    }
   }
 
   @override
@@ -269,7 +300,7 @@ class _SignInState extends State<SignIn> {
                               ],
                             )
                           : RaisedButton(
-                        onPressed: ()=>_submitForm(context: context),
+                              onPressed: () => _submitForm(context: context),
                               color: Colors.white,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -286,7 +317,9 @@ class _SignInState extends State<SignIn> {
                                   borderRadius: BorderRadius.circular(15),
                                   side: BorderSide(color: Colors.indigoAccent)),
                             ),
-                      SizedBox(height: 20,),
+                      SizedBox(
+                        height: 20,
+                      ),
                       _isSignInUsingPhoneSuccessful
                           ? Material(
                               shadowColor: Colors.indigoAccent,
@@ -305,8 +338,7 @@ class _SignInState extends State<SignIn> {
                                           MainAxisAlignment.center,
                                       children: <Widget>[
                                         InternationalPhoneNumberInput(
-                                          onInputChanged:
-                                              (PhoneNumber number) {
+                                          onInputChanged: (PhoneNumber number) {
                                             phoneNumber = number;
                                           },
                                           focusNode: focusNode,
@@ -321,8 +353,7 @@ class _SignInState extends State<SignIn> {
                                                 color: Colors.indigo),
                                           ),
                                           hintText:
-                                              translator.currentLanguage ==
-                                                      "en"
+                                              translator.currentLanguage == "en"
                                                   ? 'phone number'
                                                   : 'رقم الهاتف',
                                         ),
@@ -333,9 +364,7 @@ class _SignInState extends State<SignIn> {
                                           onPressed: () async {
                                             focusNode.unfocus();
                                             formKey.currentState.validate();
-                                            if (controller.text
-                                                    .trim()
-                                                    .length ==
+                                            if (controller.text.trim().length ==
                                                 12) {
                                               formKey.currentState.save();
                                               print(phoneNumber);
@@ -354,13 +383,10 @@ class _SignInState extends State<SignIn> {
                                           },
                                           color: Colors.indigo,
                                           child: Padding(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 50),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 50),
                                             child: Text(
-                                              translator.currentLanguage ==
-                                                      "en"
+                                              translator.currentLanguage == "en"
                                                   ? 'Get Code'
                                                   : 'الحصول على الكود',
                                               style: infoWidget.titleButton,
@@ -406,7 +432,9 @@ class _SignInState extends State<SignIn> {
                                 ),
                               ),
                             ),
-                      SizedBox(height: 4,),
+                      SizedBox(
+                        height: 4,
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -414,75 +442,117 @@ class _SignInState extends State<SignIn> {
                             flex: 1,
                             child: RaisedButton(
                               color: Colors.red,
-                              onPressed:
-                                  () async{
+                              onPressed: () async {
                                 setState(() {
-                                  _isSignInUsingGoogleSuccessful=true;
+                                  _isSignInUsingGoogleSuccessful = true;
                                 });
-                                String x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG(type: 'G',context: context);
-                                if(x=='false'){
-                                  Toast.show(translator.currentLanguage == "en"
-                                      ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                                String x = await Provider.of<Auth>(context,
+                                        listen: false)
+                                    .signInUsingFBorG(
+                                        type: 'G', context: context);
+                                if (x == 'false') {
+                                  Toast.show(
+                                      translator.currentLanguage == "en"
+                                          ? "Please try again!"
+                                          : 'من فضلك حاول اخرى',
+                                      context,
+                                      duration: Toast.LENGTH_SHORT,
+                                      gravity: Toast.BOTTOM);
                                   setState(() {
-                                    _isSignInUsingGoogleSuccessful=false;
+                                    _isSignInUsingGoogleSuccessful = false;
                                   });
-                                }else if(x=='GoToRegister'){
-                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>AddUserData()));
-                                }else{
-                                  Toast.show(translator.currentLanguage == "en"
-                                      ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+                                } else if (x == 'GoToRegister') {
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => AddUserData()));
+                                } else {
+                                  Toast.show(
+                                      translator.currentLanguage == "en"
+                                          ? "successfully Sign In"
+                                          : 'نجح تسجيل الدخول',
+                                      context,
+                                      duration: Toast.LENGTH_SHORT,
+                                      gravity: Toast.BOTTOM);
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => HomeScreen()));
                                 }
 //
                               },
                               shape: RoundedRectangleBorder(
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
+                                      BorderRadius.all(Radius.circular(10))),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: _isSignInUsingGoogleSuccessful?Center(child: CircularProgressIndicator(),): ImageIcon(
-                                  AssetImage('assets/google.png'),
-                                  color: Colors.white,
-                                ),
+                                child: _isSignInUsingGoogleSuccessful
+                                    ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : ImageIcon(
+                                        AssetImage('assets/google.png'),
+                                        color: Colors.white,
+                                      ),
                               ),
                             ),
                           ),
-                          SizedBox(width: 6,),
+                          SizedBox(
+                            width: 6,
+                          ),
                           Expanded(
                             flex: 1,
                             child: RaisedButton(
                               color: Colors.blue[900],
-                              onPressed: () async{
+                              onPressed: () async {
                                 setState(() {
-                                  _isSignInUsingFBSuccessful=true;
+                                  _isSignInUsingFBSuccessful = true;
                                 });
-                                String x = await Provider.of<Auth>(context, listen: false).signInUsingFBorG(type: 'FB',context: context);
-                                if(x=='false'){
-                                  Toast.show(translator.currentLanguage == "en"
-                                      ? "Please try again!":'من فضلك حاول اخرى', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+                                String x = await Provider.of<Auth>(context,
+                                        listen: false)
+                                    .signInUsingFBorG(
+                                        type: 'FB', context: context);
+                                if (x == 'false') {
+                                  Toast.show(
+                                      translator.currentLanguage == "en"
+                                          ? "Please try again!"
+                                          : 'من فضلك حاول اخرى',
+                                      context,
+                                      duration: Toast.LENGTH_SHORT,
+                                      gravity: Toast.BOTTOM);
                                   setState(() {
-                                    _isSignInUsingFBSuccessful=false;
+                                    _isSignInUsingFBSuccessful = false;
                                   });
-                                }else if(x=='GoToRegister'){
-                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>AddUserData()));
-                                }else{
-                                  Toast.show(translator.currentLanguage == "en"
-                                      ? "successfully Sign In":'نجح تسجيل الدخول', context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>HomeScreen()));
+                                } else if (x == 'GoToRegister') {
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => AddUserData()));
+                                } else {
+                                  Toast.show(
+                                      translator.currentLanguage == "en"
+                                          ? "successfully Sign In"
+                                          : 'نجح تسجيل الدخول',
+                                      context,
+                                      duration: Toast.LENGTH_SHORT,
+                                      gravity: Toast.BOTTOM);
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => HomeScreen()));
                                 }
                               },
                               shape: RoundedRectangleBorder(
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
+                                      BorderRadius.all(Radius.circular(10))),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: _isSignInUsingFBSuccessful?Center(child: CircularProgressIndicator(),):
-                                ImageIcon(
-                                  AssetImage(
-                                    'assets/facebook.png',
-                                  ),
-                                  color: Colors.white,
-                                ),
+                                child: _isSignInUsingFBSuccessful
+                                    ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : ImageIcon(
+                                        AssetImage(
+                                          'assets/facebook.png',
+                                        ),
+                                        color: Colors.white,
+                                      ),
                               ),
                             ),
                           ),
