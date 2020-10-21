@@ -81,7 +81,7 @@ class _AddRequestState extends State<AddRequest> {
     'numberOfUsersUseService': '1',
     'lat': '',
     'long': '',
-    'startDate': '${_dateTimeNow.day}-${_dateTimeNow.month}-${_dateTimeNow.year}',
+    'startDate': '${_dateTimeNow.year}-${_dateTimeNow.month}-${_dateTimeNow.day}',
     'endDate': '',
   };
   List<String> workingDays = translator.currentLanguage == "en"
@@ -101,13 +101,26 @@ class _AddRequestState extends State<AddRequest> {
   //List<Step> steps = [];
   Home _home;
   Auth _auth;
-  bool isAnalysisSelected = false;
 
   getAllServicesAndAnalysis() async {
     await _home.getAllServices();
     await _home.getAllAnalysis();
   }
-
+ _sort() {
+   for (int i = 0; i < _selectedWorkingDays.length; i++) {
+     int getIndex = workingDays.indexOf(_selectedWorkingDays[i]);
+     if (!_sortedWorkingDays.contains(_selectedWorkingDays[i])) {
+       _sortedWorkingDays.insert(getIndex, _selectedWorkingDays[i]);
+     }
+   }
+   List<String> _listOfDays=[];
+   for(int i=0; i<_sortedWorkingDays.length;i++){
+     if(_sortedWorkingDays[i] !=''){
+       _listOfDays.add(_sortedWorkingDays[i]);
+     }
+   }
+   _sortedWorkingDays = _listOfDays;
+ }
   @override
   void initState() {
     super.initState();
@@ -126,7 +139,7 @@ class _AddRequestState extends State<AddRequest> {
     _paramedicsData['gender']=_auth.userData.gender ;
     List<String> ageList = _auth.userData.birthDate.split('-');
     print(ageList);
-    DateTime birthday = DateTime(int.parse(ageList[2]),int.parse(ageList[1]),int.parse(ageList[0]));
+    DateTime birthday = DateTime(int.parse(ageList[0]),int.parse(ageList[1]),int.parse(ageList[2]));
     DateTime today = DateTime.now();
     AgeDuration age;
     // Find out your age
@@ -136,6 +149,8 @@ class _AddRequestState extends State<AddRequest> {
     _isGenderSelected =true;
     _paramedicsData['age']=age.years.toString();
     _paramedicsData['Location']=_auth.userData.address ;
+    _paramedicsData['lat']=_auth.userData.lat ;
+    _paramedicsData['long']=_auth.userData.lng ;
     _locationTextEditingController.text=_auth.userData.address ;
     getAllServicesAndAnalysis();
     if (translator.currentLanguage != "en") {
@@ -164,6 +179,7 @@ class _AddRequestState extends State<AddRequest> {
       _selectedWorkingDays.remove(workingDays[index]);
     }
   }
+
   Future<String> _getLocation() async {
     Position position =
     await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
@@ -438,8 +454,13 @@ class _AddRequestState extends State<AddRequest> {
             visitsTime.add(_home.convertTimeTo24Hour(time: visitTime[i]));
           }
         }
+        if(_selectedWorkingDays.length!=0) {
+          _sort();
+        }
         bool isSccuess = await _home.addRequest(
           patientId: _auth.userId,
+          patientLat: _paramedicsData['lat'],
+          patientLong: _paramedicsData['long'],
           analysisType: _paramedicsData['analysis type'],
           notes: _paramedicsData['notes'],
           discountCoupon: _paramedicsData['coupon'],
@@ -455,7 +476,7 @@ class _AddRequestState extends State<AddRequest> {
           serviceType: _paramedicsData['service type'],
           startVisitDate: _paramedicsData['startDate'],
           suppliesFromPharmacy: _paramedicsData['accessories'],
-          visitDays: _selectedWorkingDays.toString(),
+          visitDays: _selectedWorkingDays.length!=0?_sortedWorkingDays.toString():'',
           visitTime: visitsTime.toString(),
         );
         print('isScuessisScuess$isSccuess');
@@ -589,6 +610,14 @@ class _AddRequestState extends State<AddRequest> {
                   ? 'New request'
                   : 'طلب جديد',
               style: infoWidget.titleButton,
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios),
+              color: Colors.white,
+              onPressed: (){
+                _home.resetPrice();
+                Navigator.of(context).pop();
+              },
             ),
             actions: <Widget>[
               Padding(
@@ -1236,8 +1265,6 @@ class _AddRequestState extends State<AddRequest> {
                                                           val == 'Analysis') {
                                                         setState(() {
                                                           _home.resetPrice();
-                                                          isAnalysisSelected =
-                                                          true;
                                                           _paramedicsData[
                                                           'analysis type'] = '';
                                                           _paramedicsData[
@@ -1252,7 +1279,7 @@ class _AddRequestState extends State<AddRequest> {
                                                             type: '',
                                                             serviceType: val);
                                                         setState(() {
-                                                          isAnalysisSelected =
+                                                          _isAnalysisSelected =
                                                           false;
                                                           _paramedicsData[
                                                           'analysis type'] = '';
@@ -1278,7 +1305,10 @@ class _AddRequestState extends State<AddRequest> {
                                 ],
                               ),
                             ),
-                            isAnalysisSelected
+                            _paramedicsData[
+                            'service type']=='تحاليل' ||
+                                _paramedicsData[
+                                'service type'] == 'Analysis'
                                 ? Padding(
                               padding: const EdgeInsets.only(
                                   bottom: 8.0, top: 17),
@@ -1728,6 +1758,7 @@ class _AddRequestState extends State<AddRequest> {
                                     ),
                                   ),
                                   Column(
+
                                     mainAxisAlignment:
                                     MainAxisAlignment.center,
                                     crossAxisAlignment:
@@ -1934,6 +1965,7 @@ class _AddRequestState extends State<AddRequest> {
                                     MainAxisAlignment.center,
                                     crossAxisAlignment:
                                     CrossAxisAlignment.center,
+                                    textDirection: translator.currentLanguage=='en'?TextDirection.ltr:TextDirection.rtl,
                                     children: <Widget>[
                                       Switch(
                                         value: enableScheduleTheService,
@@ -1965,6 +1997,7 @@ class _AddRequestState extends State<AddRequest> {
                             ),
                             enableScheduleTheService
                                 ? Column(
+                              textDirection: translator.currentLanguage=='en'?TextDirection.ltr:TextDirection.rtl,
                               children: <Widget>[
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -1997,117 +2030,113 @@ class _AddRequestState extends State<AddRequest> {
                                     ],
                                   ),
                                 ),
-                                Column(
-                                  children: <Widget>[
-                                    RaisedButton(
-                                      onPressed: () {
-                                        DatePicker.showDatePicker(
-                                            context,
-                                            showTitleActions: true,
-                                            theme: DatePickerTheme(
-                                              itemStyle: TextStyle(
-                                                  color: Colors
-                                                      .indigo),
-                                              backgroundColor:
-                                              Colors.white,
-                                              headerColor:
-                                              Colors.white,
-                                              doneStyle: TextStyle(
-                                                  color: Colors
-                                                      .indigoAccent),
-                                              cancelStyle:
-                                              TextStyle(
-                                                  color: Colors
-                                                      .black87),
-                                            ),
-                                            minTime: DateTime.now(),
-                                            maxTime: DateTime(
-                                                2080, 6, 7),
-                                            onChanged: (_) {},
-                                            onConfirm: (date) {
-                                              print('confirm $date');
-                                              setState(() {
-                                                _paramedicsData[
-                                                'startDate'] =
-                                                '${date.year}-${date.month}-${date.day}';
-                                              });
-                                            },
-                                            currentTime:
-                                            DateTime.now(),
-                                            locale: translator
-                                                .currentLanguage ==
-                                                "en"
-                                                ? LocaleType.en
-                                                : LocaleType.ar);
-                                      },
-                                      color: Colors.indigo,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                              10)),
-                                      child: Text(
-                                          translator.currentLanguage ==
-                                              "en"
-                                              ? 'Start Date ${_paramedicsData['startDate']}'
-                                              : ' تاريخ البدايه ${_paramedicsData['startDate']}',
-                                          style: infoWidget
-                                              .titleButton),
-                                    ),
-                                    RaisedButton(
-                                      onPressed: () {
-                                        DatePicker.showDatePicker(
-                                            context,
-                                            showTitleActions: true,
-                                            theme: DatePickerTheme(
-                                              itemStyle: TextStyle(
-                                                  color: Colors
-                                                      .indigo),
-                                              backgroundColor:
-                                              Colors.white,
-                                              headerColor:
-                                              Colors.white,
-                                              doneStyle: TextStyle(
-                                                  color: Colors
-                                                      .indigoAccent),
-                                              cancelStyle:
-                                              TextStyle(
-                                                  color: Colors
-                                                      .black87),
-                                            ),
-                                            minTime: DateTime.now(),
-                                            maxTime: DateTime(
-                                                2080, 6, 7),
-                                            onChanged: (_) {},
-                                            onConfirm: (date) {
-                                              print('confirm $date');
-                                              setState(() {
-                                                _paramedicsData[
-                                                'endDate'] =
-                                                '${date.year}-${date.month}-${date.day}';
-                                              });
-                                            },
-                                            currentTime:
-                                            DateTime.now(),
-                                            locale: translator
-                                                .currentLanguage ==
-                                                "en"
-                                                ? LocaleType.en
-                                                : LocaleType.ar);
-                                      },
-                                      color: Colors.indigo,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                              10)),
-                                      child: Text(
-                                          translator.currentLanguage ==
-                                              "en"
-                                              ? 'End Date ${_paramedicsData['endDate']}'
-                                              : ' تاريخ النهايه ${_paramedicsData['endDate']} ',
-                                          style: infoWidget
-                                              .titleButton),
-                                    ),
-                                  ],
+                                RaisedButton(
+                                  onPressed: () {
+                                    DatePicker.showDatePicker(
+                                        context,
+                                        showTitleActions: true,
+                                        theme: DatePickerTheme(
+                                          itemStyle: TextStyle(
+                                              color: Colors
+                                                  .indigo),
+                                          backgroundColor:
+                                          Colors.white,
+                                          headerColor:
+                                          Colors.white,
+                                          doneStyle: TextStyle(
+                                              color: Colors
+                                                  .indigoAccent),
+                                          cancelStyle:
+                                          TextStyle(
+                                              color: Colors
+                                                  .black87),
+                                        ),
+                                        minTime: DateTime.now(),
+                                        maxTime: DateTime(
+                                            2080, 6, 7),
+                                        onChanged: (_) {},
+                                        onConfirm: (date) {
+                                          print('confirm $date');
+                                          setState(() {
+                                            _paramedicsData[
+                                            'startDate'] =
+                                            '${date.year}-${date.month}-${date.day}';
+                                          });
+                                        },
+                                        currentTime:
+                                        DateTime.now(),
+                                        locale: translator
+                                            .currentLanguage ==
+                                            "en"
+                                            ? LocaleType.en
+                                            : LocaleType.ar);
+                                  },
+                                  color: Colors.indigo,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          10)),
+                                  child: Text(
+                                      translator.currentLanguage ==
+                                          "en"
+                                          ? 'Start Date ${_paramedicsData['startDate']}'
+                                          : ' تاريخ البدايه ${_paramedicsData['startDate']}',
+                                      style: infoWidget
+                                          .titleButton),
+                                ),
+                                RaisedButton(
+                                  onPressed: () {
+                                    DatePicker.showDatePicker(
+                                        context,
+                                        showTitleActions: true,
+                                        theme: DatePickerTheme(
+                                          itemStyle: TextStyle(
+                                              color: Colors
+                                                  .indigo),
+                                          backgroundColor:
+                                          Colors.white,
+                                          headerColor:
+                                          Colors.white,
+                                          doneStyle: TextStyle(
+                                              color: Colors
+                                                  .indigoAccent),
+                                          cancelStyle:
+                                          TextStyle(
+                                              color: Colors
+                                                  .black87),
+                                        ),
+                                        minTime: DateTime.now(),
+                                        maxTime: DateTime(
+                                            2080, 6, 7),
+                                        onChanged: (_) {},
+                                        onConfirm: (date) {
+                                          print('confirm $date');
+                                          setState(() {
+                                            _paramedicsData[
+                                            'endDate'] =
+                                            '${date.year}-${date.month}-${date.day}';
+                                          });
+                                        },
+                                        currentTime:
+                                        DateTime.now(),
+                                        locale: translator
+                                            .currentLanguage ==
+                                            "en"
+                                            ? LocaleType.en
+                                            : LocaleType.ar);
+                                  },
+                                  color: Colors.indigo,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          10)),
+                                  child: Text(
+                                      translator.currentLanguage ==
+                                          "en"
+                                          ? 'End Date ${_paramedicsData['endDate']}'
+                                          : ' تاريخ النهايه ${_paramedicsData['endDate']} ',
+                                      style: infoWidget
+                                          .titleButton),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -2432,12 +2461,9 @@ class _AddRequestState extends State<AddRequest> {
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(
-                                                color: _clicked[
-                                                index]
-                                                    ? Colors
+                                                color: Colors
                                                     .grey
-                                                    : Colors
-                                                    .indigo,
+                                                    ,
                                                 borderRadius:
                                                 BorderRadius.circular(
                                                     10)),

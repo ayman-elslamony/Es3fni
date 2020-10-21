@@ -15,6 +15,7 @@ import 'package:toast/toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'add_request.dart';
+import 'edit_request.dart';
 
 class PatientRequests extends StatefulWidget {
   @override
@@ -535,7 +536,20 @@ class _PatientRequestsState extends State<PatientRequests> {
                       side: BorderSide(color: Colors.indigoAccent)),
                 ),
               ],
-            ),bottom: 8.0,right: 10.0,left: 10.0,):SizedBox()
+            ),bottom: 8.0,right: 10.0,left: 10.0,):SizedBox(),
+        request.nurseId ==''?Positioned(child:
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                IconButton(icon: Icon(Icons.mode_edit), onPressed: (){
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => EditRequest(request: request,)));
+                },
+                color: Colors.indigo,
+                ),
+              ],
+            ),top:4.0,right: 10.0,left: 10.0,):SizedBox()
           ],
         ),
       ),
