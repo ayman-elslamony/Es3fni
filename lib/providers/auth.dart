@@ -18,6 +18,8 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 
+import 'home.dart';
+
 class Auth with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
@@ -102,6 +104,7 @@ class Auth with ChangeNotifier {
       });
       signInType = 'signInUsingPhone';
     }
+
     if (signInType == 'signInUsingFBorG') {
       return true;
     } else if (signInType == 'signInUsingPhone') {
@@ -110,6 +113,7 @@ class Auth with ChangeNotifier {
       return false;
     }
   }
+
   Future<bool> editProfile(
       {String type,
       String address,
@@ -606,10 +610,13 @@ Future<bool>  checkIsPatientVerify()async{
             doc.data['phoneNumber'] == null ||
             doc.data['gender'] == null) {
           if (isTryToLogin == false) {
+
             _userData = UserData(
+
                 name: doc.data['name'] ?? 'Nurse',
                 docId: doc.documentID,
                 password: password,
+                rating: '0.0',
                 nationalId: doc.data['nationalId'] ?? '',
                 gender: doc.data['gender'] ?? '',
                 birthDate: doc.data['birthDate'] ?? '',
@@ -625,7 +632,21 @@ Future<bool>  checkIsPatientVerify()async{
             isRegisterData = false;
           }
         } else {
+
+          DocumentSnapshot rating = await users.document(_userId).collection('rating').document('rating').get();
+          double totalRating = 0.0;
+          if(rating.exists) {
+            int one = rating.data['1'] == null ? 0 : int.parse(rating.data['1']);
+            int two = rating.data['2'] == null ? 0 : int.parse(rating.data['2']);
+            int three = rating.data['3'] == null ? 0 : int.parse(rating.data['3']);
+            int four = rating.data['4'] == null ? 0 : int.parse(rating.data['4']);
+            int five = rating.data['5'] == null ? 0 : int.parse(rating.data['5']);
+            totalRating =
+                (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
+                    (one + two + three + four + five);
+          }
           _userData = UserData(
+            rating: totalRating.toString(),
               name: doc.data['name'] ?? 'Nurse',
               points: doc.data['points'].toString() ?? '0',
               docId: doc.documentID,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:helpme/models/completed_request.dart';
 import 'package:helpme/models/supplying.dart';
 import 'package:helpme/models/user_data.dart';
@@ -24,7 +25,6 @@ class Home with ChangeNotifier {
     this.authToken,
     this.authId,
   );
-
   List<Service> allService = [];
   List<Analysis> allAnalysis = [];
   List<String> allServicesType =
@@ -36,6 +36,8 @@ class Home with ChangeNotifier {
   List<Requests> allArchivedRequests = [];
   List<Supplying> allNurseSupplies = [];
   List<CompleteRequest> allCompleteRequests = [];
+  double totalRatingForNurse = 0.0;
+  double radiusForAllRequests= 1.0;
   Price price = Price(allServiceType: [], servicePrice: 0.0);
   Coupon coupon = Coupon(
       docId: '', couponName: '', discountPercentage: '0.0', numberOfUses: '0');
@@ -51,7 +53,6 @@ class Home with ChangeNotifier {
         allServiceType: x);
     notifyListeners();
   }
-
   addToPrice({String type, String serviceType}) {
     if (type == 'analysis') {
       if (!price.allServiceType.contains(serviceType)) {
@@ -134,89 +135,261 @@ class Home with ChangeNotifier {
     }
     notifyListeners();
   }
-
-  Future getAllRequests() async {
+  changeRadiusForAllRequests(double val){
+    radiusForAllRequests = val;
+    notifyListeners();
+  }
+  Future getAllRequests({String lat='0.0',String long='0.0'}) async {
     CollectionReference requests = databaseReference.collection('requests');
     requests.where('nurseId', isEqualTo: '').snapshots().listen((docs) {
       print(docs.documents);
       allPatientsRequests.clear();
+      double distance = 0.0;
       print('A');
       if (docs.documents.length != 0) {
         print('B');
-        String time='';
-        String acceptTime='';
-        List<String> convertAllVisitsTime=[];
+        String time = '';
+        String acceptTime = '';
+        List<String> convertAllVisitsTime = [];
         for (int i = 0; i < docs.documents.length; i++) {
-          if(docs.documents[i].data['time'] !=''){
-            time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
-          }else{
-            time='';
+          print('userlat:$lat');
+          print('lat:${docs.documents[i].data['lat']}');
+          print('userlng:$long');
+          print('lng:${docs.documents[i].data['long']}');
+          distance = _calculateDistance(
+              lat != '' ? double.parse(lat) : 0.0,
+              long != '' ? double.parse(long) : 0.0,
+              double.parse(docs.documents[i].data['lat']??0.0),
+              double.parse(docs.documents[i].data['long']??0.0));
+          print('distance::$distance');
+
+          if (distance <= radiusForAllRequests) {
+            if (docs.documents[i].data['time'] != '') {
+              time = convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+            } else {
+              time = '';
+            }
+            if (docs.documents[i].data['acceptTime'] != null) {
+              acceptTime = convertTimeToAMOrPM(
+                  time: docs.documents[i].data['acceptTime']);
+            } else {
+              acceptTime = '';
+            }
+            if (docs.documents[i].data['visitTime'] != '[]') {
+              var x = docs.documents[i].data['visitTime']
+                  .replaceFirst('[', '')
+                  .toString();
+              String visitTime = x.replaceAll(']', '');
+              List<String> times = visitTime.split(',');
+              if (times.length != 0) {
+                for (int i = 0; i < times.length; i++) {
+                  convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+                }
+              }
+            } else {
+              convertAllVisitsTime = [];
+            }
+            allPatientsRequests.add(Requests(
+                distance:  distance.floor().toString(),
+                lat: docs.documents[i].data['lat'] ?? '',
+                long: docs.documents[i].data['long'] ?? '',
+                acceptTime: acceptTime,
+                nurseId: docs.documents[i].data['nurseId'] ?? '',
+                patientId: docs.documents[i].data['patientId'] ?? '',
+                docId: docs.documents[i].documentID,
+                visitTime: convertAllVisitsTime.toString() == '[]'
+                    ? ''
+                    : convertAllVisitsTime.toString(),
+                visitDays: docs.documents[i].data['visitDays'] == '[]'
+                    ? ''
+                    : docs.documents[i].data['visitDays'] ?? '',
+                suppliesFromPharmacy:
+                docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+                startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
+                serviceType: docs.documents[i].data['serviceType'] ?? '',
+                picture: docs.documents[i].data['picture'] ?? '',
+                patientPhone: docs.documents[i].data['patientPhone'] ?? '',
+                patientName: docs.documents[i].data['patientName'] ?? '',
+                patientLocation: docs.documents[i].data['patientLocation'] ??
+                    '',
+                patientGender: docs.documents[i].data['patientGender'] ?? '',
+                patientAge: docs.documents[i].data['patientAge'] ?? '',
+                servicePrice: docs.documents[i].data['servicePrice'] ?? '',
+                time: time,
+                date: docs.documents[i].data['date'] ?? '',
+                discountPercentage:
+                docs.documents[i].data['discountPercentage'] ?? '',
+                nurseGender: docs.documents[i].data['nurseGender'] ?? '',
+                numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
+                endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
+                discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
+                priceBeforeDiscount:
+                docs.documents[i].data['priceBeforeDiscount'] ?? '',
+                analysisType: docs.documents[i].data['analysisType'] ?? '',
+                notes: docs.documents[i].data['notes'] ?? '',
+                priceAfterDiscount:
+                docs.documents[i].data['priceAfterDiscount'].toString() ??
+                    ''));
           }
-          if(docs.documents[i].data['acceptTime'] !=''){
-            acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
-          }else{
-            acceptTime='';
-          }
-          if (docs.documents[i].data['visitTime'] != '[]') {
-            var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
-           String visitTime = x.replaceAll(']', '');
-           List<String> times=visitTime.split(',');
-           if(times.length !=0){
-             for(int i=0; i<times.length; i++){
-               convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
-             }
-           }
-          }else{
-            convertAllVisitsTime=[];
-          }
-          allPatientsRequests.add(Requests(
-              lat:  docs.documents[i].data['lat'] ?? '',
-              long:  docs.documents[i].data['long'] ?? '',
-            acceptTime: acceptTime,
-              nurseId: docs.documents[i].data['nurseId'] ?? '',
-              patientId: docs.documents[i].data['patientId'] ?? '',
-              docId: docs.documents[i].documentID,
-              visitTime: convertAllVisitsTime.toString() == '[]'
-                  ? ''
-                  : convertAllVisitsTime.toString(),
-              visitDays: docs.documents[i].data['visitDays'] == '[]'
-                  ? ''
-                  : docs.documents[i].data['visitDays'] ?? '',
-              suppliesFromPharmacy:
-                  docs.documents[i].data['suppliesFromPharmacy'] ?? '',
-              startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
-              serviceType: docs.documents[i].data['serviceType'] ?? '',
-              picture: docs.documents[i].data['picture'] ?? '',
-              patientPhone: docs.documents[i].data['patientPhone'] ?? '',
-              patientName: docs.documents[i].data['patientName'] ?? '',
-              patientLocation: docs.documents[i].data['patientLocation'] ?? '',
-              patientGender: docs.documents[i].data['patientGender'] ?? '',
-              patientAge: docs.documents[i].data['patientAge'] ?? '',
-              servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-              time: time,
-              date: docs.documents[i].data['date'] ?? '',
-              discountPercentage:
-                  docs.documents[i].data['discountPercentage'] ?? '',
-              nurseGender: docs.documents[i].data['nurseGender'] ?? '',
-              numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
-              endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
-              discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
-              priceBeforeDiscount:
-                  docs.documents[i].data['priceBeforeDiscount'] ?? '',
-              analysisType: docs.documents[i].data['analysisType'] ?? '',
-              notes: docs.documents[i].data['notes'] ?? '',
-              priceAfterDiscount:
-                  docs.documents[i].data['priceAfterDiscount'].toString() ??
-                      ''));
+          print('dfbfdsndd');
+          print(allPatientsRequests.length);
         }
-        print('dfbfdsndd');
-        print(allPatientsRequests.length);
-      } else {
+        } else {
         allPatientsRequests.clear();
       }
       notifyListeners();
     });
   }
+
+Future<double> getSpecificRating({String nurseId,String patientId})async{
+  CollectionReference patientCollection = databaseReference.collection("users");
+  double rating =0.0;
+  DocumentSnapshot x = await patientCollection.document(patientId).collection('rating').document(nurseId).get();
+    if(x.exists){
+      rating = double.parse(x.data['rating']);
+    }
+   return rating;
+}
+  Future<void> ratingNurse({int ratingCount,String nurseId,String patientId})async{
+    CollectionReference nurses= databaseReference.collection("nurses");
+    CollectionReference patientCollection = databaseReference.collection("users");
+    DocumentSnapshot x = await patientCollection.document(patientId).collection('rating').document(nurseId).get();
+    DocumentSnapshot doc =await nurses.document(nurseId).collection('rating').document('rating').get();
+    int rating = 0;
+    int previousRating=0;
+    if(x.exists){
+      previousRating = int.parse(x.data['rating']);
+      switch(previousRating){
+        case 1:
+          if(doc.exists&&doc.data['1'] != null){
+            rating = int.parse(doc.data['1']);
+          }
+          rating =rating -1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '1': rating.toString()
+          },merge: true);
+          break;
+        case 2:
+          if(doc.exists&&doc.data['2'] != null){
+            rating = int.parse(doc.data['2']);
+          }
+          rating =rating -1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '2': rating.toString()
+          },merge: true);
+          break;
+        case 3:
+          if(doc.exists&&doc.data['3'] != null){
+            rating = int.parse(doc.data['3']);
+          }
+          rating =rating -1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '3': rating.toString()
+          },merge: true);
+          break;
+        case 4:
+          if(doc.exists&&doc.data['4'] != null){
+            rating = int.parse(doc.data['4']);
+          }
+          rating =rating -1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '4': rating.toString()
+          },merge: true);
+          break;
+        case 5:
+          if(doc.exists&&doc.data['5'] != null){
+            rating = int.parse(doc.data['5']);
+          }
+          rating =rating -1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '5': rating.toString()
+          },merge: true);
+          break;
+      }
+    }
+      switch(ratingCount){
+        case 1:
+          if(doc.exists&&doc.data['1'] != null){
+            rating = int.parse(doc.data['1']);
+          }
+          rating =rating +1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '1': rating.toString()
+          },merge: true);
+          break;
+        case 2:
+          if(doc.exists&&doc.data['2'] != null){
+            rating = int.parse(doc.data['2']);
+          }
+          rating =rating +1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '2': rating.toString()
+          },merge: true);
+          break;
+        case 3:
+          if(doc.exists&&doc.data['3'] != null){
+            rating = int.parse(doc.data['3']);
+          }
+          rating =rating +1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '3': rating.toString()
+          },merge: true);
+          break;
+        case 4:
+          if(doc.exists&&doc.data['4'] != null){
+            rating = int.parse(doc.data['4']);
+          }
+          rating =rating +1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '4': rating.toString()
+          },merge: true);
+          break;
+        case 5:
+          if(doc.exists&&doc.data['5'] != null){
+            rating = int.parse(doc.data['5']);
+          }
+          rating =rating +1;
+          nurses.document(nurseId).collection('rating').document('rating').setData({
+            '5': rating.toString()
+          },merge: true);
+          break;
+      }
+    await patientCollection.document(patientId).collection('rating').document(nurseId).setData({
+      'rating': ratingCount.toString()
+    },merge: true);
+    DocumentSnapshot ratingNurse = await nurses.document(nurseId).collection('rating').document('rating').get();
+
+    if(ratingNurse.exists) {
+      int one = ratingNurse.data['1'] == null ? 0 : int.parse(ratingNurse.data['1']);
+      int two = ratingNurse.data['2'] == null ? 0 : int.parse(ratingNurse.data['2']);
+      int three = ratingNurse.data['3'] == null ? 0 : int.parse(ratingNurse.data['3']);
+      int four = ratingNurse.data['4'] == null ? 0 : int.parse(ratingNurse.data['4']);
+      int five = ratingNurse.data['5'] == null ? 0 : int.parse(ratingNurse.data['5']);
+      totalRatingForNurse =
+          (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
+              (one + two + three + four + five);
+      notifyListeners();
+    }
+  }
+
+  double deg2rad(double deg) {
+    return (deg * pi / 180.0);
+  }
+
+  double rad2deg(double rad) {
+    return (rad * 180.0 / pi);
+  }
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
+    double theta = lon1 - lon2;
+    double dist = sin(deg2rad(lat1)) * sin(deg2rad(lat2)) +
+        cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(deg2rad(theta));
+    dist = acos(dist);
+    dist = rad2deg(dist);
+    dist = dist * 60 * 1.1515;
+    return dist * 1.609344;
+  }
+
 
   Future<UserData> getUserData({String type, String userId}) async {
     var nursesCollection = databaseReference.collection("nurses");
@@ -243,7 +416,19 @@ class Home with ChangeNotifier {
       }
     } else {
       DocumentSnapshot doc = await nursesCollection.document(userId).get();
+      DocumentSnapshot rating = await nursesCollection.document(userId).collection('rating').document('rating').get();
+      if(rating.exists) {
+        int one = rating.data['1'] == null ? 0 : int.parse(rating.data['1']);
+        int two = rating.data['2'] == null ? 0 : int.parse(rating.data['2']);
+        int three = rating.data['3'] == null ? 0 : int.parse(rating.data['3']);
+        int four = rating.data['4'] == null ? 0 : int.parse(rating.data['4']);
+        int five = rating.data['5'] == null ? 0 : int.parse(rating.data['5']);
+        totalRatingForNurse =
+            (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
+                (one + two + three + four + five);
+      }
       user = UserData(
+        rating: totalRatingForNurse.toString(),
         name: doc.data['name'] ?? '',
         docId: doc.documentID ?? '',
         lat: doc.data['lat'] ?? '',
@@ -262,11 +447,11 @@ class Home with ChangeNotifier {
     return user;
   }
 
-  Future getAllAcceptedRequests({String userId}) async {
+  Future getAllAcceptedRequests({String userId,String userLat='0.0',String userLong='0.0'}) async {
     var requests = databaseReference.collection('requests');
     QuerySnapshot docs =
         await requests.where('nurseId', isEqualTo: userId).getDocuments();
-
+    double distance = 0.0;
     allAcceptedRequests.clear();
     print('A');
     if (docs.documents.length != 0) {
@@ -274,70 +459,76 @@ class Home with ChangeNotifier {
       String time='';
       String acceptTime=''; List<String> convertAllVisitsTime=[];
       for (int i = 0; i < docs.documents.length; i++) {
-        if(docs.documents[i].data['time'] !=''){
-          time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
-        }else{
-          time='';
-        }
-        if(docs.documents[i].data['acceptTime'] !=''){
-          acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
-        }else{
-          acceptTime='';
-        }
-
-        if (docs.documents[i].data['visitTime'] != '[]') {
-          var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
-          String visitTime = x.replaceAll(']', '');
-          List<String> times=visitTime.split(',');
-          if(times.length !=0){
-            for(int i=0; i<times.length; i++){
-              convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
-            }
+        distance = _calculateDistance(
+           userLat != ''? double.parse(userLat):0.0,
+            userLong != ''? double.parse(userLong):0.0,
+            double.parse(docs.documents[i].data['lat']??0.0),
+            double.parse(docs.documents[i].data['long']??0.0));
+        print('distance::$distance');
+          if(docs.documents[i].data['time'] !=''){
+            time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
+          }else{
+            time='';
           }
-        }else{
-          convertAllVisitsTime=[];
+          if(docs.documents[i].data['acceptTime'] !=''){
+            acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
+          }else{
+            acceptTime='';
+          }
+          if (docs.documents[i].data['visitTime'] != '[]') {
+            var x = docs.documents[i].data['visitTime'].replaceFirst('[', '').toString();
+            String visitTime = x.replaceAll(']', '');
+            List<String> times=visitTime.split(',');
+            if(times.length !=0){
+              for(int i=0; i<times.length; i++){
+                convertAllVisitsTime.add(convertTimeToAMOrPM(time: times[i]));
+              }
+            }
+          }else{
+            convertAllVisitsTime=[];
+          }
+          allAcceptedRequests.add(Requests(
+            distance:  distance.floor().toString(),
+              lat:  docs.documents[i].data['lat'] ?? '',
+              long:  docs.documents[i].data['long'] ?? '',
+              acceptTime: acceptTime,
+              nurseId: docs.documents[i].data['nurseId'] ?? '',
+              patientId: docs.documents[i].data['patientId'] ?? '',
+              docId: docs.documents[i].documentID,
+              visitTime: convertAllVisitsTime.toString() == '[]'
+                  ? ''
+                  : convertAllVisitsTime.toString(),
+              visitDays: docs.documents[i].data['visitDays'] == '[]'
+                  ? ''
+                  : docs.documents[i].data['visitDays'] ?? '',
+              suppliesFromPharmacy:
+              docs.documents[i].data['suppliesFromPharmacy'] ?? '',
+              startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
+              serviceType: docs.documents[i].data['serviceType'] ?? '',
+              picture: docs.documents[i].data['picture'] ?? '',
+              patientPhone: docs.documents[i].data['patientPhone'] ?? '',
+              patientName: docs.documents[i].data['patientName'] ?? '',
+              patientLocation: docs.documents[i].data['patientLocation'] ?? '',
+              patientGender: docs.documents[i].data['patientGender'] ?? '',
+              patientAge: docs.documents[i].data['patientAge'] ?? '',
+              servicePrice: docs.documents[i].data['servicePrice'] ?? '',
+              time: time,
+              date: docs.documents[i].data['date'] ?? '',
+              discountPercentage:
+              docs.documents[i].data['discountPercentage'] ?? '',
+              nurseGender: docs.documents[i].data['nurseGender'] ?? '',
+              numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
+              endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
+              discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
+              priceBeforeDiscount:
+              docs.documents[i].data['priceBeforeDiscount'] ?? '',
+              analysisType: docs.documents[i].data['analysisType'] ?? '',
+              notes: docs.documents[i].data['notes'] ?? '',
+              priceAfterDiscount:
+              docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
+        print('dfbfdsndd');
+        print(allAcceptedRequests.length);
         }
-        allAcceptedRequests.add(Requests(
-            lat:  docs.documents[i].data['lat'] ?? '',
-            long:  docs.documents[i].data['long'] ?? '',
-            acceptTime: acceptTime,
-            nurseId: docs.documents[i].data['nurseId'] ?? '',
-            patientId: docs.documents[i].data['patientId'] ?? '',
-            docId: docs.documents[i].documentID,
-            visitTime: convertAllVisitsTime.toString() == '[]'
-                ? ''
-                : convertAllVisitsTime.toString(),
-            visitDays: docs.documents[i].data['visitDays'] == '[]'
-                ? ''
-                : docs.documents[i].data['visitDays'] ?? '',
-            suppliesFromPharmacy:
-                docs.documents[i].data['suppliesFromPharmacy'] ?? '',
-            startVisitDate: docs.documents[i].data['startVisitDate'] ?? '',
-            serviceType: docs.documents[i].data['serviceType'] ?? '',
-            picture: docs.documents[i].data['picture'] ?? '',
-            patientPhone: docs.documents[i].data['patientPhone'] ?? '',
-            patientName: docs.documents[i].data['patientName'] ?? '',
-            patientLocation: docs.documents[i].data['patientLocation'] ?? '',
-            patientGender: docs.documents[i].data['patientGender'] ?? '',
-            patientAge: docs.documents[i].data['patientAge'] ?? '',
-            servicePrice: docs.documents[i].data['servicePrice'] ?? '',
-            time: time,
-            date: docs.documents[i].data['date'] ?? '',
-            discountPercentage:
-                docs.documents[i].data['discountPercentage'] ?? '',
-            nurseGender: docs.documents[i].data['nurseGender'] ?? '',
-            numOfPatients: docs.documents[i].data['numOfPatients'] ?? '',
-            endVisitDate: docs.documents[i].data['endVisitDate'] ?? '',
-            discountCoupon: docs.documents[i].data['discountCoupon'] ?? '',
-            priceBeforeDiscount:
-                docs.documents[i].data['priceBeforeDiscount'] ?? '',
-            analysisType: docs.documents[i].data['analysisType'] ?? '',
-            notes: docs.documents[i].data['notes'] ?? '',
-            priceAfterDiscount:
-                docs.documents[i].data['priceAfterDiscount'].toString() ?? ''));
-      }
-      print('dfbfdsndd');
-      print(allAcceptedRequests.length);
     }
     notifyListeners();
   }
@@ -856,6 +1047,14 @@ class Home with ChangeNotifier {
   Future<bool> sendRequestToCancel({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
     allRequests.document(requestId).setData({'isFinished': false}, merge: true);
+    return true;
+  }
+
+  Future<bool> cancelRequest({String requestId}) async {
+    CollectionReference allRequests = databaseReference.collection('requests');
+    allRequests.document(requestId).setData({'nurseId': '','acceptTime':null,}, merge: true);
+    allAcceptedRequests.removeWhere((x)=>x.docId==requestId);
+    notifyListeners();
     return true;
   }
 

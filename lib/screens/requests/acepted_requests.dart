@@ -24,7 +24,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
   Home _home;
   Auth _auth;
   ScanResult codeSanner;
-  bool loadingBody = true;
+  bool loadingBody = false;
   bool enableWriteQrCode = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
   TextEditingController qrCode = TextEditingController();
@@ -93,7 +93,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                         SizedBox(
                           height: 10,
                         ),
-                        request.patientId != ''
+                        request.patientName != _auth.userData.name
                             ? Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -161,6 +161,15 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                     : 'موقع المريض: ',
                                 content: request.patientLocation,
                                 infoWidget: infoWidget)
+                            : SizedBox(),
+                        request.distance != ''
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Distance between you: '
+                                : 'المسافه بينكم: ',
+                            content:  translator.currentLanguage == "en"
+                                ? '${request.distance} KM':'${request.distance} كم ',
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.patientAge != ''
                             ? rowWidget(
@@ -299,512 +308,535 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
       },
       child: Padding(
         padding: const EdgeInsets.only(top: 6),
-        child: Stack(
-          children: <Widget>[
-            Container(
-              color: Colors.blue[100],
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Container(
-                        width: infoWidget.screenWidth * 0.06,
-                        height: infoWidget.screenWidth * 0.06,
-                        child: LoadingIndicator(
-                          color: Colors.indigo,
-                          indicatorType: Indicator.ballScale,
-                        ),
-                      ),
+        child:  Container(
+          color: Colors.blue[100],
+          child: Padding(
+            padding:
+            const EdgeInsets.only(top: 10, left: 6,right: 6,bottom: 5),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Container(
+                    width: infoWidget.screenWidth * 0.06,
+                    height: infoWidget.screenWidth * 0.06,
+                    child: LoadingIndicator(
+                      color: Colors.indigo,
+                      indicatorType: Indicator.ballScale,
                     ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          request.patientName != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Patient Name: ${request.patientName}'
-                                      : 'اسم المريض: ${request.patientName}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
-                              : SizedBox(),
-                          request.patientLocation != ''
-                              ? Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Text(
-                                        translator.currentLanguage == 'en'
-                                            ? 'Patient Location: ${request.patientLocation}'
-                                            : 'موقع المريض: ${request.patientLocation}',
-                                        style: infoWidget.titleButton
-                                            .copyWith(color: Colors.indigo),
-                                        maxLines: 3,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 0.1,
-                                    ),
-                                  ],
-                                )
-                              : SizedBox(),
-                          request.serviceType != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Service Type: ${request.serviceType}'
-                                      : 'نوع الخدمه: ${request.serviceType}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
-                              : SizedBox(),
-                          request.analysisType != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Analysis Type: ${request.priceBeforeDiscount} EGP'
-                                      : 'نوع التحليل: ${request.analysisType}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
-                              : SizedBox(),
-                          request.date != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Dtate: ${request.date}'
-                                      : 'التاريخ: ${request.date}',
-                                  style: infoWidget.subTitle,
-                                )
-                              : SizedBox(),
-                          request.time != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Time: ${request.time}'
-                                      : 'الوقت: ${request.time}',
-                                  style: infoWidget.subTitle,
-                                )
-                              : SizedBox(),
-
-//              request.acceptTime==''?SizedBox():Text(
-//                translator.currentLanguage == 'en'
-//                    ? 'Time of acceptance: ${request.acceptTime}'
-//                    : ' وقت القبول:${request.acceptTime}',
-//                style: infoWidget.titleButton
-//                    .copyWith(color: Colors.indigo),
-//              )
-                          request.priceBeforeDiscount != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Price before discount: ${request.priceBeforeDiscount} EGP'
-                                      : 'السعر قبل الخصم: ${request.priceBeforeDiscount} جنيه ',
-                                  style: infoWidget.subTitle,
-                                )
-                              : SizedBox(),
-                          request.priceAfterDiscount != ''
-                              ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Price after discount: ${request.priceAfterDiscount} EGP'
-                                      : 'السعر بعد الخصم: ${request.priceAfterDiscount} جنيه ',
-                                  style: infoWidget.subTitle,
-                                )
-                              : SizedBox(),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  RaisedButton(
-                    onPressed: () async {
-                      bool isFinish = await _home.sendRequestToFinish(
-                          requestId: request.docId);
-                      if (isFinish) {
-                        await showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (ctx) => StatefulBuilder(
-                                  builder: (context, setState) =>
-                                      Directionality(
-                                    textDirection:
-                                        translator.currentLanguage == "en"
-                                            ? TextDirection.ltr
-                                            : TextDirection.rtl,
-                                    child: AlertDialog(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(25.0))),
-                                      contentPadding:
-                                          EdgeInsets.only(top: 10.0),
-                                      title: Text(
-                                        translator.currentLanguage == "en"
-                                            ? 'Finish Request'
-                                            : 'انهاء الطلب',
-                                        textAlign: TextAlign.center,
-                                        style: infoWidget.titleButton
-                                            .copyWith(color: Colors.indigo),
-                                      ),
-                                      content: Container(
-                                          height: enableWriteQrCode
-                                              ? infoWidget.screenHeight * 0.24
-                                              : infoWidget.screenHeight * 0.16,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              FlatButton(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 5, horizontal: 8),
-                                                onPressed: () async {
-                                                  codeSanner =
-                                                      await BarcodeScanner
-                                                          .scan();
-                                                  print('codeSanner');
-                                                  print(codeSanner.type.name);
-                                                  print(codeSanner.rawContent);
-                                                  print(request.docId);
-                                                  if (codeSanner.type ==
-                                                          ResultType.Barcode &&
-                                                      codeSanner.rawContent ==
-                                                          request.docId) {
-                                                    bool x =
-                                                        await _home.endRequest(
-                                                            userData:
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      request.patientName != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Patient Name: ${request.patientName}'
+                            : 'اسم المريض: ${request.patientName}',
+                        style: infoWidget.titleButton
+                            .copyWith(color: Colors.indigo),
+                      )
+                          : SizedBox(),
+                      request.patientLocation != ''
+                          ? Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              translator.currentLanguage == 'en'
+                                  ? 'Patient Location: ${request.patientLocation}'
+                                  : 'موقع المريض: ${request.patientLocation}',
+                              style: infoWidget.titleButton
+                                  .copyWith(color: Colors.indigo),
+                              maxLines: 3,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 0.1,
+                          ),
+                        ],
+                      )
+                          : SizedBox(),
+                      request.serviceType != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Service Type: ${request.serviceType}'
+                            : 'نوع الخدمه: ${request.serviceType}',
+                        style: infoWidget.titleButton
+                            .copyWith(color: Colors.indigo),
+                      )
+                          : SizedBox(),
+                      request.analysisType != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Analysis Type: ${request.priceBeforeDiscount} EGP'
+                            : 'نوع التحليل: ${request.analysisType}',
+                        style: infoWidget.titleButton
+                            .copyWith(color: Colors.indigo),
+                      )
+                          : SizedBox(),
+                      request.date != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Dtate: ${request.date}'
+                            : 'التاريخ: ${request.date}',
+                        style: infoWidget.subTitle,
+                      )
+                          : SizedBox(),
+                      request.time != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Time: ${request.time}'
+                            : 'الوقت: ${request.time}',
+                        style: infoWidget.subTitle,
+                      )
+                          : SizedBox(),
+                      request.priceBeforeDiscount != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Price before discount: ${request.priceBeforeDiscount} EGP'
+                            : 'السعر قبل الخصم: ${request.priceBeforeDiscount} جنيه ',
+                        style: infoWidget.subTitle,
+                      )
+                          : SizedBox(),
+                      request.priceAfterDiscount != ''
+                          ? Text(
+                        translator.currentLanguage == 'en'
+                            ? 'Price after discount: ${request.priceAfterDiscount} EGP'
+                            : 'السعر بعد الخصم: ${request.priceAfterDiscount} جنيه ',
+                        style: infoWidget.subTitle,
+                      )
+                          : SizedBox(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          RaisedButton(
+                            onPressed: () async {
+                              bool isFinish = await _home.sendRequestToFinish(
+                                  requestId: request.docId);
+                              if (isFinish) {
+                                await showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (ctx) => StatefulBuilder(
+                                      builder: (context, setState) =>
+                                          Directionality(
+                                            textDirection:
+                                            translator.currentLanguage == "en"
+                                                ? TextDirection.ltr
+                                                : TextDirection.rtl,
+                                            child: AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(25.0))),
+                                              contentPadding:
+                                              EdgeInsets.only(top: 10.0),
+                                              title: Text(
+                                                translator.currentLanguage == "en"
+                                                    ? 'Finish Request'
+                                                    : 'انهاء الطلب',
+                                                textAlign: TextAlign.center,
+                                                style: infoWidget.titleButton
+                                                    .copyWith(color: Colors.indigo),
+                                              ),
+                                              content: Container(
+                                                  height: enableWriteQrCode
+                                                      ? infoWidget.screenHeight * 0.24
+                                                      : infoWidget.screenHeight * 0.16,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                    children: <Widget>[
+                                                      FlatButton(
+                                                        padding: EdgeInsets.symmetric(
+                                                            vertical: 5, horizontal: 8),
+                                                        onPressed: () async {
+                                                          codeSanner =
+                                                          await BarcodeScanner
+                                                              .scan();
+                                                          print('codeSanner');
+                                                          print(codeSanner.type.name);
+                                                          print(codeSanner.rawContent);
+                                                          print(request.docId);
+                                                          if (codeSanner.type ==
+                                                              ResultType.Barcode &&
+                                                              codeSanner.rawContent ==
+                                                                  request.docId) {
+                                                            bool x =
+                                                            await _home.endRequest(
+                                                                userData:
                                                                 _auth.userData,
-                                                            request: request);
-                                                    if (x) {
-                                                      Toast.show(
+                                                                request: request);
+                                                            if (x) {
+                                                              Toast.show(
+                                                                  translator.currentLanguage ==
+                                                                      "en"
+                                                                      ? "Successfully completed"
+                                                                      : 'تم الانتهاء بنجاح',
+                                                                  context,
+                                                                  duration: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                  Toast.BOTTOM);
+                                                              Navigator.of(ctx).pop();
+                                                            } else {
+                                                              Toast.show(
+                                                                  translator.currentLanguage ==
+                                                                      "en"
+                                                                      ? "Completion failed"
+                                                                      : 'فشل الانتهاء',
+                                                                  context,
+                                                                  duration: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                  Toast.BOTTOM);
+                                                            }
+                                                          } else {
+                                                            Toast.show(
+                                                                translator.currentLanguage ==
+                                                                    "en"
+                                                                    ? "Invalid QR Code"
+                                                                    : 'رمز الاستجابة السريعة غير صحيح',
+                                                                context,
+                                                                duration:
+                                                                Toast.LENGTH_LONG,
+                                                                gravity: Toast.BOTTOM);
+                                                          }
+                                                        },
+                                                        child: Text(
                                                           translator.currentLanguage ==
-                                                                  "en"
-                                                              ? "Successfully completed"
-                                                              : 'تم الانتهاء بنجاح',
-                                                          context,
-                                                          duration: Toast
-                                                              .LENGTH_SHORT,
-                                                          gravity:
-                                                              Toast.BOTTOM);
-                                                      Navigator.of(ctx).pop();
-                                                    } else {
-                                                      Toast.show(
-                                                          translator.currentLanguage ==
-                                                                  "en"
-                                                              ? "Completion failed"
-                                                              : 'فشل الانتهاء',
-                                                          context,
-                                                          duration: Toast
-                                                              .LENGTH_SHORT,
-                                                          gravity:
-                                                              Toast.BOTTOM);
-                                                    }
-                                                  } else {
-                                                    Toast.show(
-                                                        translator.currentLanguage ==
-                                                                "en"
-                                                            ? "Invalid QR Code"
-                                                            : 'رمز الاستجابة السريعة غير صحيح',
-                                                        context,
-                                                        duration:
-                                                            Toast.LENGTH_LONG,
-                                                        gravity: Toast.BOTTOM);
-                                                  }
-                                                },
-                                                child: Text(
-                                                  translator.currentLanguage ==
-                                                          "en"
-                                                      ? 'Scan QR CODE'
-                                                      : 'مسح رمز الاستجابة السريعة',
-                                                  style: infoWidget.titleButton
-                                                      .copyWith(
-                                                          color: Colors.indigo,
-                                                          fontWeight:
+                                                              "en"
+                                                              ? 'Scan QR CODE'
+                                                              : 'مسح رمز الاستجابة السريعة',
+                                                          style: infoWidget.titleButton
+                                                              .copyWith(
+                                                              color: Colors.indigo,
+                                                              fontWeight:
                                                               FontWeight.bold),
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                    side: BorderSide(
-                                                        color: Colors.indigo,
-                                                        width: 2.0),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0)),
-                                              ),
-                                              SizedBox(
-                                                height: 4.0,
-                                              ),
-                                              enableWriteQrCode
-                                                  ? Form(
-                                                      key: _formKey,
-                                                      child: Container(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
+                                                        ),
+                                                        shape: RoundedRectangleBorder(
+                                                            side: BorderSide(
+                                                                color: Colors.indigo,
+                                                                width: 2.0),
+                                                            borderRadius:
+                                                            BorderRadius.circular(
+                                                                15.0)),
+                                                      ),
+                                                      SizedBox(
+                                                        height: 4.0,
+                                                      ),
+                                                      enableWriteQrCode
+                                                          ? Form(
+                                                          key: _formKey,
+                                                          child: Container(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
                                                                 vertical: 7.0),
 //                                          height: 75,
-                                                        width: infoWidget
+                                                            width: infoWidget
                                                                 .screenWidth *
-                                                            0.41,
-                                                        child: TextFormField(
-                                                          autofocus: false,
-                                                          controller: qrCode,
-                                                          textInputAction:
+                                                                0.41,
+                                                            child: TextFormField(
+                                                              autofocus: false,
+                                                              controller: qrCode,
+                                                              textInputAction:
                                                               TextInputAction
                                                                   .next,
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .indigo),
-                                                          decoration:
-                                                              InputDecoration(
-                                                            labelText: translator
-                                                                        .currentLanguage ==
-                                                                    "en"
-                                                                ? "QR Code"
-                                                                : 'رمز التحقق',
-                                                            focusedBorder:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          10.0)),
-                                                              borderSide:
-                                                                  BorderSide(
-                                                                color: Colors
-                                                                    .indigo,
-                                                              ),
-                                                            ),
-                                                            errorBorder:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          10.0)),
-                                                              borderSide:
-                                                                  BorderSide(
-                                                                color: Colors
-                                                                    .indigo,
-                                                              ),
-                                                            ),
-                                                            focusedErrorBorder:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          10.0)),
-                                                              borderSide:
-                                                                  BorderSide(
-                                                                color: Colors
-                                                                    .indigo,
-                                                              ),
-                                                            ),
-                                                            disabledBorder:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          10.0)),
-                                                              borderSide:
-                                                                  BorderSide(
-                                                                color: Colors
-                                                                    .indigo,
-                                                              ),
-                                                            ),
-                                                            enabledBorder:
-                                                                OutlineInputBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .all(Radius
-                                                                      .circular(
-                                                                          10.0)),
-                                                              borderSide: BorderSide(
+                                                              style: TextStyle(
                                                                   color: Colors
                                                                       .indigo),
-                                                            ),
-                                                            errorStyle: TextStyle(
-                                                                color: Colors
-                                                                    .indigo),
-                                                            labelStyle: TextStyle(
-                                                                color: Colors
-                                                                    .indigo),
-                                                          ),
-                                                          keyboardType:
+                                                              decoration:
+                                                              InputDecoration(
+                                                                labelText: translator
+                                                                    .currentLanguage ==
+                                                                    "en"
+                                                                    ? "QR Code"
+                                                                    : 'رمز التحقق',
+                                                                focusedBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                      .circular(
+                                                                      10.0)),
+                                                                  borderSide:
+                                                                  BorderSide(
+                                                                    color: Colors
+                                                                        .indigo,
+                                                                  ),
+                                                                ),
+                                                                errorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                      .circular(
+                                                                      10.0)),
+                                                                  borderSide:
+                                                                  BorderSide(
+                                                                    color: Colors
+                                                                        .indigo,
+                                                                  ),
+                                                                ),
+                                                                focusedErrorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                      .circular(
+                                                                      10.0)),
+                                                                  borderSide:
+                                                                  BorderSide(
+                                                                    color: Colors
+                                                                        .indigo,
+                                                                  ),
+                                                                ),
+                                                                disabledBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                      .circular(
+                                                                      10.0)),
+                                                                  borderSide:
+                                                                  BorderSide(
+                                                                    color: Colors
+                                                                        .indigo,
+                                                                  ),
+                                                                ),
+                                                                enabledBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius: BorderRadius
+                                                                      .all(Radius
+                                                                      .circular(
+                                                                      10.0)),
+                                                                  borderSide: BorderSide(
+                                                                      color: Colors
+                                                                          .indigo),
+                                                                ),
+                                                                errorStyle: TextStyle(
+                                                                    color: Colors
+                                                                        .indigo),
+                                                                labelStyle: TextStyle(
+                                                                    color: Colors
+                                                                        .indigo),
+                                                              ),
+                                                              keyboardType:
                                                               TextInputType
                                                                   .text,
-// ignore: missing_return
-                                                          validator:
-                                                              (String value) {
-                                                            if (value
-                                                                .trim()
-                                                                .isEmpty) {
-                                                              return translator
-                                                                          .currentLanguage ==
+                                                              validator:
+                                                                  // ignore: missing_return
+                                                                  (String value) {
+                                                                if (value
+                                                                    .trim()
+                                                                    .isEmpty) {
+                                                                  return translator
+                                                                      .currentLanguage ==
                                                                       "en"
-                                                                  ? "Please enter QR Code!"
-                                                                  : 'من فضلك ادخل رمز التحقق';
-                                                            }
-                                                            if (value
+                                                                      ? "Please enter QR Code!"
+                                                                      : 'من فضلك ادخل رمز التحقق';
+                                                                }
+                                                                if (value
                                                                     .trim()
                                                                     .length <
-                                                                6) {
-                                                              return translator
-                                                                          .currentLanguage ==
+                                                                    6) {
+                                                                  return translator
+                                                                      .currentLanguage ==
                                                                       "en"
-                                                                  ? "Invalid QR Code!"
-                                                                  : 'رمز التحقق خطاء';
-                                                            }
-                                                            if (value
+                                                                      ? "Invalid QR Code!"
+                                                                      : 'رمز التحقق خطاء';
+                                                                }
+                                                                if (value
                                                                     .trim()
                                                                     .toLowerCase() !=
-                                                                request.docId
-                                                                    .toLowerCase()
-                                                                    .substring(
+                                                                    request.docId
+                                                                        .toLowerCase()
+                                                                        .substring(
                                                                         0, 6)) {
-                                                              return translator
-                                                                          .currentLanguage ==
+                                                                  return translator
+                                                                      .currentLanguage ==
                                                                       "en"
-                                                                  ? "Invalid QR Code!"
-                                                                  : 'رمز التحقق غير صحيح';
-                                                            }
-                                                          },
+                                                                      ? "Invalid QR Code!"
+                                                                      : 'رمز التحقق غير صحيح';
+                                                                }
+                                                              },
+                                                            ),
+                                                          ))
+                                                          : FlatButton(
+                                                        padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 5,
+                                                            horizontal: 8),
+                                                        onPressed: () async {
+                                                          setState(() {
+                                                            enableWriteQrCode =
+                                                            true;
+                                                          });
+                                                        },
+                                                        child: Text(
+                                                          translator.currentLanguage ==
+                                                              "en"
+                                                              ? 'Write verification code'
+                                                              : 'كتابه كود التحقق',
+                                                          style: infoWidget
+                                                              .titleButton
+                                                              .copyWith(
+                                                              color: Colors
+                                                                  .indigo,
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold),
                                                         ),
-                                                      ))
-                                                  : FlatButton(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: 5,
-                                                              horizontal: 8),
-                                                      onPressed: () async {
-                                                        setState(() {
-                                                          enableWriteQrCode =
-                                                              true;
-                                                        });
-                                                      },
-                                                      child: Text(
-                                                        translator.currentLanguage ==
-                                                                "en"
-                                                            ? 'Write verification code'
-                                                            : 'كتابه كود التحقق',
-                                                        style: infoWidget
-                                                            .titleButton
-                                                            .copyWith(
+                                                        shape:
+                                                        RoundedRectangleBorder(
+                                                            side: BorderSide(
                                                                 color: Colors
                                                                     .indigo,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
+                                                                width: 2.0),
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                15.0)),
                                                       ),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              side: BorderSide(
-                                                                  color: Colors
-                                                                      .indigo,
-                                                                  width: 2.0),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          15.0)),
-                                                    ),
-                                              SizedBox(
-                                                height: 8.0,
-                                              ),
-                                            ],
-                                          )),
-                                      actions: <Widget>[
-                                        FlatButton(
-                                          child: Text(
-                                            translator.currentLanguage == "en"
-                                                ? 'Cancel'
-                                                : 'الغاء',
-                                            style: infoWidget.subTitle
-                                                .copyWith(color: Colors.indigo),
-                                          ),
-                                          onPressed: () async {
-                                            bool isCancel =
-                                                await _home.sendRequestToCancel(
-                                                    requestId: request.docId);
-                                            if (isCancel) {
-                                              enableWriteQrCode = false;
-                                              qrCode.clear();
-                                              Navigator.of(ctx).pop();
-                                            }
-                                          },
-                                        ),
-                                        enableWriteQrCode
-                                            ? FlatButton(
-                                                child: Text(
-                                                  translator.currentLanguage ==
-                                                          "en"
-                                                      ? 'Ok'
-                                                      : 'تحقق',
-                                                  style: infoWidget.subTitle
-                                                      .copyWith(
-                                                          color: Colors.indigo),
-                                                ),
-                                                onPressed: () async {
-                                                  if (_formKey.currentState
-                                                      .validate()) {
-                                                    print('iam here');
-                                                    bool x =
-                                                        await _home.endRequest(
-                                                            userData:
-                                                                _auth.userData,
-                                                            request: request);
-                                                    if (x) {
-                                                      Toast.show(
-                                                          translator.currentLanguage ==
-                                                                  "en"
-                                                              ? "Successfully completed"
-                                                              : 'تم الانتهاء بنجاح',
-                                                          context,
-                                                          duration: Toast
-                                                              .LENGTH_SHORT,
-                                                          gravity:
-                                                              Toast.BOTTOM);
-                                                    } else {
-                                                      Toast.show(
-                                                          translator.currentLanguage ==
-                                                                  "en"
-                                                              ? "Completion failed"
-                                                              : 'فشل الانتهاء',
-                                                          context,
-                                                          duration: Toast
-                                                              .LENGTH_SHORT,
-                                                          gravity:
-                                                              Toast.BOTTOM);
+                                                      SizedBox(
+                                                        height: 8.0,
+                                                      ),
+                                                    ],
+                                                  )),
+                                              actions: <Widget>[
+                                                FlatButton(
+                                                  child: Text(
+                                                    translator.currentLanguage == "en"
+                                                        ? 'Cancel'
+                                                        : 'الغاء',
+                                                    style: infoWidget.subTitle
+                                                        .copyWith(color: Colors.indigo),
+                                                  ),
+                                                  onPressed: () async {
+                                                    bool isCancel =
+                                                    await _home.sendRequestToCancel(
+                                                        requestId: request.docId);
+                                                    if (isCancel) {
+                                                      enableWriteQrCode = false;
+                                                      qrCode.clear();
+                                                      Navigator.of(ctx).pop();
                                                     }
-                                                  }
-                                                },
-                                              )
-                                            : SizedBox(),
-                                      ],
-                                    ),
-                                  ),
-                                ));
+                                                  },
+                                                ),
+                                                enableWriteQrCode
+                                                    ? FlatButton(
+                                                  child: Text(
+                                                    translator.currentLanguage ==
+                                                        "en"
+                                                        ? 'Ok'
+                                                        : 'تحقق',
+                                                    style: infoWidget.subTitle
+                                                        .copyWith(
+                                                        color: Colors.indigo),
+                                                  ),
+                                                  onPressed: () async {
+                                                    if (_formKey.currentState
+                                                        .validate()) {
+                                                      print('iam here');
+                                                      bool x =
+                                                      await _home.endRequest(
+                                                          userData:
+                                                          _auth.userData,
+                                                          request: request);
+                                                      if (x) {
+                                                        Toast.show(
+                                                            translator.currentLanguage ==
+                                                                "en"
+                                                                ? "Successfully completed"
+                                                                : 'تم الانتهاء بنجاح',
+                                                            context,
+                                                            duration: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            Toast.BOTTOM);
+                                                      } else {
+                                                        Toast.show(
+                                                            translator.currentLanguage ==
+                                                                "en"
+                                                                ? "Completion failed"
+                                                                : 'فشل الانتهاء',
+                                                            context,
+                                                            duration: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            Toast.BOTTOM);
+                                                      }
+                                                    }
+                                                  },
+                                                )
+                                                    : SizedBox(),
+                                              ],
+                                            ),
+                                          ),
+                                    ));
 //
-                      }
-                    },
-                    color: Colors.white,
-                    child: Text(
-                      translator.currentLanguage == "en" ? 'End' : 'انهاء',
-                      style:
-                          infoWidget.titleButton.copyWith(color: Colors.indigo),
-                    ),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: BorderSide(color: Colors.indigoAccent)),
+                              }
+                            },
+                            color: Colors.white,
+                            child: Text(
+                              translator.currentLanguage == "en" ? 'Finish Request'
+                              : 'انهاء الطلب',
+                              style:
+                              infoWidget.subTitle.copyWith(color: Colors.indigo),
+                            ),
+                            padding: EdgeInsets.all(0.0),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(color: Colors.indigoAccent)),
+                          ),SizedBox(width: 3,),
+                          RaisedButton(
+                            onPressed: () async {
+                              bool isFinish = await _home.cancelRequest(
+                                  requestId: request.docId);
+                              if (isFinish) {
+                                Toast.show(
+                                    translator.currentLanguage ==
+                                        "en"
+                                        ? "Cancellation succeeded"
+                                        : 'نجح الالغاء',
+                                    context,
+                                    duration: Toast
+                                        .LENGTH_SHORT,
+                                    gravity:
+                                    Toast.BOTTOM);
+                              }else{
+                                Toast.show(
+                                    translator.currentLanguage ==
+                                        "en"
+                                        ? "please try again later"
+                                        : 'لم ينجح الالغاء',
+                                    context,
+                                    duration: Toast
+                                        .LENGTH_SHORT,
+                                    gravity:
+                                    Toast.BOTTOM);
+                              }
+                            },
+                            color: Colors.white,
+                            child: Text(
+                              translator.currentLanguage == "en" ? 'Cancel' : 'الغاء',
+                              style:
+                              infoWidget.subTitle.copyWith(color: Colors.indigo),
+                            ),
+                            padding: EdgeInsets.all(0.0),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(color: Colors.indigoAccent)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              bottom: 8.0,
-              right: 10.0,
-              left: 10.0,
-            )
-          ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -838,11 +870,15 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
   getAllAcceptedRequests() async {
     print('dvdxvx');
     if (_home.allAcceptedRequests.length == 0) {
+      setState(() {
+        loadingBody = true;
+      });
       await _home.getAllAcceptedRequests(userId: _auth.userId);
+      setState(() {
+        loadingBody = false;
+      });
     }
-    setState(() {
-      loadingBody = false;
-    });
+
   }
 
   @override

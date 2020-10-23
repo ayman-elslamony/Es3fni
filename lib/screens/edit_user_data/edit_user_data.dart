@@ -502,7 +502,6 @@ class _EditProfileState extends State<EditProfile> {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).pop();
                     }),
                 actions: <Widget>[
                   PopupMenuButton(

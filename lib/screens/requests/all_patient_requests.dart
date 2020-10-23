@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
@@ -25,9 +26,10 @@ class PatientRequests extends StatefulWidget {
 class _PatientRequestsState extends State<PatientRequests> {
   Home _home;
   Auth _auth;
-  bool loadingBody = true;
+  bool loadingBody = false;
   bool _showFloating = true;
   ScrollController _scrollController;
+
   Widget content({Requests request, DeviceInfo infoWidget,BuildContext context}) {
     String visitDays = '';
     String visitTime = '';
@@ -586,12 +588,16 @@ class _PatientRequestsState extends State<PatientRequests> {
   getAllPatientRequests() async {
     print('dvdxvx');
     if (_home.allPatientsRequests.length == 0) {
+      setState(() {
+        loadingBody = true;
+      });
       await _home.getAllPatientRequests(userId: _auth.userId,userType: _auth.getUserType
       );
+      setState(() {
+        loadingBody = false;
+      });
     }
-    setState(() {
-      loadingBody = false;
-    });
+
   }
 
   @override
@@ -614,6 +620,8 @@ class _PatientRequestsState extends State<PatientRequests> {
 
   @override
   Widget build(BuildContext context) {
+
+
     return InfoWidget(
         builder: (context, infoWidget) => Scaffold(
           body: loadingBody

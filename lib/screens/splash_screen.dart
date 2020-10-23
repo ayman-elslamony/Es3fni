@@ -9,18 +9,28 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+  ImageProvider logo = AssetImage("images/logo_rienpa.png");
 
   @override
   Widget build(BuildContext context) {
     return InfoWidget(
-      builder: (context ,infoWidget)=>Scaffold(
-        body:
-        Column(
+      builder: (context, infoWidget) => Scaffold(
+        body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-                child: Center(child: Hero(tag: 'splash',child: Image.asset('assets/Logo.png',fit: BoxFit.fill,width: infoWidget.orientation ==Orientation.landscape?infoWidget.localWidth*0.2:infoWidget.localWidth*0.28)))),
+              child: Center(
+                child: Hero(
+                  tag: 'splash',
+                  child: Image.asset('assets/Logo.png',
+                      fit: BoxFit.fill,
+                      width: infoWidget.orientation == Orientation.landscape
+                          ? infoWidget.localWidth * 0.2
+                          : infoWidget.localWidth * 0.28),
+                ),
+              ),
+            ),
             SizedBox(
               height: 15.0,
             ),
@@ -29,9 +39,13 @@ class _SplashState extends State<Splash> {
                 pause: Duration(milliseconds: 1000),
                 isRepeatingAnimation: true,
                 speed: Duration(seconds: 1),
-                text: [translator.currentLanguage == "en" ?' Es3fni ':'اسعفنى'],
+                text: [
+                  translator.currentLanguage == "en" ? ' Es3fni ' : 'اسعفنى'
+                ],
                 textStyle: TextStyle(
-                    fontSize: infoWidget.orientation==Orientation.portrait?infoWidget.screenWidth * 0.05:infoWidget.screenWidth * 0.032,
+                    fontSize: infoWidget.orientation == Orientation.portrait
+                        ? infoWidget.screenWidth * 0.05
+                        : infoWidget.screenWidth * 0.032,
                     fontWeight: FontWeight.bold),
                 colors: [
                   Colors.red,
@@ -41,9 +55,8 @@ class _SplashState extends State<Splash> {
                   Colors.red,
                 ],
                 textAlign: TextAlign.start,
-                alignment: AlignmentDirectional
-                    .topStart // or Alignment.topLeft
-            ),
+                alignment: AlignmentDirectional.topStart // or Alignment.topLeft
+                ),
           ],
         ),
       ),

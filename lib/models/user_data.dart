@@ -14,9 +14,11 @@ class UserData {
   String imgUrl;
   String aboutYou;
   String isVerify;
+  String rating;
 bool loading;
   UserData(
       {this.docId,
+        this.rating='0.0',
       this.address,
         this.lat,this.lng,
       this.nationalId,
