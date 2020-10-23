@@ -27,7 +27,7 @@ class Auth with ChangeNotifier {
   String _userId = '';
 
   String get userId => _userId;
-
+  double totalRatingForNurse = 0.0;
 
   String signInType = '';
   static String _userType = 'patient';
@@ -574,7 +574,23 @@ Future<bool>  checkIsPatientVerify()async{
         },
         codeAutoRetrievalTimeout: null);
   }
+  Future<void>  getNurseRating()async{
+    var users = databaseReference.collection("nurses");
+     users.document(_userId).collection('rating').document('rating').snapshots().listen((rating){
+        if(rating.exists) {
+          int one = rating.data['1'] == null ? 0 : int.parse(rating.data['1']);
+          int two = rating.data['2'] == null ? 0 : int.parse(rating.data['2']);
+          int three = rating.data['3'] == null ? 0 : int.parse(rating.data['3']);
+          int four = rating.data['4'] == null ? 0 : int.parse(rating.data['4']);
+          int five = rating.data['5'] == null ? 0 : int.parse(rating.data['5']);
+          totalRatingForNurse =
+              (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
+                  (one + two + three + four + five);
+          notifyListeners();
+        }
+      });
 
+    }
   Future<bool> signInUsingEmailForNurse(
       {String email,
       String password,
@@ -610,11 +626,11 @@ Future<bool>  checkIsPatientVerify()async{
             doc.data['phoneNumber'] == null ||
             doc.data['gender'] == null) {
           if (isTryToLogin == false) {
-
             _userData = UserData(
-
                 name: doc.data['name'] ?? 'Nurse',
                 docId: doc.documentID,
+                specialization: '',
+                specializationBranch: '',
                 password: password,
                 rating: '0.0',
                 nationalId: doc.data['nationalId'] ?? '',
@@ -633,20 +649,9 @@ Future<bool>  checkIsPatientVerify()async{
           }
         } else {
 
-          DocumentSnapshot rating = await users.document(_userId).collection('rating').document('rating').get();
-          double totalRating = 0.0;
-          if(rating.exists) {
-            int one = rating.data['1'] == null ? 0 : int.parse(rating.data['1']);
-            int two = rating.data['2'] == null ? 0 : int.parse(rating.data['2']);
-            int three = rating.data['3'] == null ? 0 : int.parse(rating.data['3']);
-            int four = rating.data['4'] == null ? 0 : int.parse(rating.data['4']);
-            int five = rating.data['5'] == null ? 0 : int.parse(rating.data['5']);
-            totalRating =
-                (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
-                    (one + two + three + four + five);
-          }
           _userData = UserData(
-            rating: totalRating.toString(),
+            specializationBranch: doc.data['specializationBranch'].toString() ?? '',
+              specialization: doc.data['specialization'].toString() ?? '',
               name: doc.data['name'] ?? 'Nurse',
               points: doc.data['points'].toString() ?? '0',
               docId: doc.documentID,

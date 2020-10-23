@@ -984,6 +984,10 @@ class _AddUserDataState extends State<AddUserData> {
                                               height: 40,
                                               width: 35,
                                               child: PopupMenuButton(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    side: BorderSide(color: Colors.indigo)
+                                                ),
                                                 initialValue: translator.currentLanguage == "en"
                                                     ? 'Male'
                                                     : 'ذكر',

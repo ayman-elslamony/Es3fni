@@ -212,6 +212,25 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                       : _userData.name,
                                   iconData: Icons.person,
                                   infoWidget: infoWidget),
+                          _userData.specialization== ''
+                              ? SizedBox()
+                              : personalInfo(
+                                  title: translator.currentLanguage == "en"
+                                      ? 'Specialization'
+                                      : 'التخصص',
+                                  subtitle:  _userData.specialization,
+                                  iconData: Icons.school,
+                                  infoWidget: infoWidget),
+                          _userData.specializationBranch== ''
+                              ? SizedBox()
+                              : personalInfo(
+                                  title: translator.currentLanguage == "en"
+                                      ? 'Specialization'
+                                      : 'التخصص',
+                                  subtitle:  _userData.specializationBranch,
+                                  iconData: Icons.info,
+                                  infoWidget: infoWidget),
+
                           _auth.getUserType != 'nurse'
                               ? SizedBox()
                               : _userData.address == ''
@@ -286,12 +305,8 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                               style:
                               infoWidget.titleButton.copyWith(color: Colors.indigo),
                             ),
-                            leading: Icon(
-                              Icons.stars,
-                              color: Colors.indigo,
-                            ),
-                            subtitle: InkWell(
-                              onTap: ()async{
+                            trailing: RaisedButton(
+                              onPressed:()async{
                                 ratingNurse = await _home.getSpecificRating(nurseId: _userData.docId,patientId: _auth.userId);
                                 showModalBottomSheet(
                                     backgroundColor: Colors.white,
@@ -317,8 +332,8 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                                   Text(
                                                       translator.currentLanguage == "en"
 
-                                                  ? 'Rate the nurse'
-                                                      : 'تقيم الممرض',
+                                                          ? 'Rate the nurse'
+                                                          : 'تقيم الممرض',
                                                       style: TextStyle(
                                                           fontSize: MediaQuery.of(context)
                                                               .orientation ==
@@ -347,6 +362,7 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                                 direction: Axis.horizontal,
                                                 allowHalfRating: false,
                                                 itemCount: 5,
+                                                unratedColor: Colors.grey,
                                                 itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                                                 itemBuilder: (context, _) => Icon(
                                                   Icons.stars,
@@ -372,7 +388,7 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                                     onPressed: () async{
                                                       if(ratingNurse != 0) {
                                                         await _home.ratingNurse(
-                                                          patientId: _auth.userId,
+                                                            patientId: _auth.userId,
                                                             nurseId: _userData.docId,
                                                             ratingCount: ratingNurse.floor());
                                                         Navigator.of(context).pop();
@@ -401,25 +417,46 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                       );
                                     });
                               },
-                              child: Consumer<Home>(
-                                builder: (context,data,_)=>
-                                    RatingBar(
-                                  onRatingUpdate: (_){},
-                                  ignoreGestures: true,
-                                  initialRating: data.totalRatingForNurse,
-                                  minRating: 1,
-                                  itemSize: infoWidget.screenWidth*0.067,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: false,
-                                  itemCount: 5,
-                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.stars,
-                                    color: Colors.indigo,
-                                  ),
+                              color: Colors.indigo,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 0, horizontal: 0),
+                                child: Text(
+                                  translator.currentLanguage == "en"
+                                      ? 'Rate now'
+                                      : 'تقيم الان',
+                                  style: infoWidget.subTitle
+                                      .copyWith(color: Colors.white),
+                                ),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                 ),
+                            ),
+                            leading: Icon(
+                              Icons.stars,
+                              color: Colors.indigo,
+                            ),
+                            subtitle: Consumer<Home>(
+                              builder: (context,data,_)=>
+                                  RatingBar(
+                                onRatingUpdate: (_){},
+                                ignoreGestures: true,
+                                initialRating: data.totalRatingForNurse,
+                                minRating: 1,
+                                    unratedColor: Colors.grey,
+                                itemSize: infoWidget.screenWidth*0.067,
+                                direction: Axis.horizontal,
+                                allowHalfRating: false,
+                                itemCount: 5,
+                                itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                                itemBuilder: (context, _) => Icon(
+                                  Icons.stars,
+                                  color: Colors.indigo,
                                 ),
                               ),
                             ),
+
                           ):SizedBox(),
                           _userData.aboutYou == ''
                               ? SizedBox()

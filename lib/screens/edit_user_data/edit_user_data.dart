@@ -243,13 +243,11 @@ class _EditProfileState extends State<EditProfile> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(25.0))),
                   contentPadding: EdgeInsets.only(top: 10.0),
-                  content: SizedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: EditAddress(
-                        getAddress: getAddress,
-                        address: _auth.userData.address,
-                      ),
+                  content: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: EditAddress(
+                      getAddress: getAddress,
+                      address: _auth.userData.address,
                     ),
                   ),
                   actions: <Widget>[
@@ -505,6 +503,10 @@ class _EditProfileState extends State<EditProfile> {
                     }),
                 actions: <Widget>[
                   PopupMenuButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(color: Colors.indigo)
+                    ),
                     initialValue: '',
                     tooltip:
                         translator.currentLanguage == "en" ? 'Select' : 'اختار',

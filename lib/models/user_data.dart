@@ -16,8 +16,11 @@ class UserData {
   String isVerify;
   String rating;
 bool loading;
+String specialization;
+String specializationBranch;
   UserData(
       {this.docId,
+        this.specialization,this.specializationBranch,
         this.rating='0.0',
       this.address,
         this.lat,this.lng,

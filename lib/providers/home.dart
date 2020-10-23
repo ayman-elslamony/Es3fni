@@ -169,7 +169,7 @@ class Home with ChangeNotifier {
             } else {
               time = '';
             }
-            if (docs.documents[i].data['acceptTime'] != null) {
+            if (docs.documents[i].data['acceptTime'] != null&&docs.documents[i].data['acceptTime'] != '') {
               acceptTime = convertTimeToAMOrPM(
                   time: docs.documents[i].data['acceptTime']);
             } else {
@@ -190,6 +190,8 @@ class Home with ChangeNotifier {
               convertAllVisitsTime = [];
             }
             allPatientsRequests.add(Requests(
+                specialization: docs.documents[i].data['specialization'] ?? '',
+                specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
                 distance:  distance.floor().toString(),
                 lat: docs.documents[i].data['lat'] ?? '',
                 long: docs.documents[i].data['long'] ?? '',
@@ -399,6 +401,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       DocumentSnapshot doc = await patientCollection.document(userId).get();
       if (doc.data != null) {
         user = UserData(
+          specializationBranch: doc.data['specializationBranch'].toString() ?? '',
+          specialization: doc.data['specialization'].toString() ?? '',
           name: doc.data['name'] ?? '',
           docId: doc.documentID ?? '',
           lat: doc.data['lat'] ?? '',
@@ -428,6 +432,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
                 (one + two + three + four + five);
       }
       user = UserData(
+        specializationBranch: doc.data['specializationBranch'].toString() ?? '',
+        specialization: doc.data['specialization'].toString() ?? '',
         rating: totalRatingForNurse.toString(),
         name: doc.data['name'] ?? '',
         docId: doc.documentID ?? '',
@@ -470,7 +476,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
           }else{
             time='';
           }
-          if(docs.documents[i].data['acceptTime'] !=''){
+          if(docs.documents[i].data['acceptTime'] !=null&&docs.documents[i].data['acceptTime'] !=''){
             acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
           }else{
             acceptTime='';
@@ -488,6 +494,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
             convertAllVisitsTime=[];
           }
           allAcceptedRequests.add(Requests(
+              specialization: docs.documents[i].data['specialization'] ?? '',
+              specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
             distance:  distance.floor().toString(),
               lat:  docs.documents[i].data['lat'] ?? '',
               long:  docs.documents[i].data['long'] ?? '',
@@ -550,7 +558,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
             }else{
               time='';
             }
-            if(docs.documents[i].data['acceptTime'] !=null){
+            if(docs.documents[i].data['acceptTime'] !=null&& docs.documents[i].data['acceptTime'] !=''){
               acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
             }else{
               acceptTime='';
@@ -572,6 +580,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
             }
             print('convertAllVisitsTime: $convertAllVisitsTime');
             allPatientsRequests.add(Requests(
+                specialization: docs.documents[i].data['specialization'] ?? '',
+                specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
                 lat:  docs.documents[i].data['lat'] ?? '',
                 long:  docs.documents[i].data['long'] ?? '',
                 isFinished: docs.documents[i].data['isFinished'] ?? false,
@@ -640,7 +650,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         }else{
           time='';
         }
-        if(docs.documents[i].data['acceptTime'] !=''){
+        if(docs.documents[i].data['acceptTime'] !=null &&docs.documents[i].data['acceptTime'] !=''){
           acceptTime=convertTimeToAMOrPM(time: docs.documents[i].data['acceptTime']);
         }else{
           acceptTime='';
@@ -659,6 +669,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
           convertAllVisitsTime=[];
         }
         allArchivedRequests.add(Requests(
+            specialization: docs.documents[i].data['specialization'] ?? '',
+            specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
             acceptTime: acceptTime,
             lat:  docs.documents[i].data['lat'] ?? '',
             long:  docs.documents[i].data['long'] ?? '',
@@ -728,6 +740,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
   Future<bool> addRequest(
       {String analysisType,
       String patientId,
+        String specialization='',String specializationBranch='',
       String patientName,
       String patientPhone,
       String patientLocation,
@@ -777,6 +790,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       'analysisType': analysisType,
       'nurseGender': nurseGender,
       'lat':patientLat,
+      'specialization':specialization,
+      'specializationBranch':specializationBranch,
       'long':patientLong,
       'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
       'time': '${dateTime.hour}:${dateTime.minute}',
@@ -823,6 +838,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       {String docId,
         bool isPictureTypeFile=true,
       String analysisType,
+        String specialization='',String specializationBranch='',
       String patientId,
       String patientName,
       String patientPhone,
@@ -873,6 +889,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         'serviceType': serviceType,
         'analysisType': analysisType,
         'nurseGender': nurseGender,
+        'specialization':specialization,
+        'specializationBranch':specializationBranch,
         'lat': patientLat,
         'long': patientLong,
         'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
@@ -919,6 +937,9 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
     CollectionReference allRequests = databaseReference.collection('requests');
     CollectionReference archived =
         databaseReference.collection('archived requests');
+    CollectionReference archivedForPatients =
+        databaseReference.collection('archivedForPatients');
+
     int points = int.parse(userData.points);
     points = points + 50;
     await nursesCollection
@@ -936,11 +957,6 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       'date': '${dateTime.year}-${dateTime.month}-${dateTime.day}',
       'time': '${dateTime.hour}:${dateTime.minute}',
     });
-//    allArchived.document(request.docId).setData({
-//      'docId':request.docId,
-//      'patientId':request.patientId
-//    });
-
 
     String acceptTime='';
     String time=''; List<String> convertAllVisitsTime=[];
@@ -970,6 +986,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
           .collection('archived requests')
           .document(request.docId)
           .setData({
+      'specialization':request.specialization,
+      'specializationBranch':request.specializationBranch,
         'acceptTime':acceptTime,
         'nurseId': userData.docId,
         'patientId': request.patientId,
@@ -999,8 +1017,14 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         'priceBeforeDiscount': request.priceBeforeDiscount,
         'priceAfterDiscount': request.priceAfterDiscount,
       });
+      archivedForPatients.document(request.docId)
+          .setData({
+        'patientId':request.patientId
+      });
     } else {
       await archived.document(request.docId).setData({
+        'specialization':request.specialization,
+        'specializationBranch':request.specializationBranch,
         'nurseId': userData.docId,
         'patientId': request.patientId,
         'patientName': request.patientName,

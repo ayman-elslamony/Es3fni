@@ -492,7 +492,7 @@ class _AllRequestsState extends State<AllRequests> {
         loadingBody = true;
       });
       final prefs = await SharedPreferences.getInstance();
-      if(_home.radiusForAllRequests==1.1){
+      if(_home.radiusForAllRequests==1.0){
         if (prefs.containsKey('radiusForAllRequests')) {
           print('bdfbdf');
           final _radiusForAllRequests = await json
@@ -500,7 +500,7 @@ class _AllRequestsState extends State<AllRequests> {
           print(_radiusForAllRequests['radiusForAllRequests']);
           _home.radiusForAllRequests =double.parse(_radiusForAllRequests['radiusForAllRequests']);
         }else{
-          _home.radiusForAllRequests = 3000.0;
+          _home.radiusForAllRequests = 3.0;
         }
       }
       await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
@@ -575,6 +575,7 @@ class _AllRequestsState extends State<AllRequests> {
               floatingActionButton: FloatingActionButton(
                 onPressed: () {
                   showModalBottomSheet(
+                      isDismissible: false,
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
@@ -582,70 +583,73 @@ class _AllRequestsState extends State<AllRequests> {
                               topLeft: Radius.circular(10))),
                       context: context,
                       builder: (BuildContext context) {
-                        return StatefulBuilder(
-                          builder: (context, setState) => Container(
-                            height: MediaQuery.of(context).orientation ==
-                                    Orientation.portrait
-                                ? MediaQuery.of(context).size.height * 0.16
-                                : MediaQuery.of(context).size.height * 0.28,
-                            padding: EdgeInsets.all(10.0),
-                            child: Column(children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: InkWell(onTap: ()async{
-                                      await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
-                                      Navigator.of(context).pop();
-                                      final prefs = await SharedPreferences.getInstance();
+                        return Directionality(
+                          textDirection: translator.currentLanguage=='en'?TextDirection.ltr:TextDirection.rtl,
+                          child: StatefulBuilder(
+                            builder: (context, setState) => Container(
+                              height: MediaQuery.of(context).orientation ==
+                                      Orientation.portrait
+                                  ? MediaQuery.of(context).size.height * 0.16
+                                  : MediaQuery.of(context).size.height * 0.28,
+                              padding: EdgeInsets.all(10.0),
+                              child: Column(children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    SizedBox(width: 1.0,)
+                                    ,
+                                    Text(
+                                        translator.currentLanguage == "en"
+                                            ? 'Filter Requests'
+                                            : 'فلتره الطلبات',
+                                        style: TextStyle(
+                                            fontSize: MediaQuery.of(context)
+                                                        .orientation ==
+                                                    Orientation.portrait
+                                                ? MediaQuery.of(context).size.width *
+                                                    0.04
+                                                : MediaQuery.of(context).size.width *
+                                                    0.03,
+                                            color: Colors.indigo,
+                                            fontWeight: FontWeight.bold)),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      child: InkWell(onTap: ()async{
+                                        await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
+                                        Navigator.of(context).pop();
+                                        final prefs = await SharedPreferences.getInstance();
                                         final _radiusForAllRequests = json.encode({
                                           'radiusForAllRequests': _home.radiusForAllRequests.toString(),
                                         });
                                         prefs.setString('radiusForAllRequests', _radiusForAllRequests);
-                                    }, child: Text(translator.currentLanguage == "en" ?'Save':'حفظ',style: infoWidget.subTitle.copyWith(color: Colors.indigo),)),
-                                  ),
-                                  Text(
-                                      translator.currentLanguage == "en"
-                                          ? 'Filter Requests'
-                                          : 'فلتره الطلبات',
-                                      style: TextStyle(
-                                          fontSize: MediaQuery.of(context)
-                                                      .orientation ==
-                                                  Orientation.portrait
-                                              ? MediaQuery.of(context).size.width *
-                                                  0.04
-                                              : MediaQuery.of(context).size.width *
-                                                  0.03,
-                                          color: Colors.indigo,
-                                          fontWeight: FontWeight.bold)),
-                                  SizedBox()
-                                  ,
-                                ],
-                              ),
-                              SizedBox(
-                                height: 10.0,
-                              ),
-                              Consumer<Home>(
-                                builder: (context,data,_)=>
-                                Slider(
-                                  value: data.radiusForAllRequests,
-                                  onChanged: _home.changeRadiusForAllRequests,
-                                  min: 0.0,
-                                  max: 100.0,
-                                  divisions: 10,
-                                  label: '${data.radiusForAllRequests.floor()} KM',
-                                  inactiveColor: Colors.blue[100],
-                                  activeColor: Colors.indigo,
+                                      }, child: Text(translator.currentLanguage == "en" ?'Save':'حفظ',style: infoWidget.subTitle.copyWith(color: Colors.indigo),)),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ]),
+                                SizedBox(
+                                  height: 10.0,
+                                ),
+                                Consumer<Home>(
+                                  builder: (context,data,_)=>
+                                  Slider(
+                                    value: data.radiusForAllRequests,
+                                    onChanged: _home.changeRadiusForAllRequests,
+                                    min: 0.0,
+                                    max: 100.0,
+                                    divisions: 10,
+                                    label: '${data.radiusForAllRequests.floor()} KM',
+                                    inactiveColor: Colors.blue[100],
+                                    activeColor: Colors.indigo,
+                                  ),
+                                ),
+                              ]),
+                            ),
                           ),
                         );
                       });
                 },
                 tooltip:
-                    translator.currentLanguage == "en" ? 'Filter' : 'Filter',
+                    translator.currentLanguage == "en" ? 'Filter' : 'فلتره',
                 child: Icon(
                   Icons.filter_list,
                   color: Colors.white,

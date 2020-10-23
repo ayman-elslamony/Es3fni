@@ -755,6 +755,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                                 .LENGTH_SHORT,
                                                             gravity:
                                                             Toast.BOTTOM);
+                                                        Navigator.of(context).pop();
                                                       } else {
                                                         Toast.show(
                                                             translator.currentLanguage ==

@@ -31,7 +31,8 @@ class Requests{
   String lat;
   String long;
   String distance;
-  Requests({this.distance,this.isFinished=false,this.acceptTime,this.nurseId,this.date,this.time,this.servicePrice,this.discountPercentage,this.patientId,this.isLoading=false,this.docId,this.patientName, this.patientPhone, this.patientLocation,
+  String specialization;String specializationBranch;
+  Requests({this.specialization,this.specializationBranch,this.distance,this.isFinished=false,this.acceptTime,this.nurseId,this.date,this.time,this.servicePrice,this.discountPercentage,this.patientId,this.isLoading=false,this.docId,this.patientName, this.patientPhone, this.patientLocation,
     this.patientAge, this.patientGender,this.lat,this.long, this.numOfPatients, this.serviceType,
     this.analysisType, this.nurseGender, this.suppliesFromPharmacy,
     this.picture, this.discountCoupon, this.startVisitDate, this.endVisitDate,

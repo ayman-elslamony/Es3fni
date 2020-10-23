@@ -24,8 +24,11 @@ class _UserProfileState extends State<UserProfile> {
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
+    getNurseRating();
   }
-
+  getNurseRating(){
+    _auth.getNurseRating();
+  }
   personalInfo(
       {String title,
       String subtitle,
@@ -125,6 +128,24 @@ class _UserProfileState extends State<UserProfile> {
                                 : _auth.userData.address,
                             iconData: Icons.my_location,
                             infoWidget: infoWidget)),
+                _auth.userData.specialization== ''
+                    ? SizedBox()
+                    : personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Specialization'
+                        : 'التخصص',
+                    subtitle:  _auth.userData.specialization,
+                    iconData: Icons.school,
+                    infoWidget: infoWidget),
+                _auth.userData.specializationBranch== ''
+                    ? SizedBox()
+                    : personalInfo(
+                    title: translator.currentLanguage == "en"
+                        ? 'Specialization'
+                        : 'التخصص',
+                    subtitle:  _auth.userData.specializationBranch,
+                    iconData: Icons.info,
+                    infoWidget: infoWidget),
                 _auth.userData.phoneNumber == ''
                     ? SizedBox()
                     : personalInfo(
@@ -157,19 +178,22 @@ class _UserProfileState extends State<UserProfile> {
                     Icons.stars,
                     color: Colors.indigo,
                   ),
-                  subtitle: RatingBar(
-                    onRatingUpdate: (_){},
-                    ignoreGestures: true,
-                    initialRating: double.parse( _auth.userData.rating),
-                    minRating: 1,
-                    itemSize: infoWidget.screenWidth*0.067,
-                    direction: Axis.horizontal,
-                    allowHalfRating: false,
-                    itemCount: 5,
-                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                    itemBuilder: (context, _) => Icon(
-                      Icons.stars,
-                      color: Colors.indigo,
+                  subtitle: Consumer<Auth>(
+                    builder: (context,data,_)=>
+                    RatingBar(
+                      onRatingUpdate: (_){},
+                      ignoreGestures: true,
+                      initialRating: data.totalRatingForNurse,
+                      minRating: 1,
+                      itemSize: infoWidget.screenWidth*0.067,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 5,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) => Icon(
+                        Icons.stars,
+                        color: Colors.indigo,
+                      ),
                     ),
                   ),
                 ):SizedBox(),
