@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/edit_user_data/widgets/editImage.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -557,24 +559,39 @@ class _EditProfileState extends State<EditProfile> {
                             child: Center(
                               child: Stack(
                                 children: <Widget>[
-                                  SizedBox(
-                                    width: 160,
-                                    height: 130,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border:
-                                            Border.all(color: Colors.indigo),
-                                        borderRadius: BorderRadius.circular(15),
+                                  InkWell(
+                                    onTap: (){
+                                      if(data.userData.imgUrl !='') {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(builder: (context) =>
+                                                ShowImage(
+                                                  title: translator.currentLanguage ==
+                                                      "en" ? 'personal picture'
+                                                      : 'الصوره الشخصيه',
+                                                  imgUrl:data.userData.imgUrl,
+                                                  isImgUrlAsset: false,
+                                                )));
+                                      }
+                                    },
+                                    child: SizedBox(
+                                      width: 160,
+                                      height: 130,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border:
+                                              Border.all(color: Colors.indigo),
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        child: ClipRRect(
+                                            //backgroundColor: Colors.white,
+                                            //backgroundImage:
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(15)),
+                                            child: FadeInImage.assetNetwork(
+                                                fit: BoxFit.fill,
+                                                placeholder: 'assets/user.png',
+                                                image: data.userData.imgUrl)),
                                       ),
-                                      child: ClipRRect(
-                                          //backgroundColor: Colors.white,
-                                          //backgroundImage:
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(15)),
-                                          child: FadeInImage.assetNetwork(
-                                              fit: BoxFit.fill,
-                                              placeholder: 'assets/user.png',
-                                              image: data.userData.imgUrl)),
                                     ),
                                   ),
                                   Positioned(
@@ -657,6 +674,24 @@ class _EditProfileState extends State<EditProfile> {
                                     : data.userData.address,
                                 iconData: Icons.my_location,
                                 infoWidget: infoWidget),
+                        data.userData.specialization== ''
+                            ? SizedBox()
+                            : personalInfo(
+                            title: translator.currentLanguage == "en"
+                                ? 'Specialization'
+                                : 'التخصص',
+                            subtitle:  _auth.userData.specialization,
+                            iconData: Icons.school,
+                            infoWidget: infoWidget),
+                        data.userData.specializationBranch== ''
+                            ? SizedBox()
+                            : personalInfo(
+                            title: translator.currentLanguage == "en"
+                                ? 'Specialization type'
+                                : 'نوع التخصص',
+                            subtitle:  _auth.userData.specializationBranch,
+                            iconData: Icons.info,
+                            infoWidget: infoWidget),
                          data.userData.phoneNumber == ''
                                 ? SizedBox()
                                 : personalInfo(
@@ -685,6 +720,35 @@ class _EditProfileState extends State<EditProfile> {
                                 enableEdit: false,
                                 context: context,
                                 infoWidget: infoWidget),
+                        _auth.getUserType=='nurse'?ListTile(
+                          title: Text(
+                            translator.currentLanguage == "en" ? 'Rating' : 'التقيم',
+                            style:
+                            infoWidget.titleButton.copyWith(color: Colors.indigo),
+                          ),
+                          leading: Icon(
+                            Icons.stars,
+                            color: Colors.indigo,
+                          ),
+                          subtitle: Consumer<Auth>(
+                            builder: (context,data,_)=>
+                                RatingBar(
+                                  onRatingUpdate: (_){},
+                                  ignoreGestures: true,
+                                  initialRating: data.totalRatingForNurse,
+                                  minRating: 1,
+                                  itemSize: infoWidget.screenWidth*0.067,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: false,
+                                  itemCount: 5,
+                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                                  itemBuilder: (context, _) => Icon(
+                                    Icons.stars,
+                                    color: Colors.indigo,
+                                  ),
+                                ),
+                          ),
+                        ):SizedBox(),
                         data.userData.nationalId == ''
                             ? SizedBox()
                             : personalInfo(

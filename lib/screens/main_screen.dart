@@ -253,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 ? "All requests"
                                 : 'كل الطلبات',
                             isIcon: true,
-                            icon: Icons.remove_from_queue,
+                            icon: Icons.redeem,
                             infoWidget: infoWidget,
                             onTap: () {
                               Navigator.of(context).pop();

@@ -541,18 +541,25 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
     notifyListeners();
   }
 
-  Future getAllPatientRequests({String userId, String userType}) async {
+  Future getAllPatientRequests({String userId, String userType,String userLat='0.0',String userLong='0.0'}) async {
     if (userType == 'patient') {
       var requests = databaseReference.collection('requests');
       requests.where('patientId', isEqualTo: userId).snapshots().listen((docs) {
         print('A');
         if (docs.documents.length != 0) {
           print('B');
+          double distance = 0.0;
           allPatientsRequests.clear();
           String time='';
           String acceptTime='';
           List<String> convertAllVisitsTime=[];
           for (int i = 0; i < docs.documents.length; i++) {
+            distance = _calculateDistance(
+                userLat != ''? double.parse(userLat):0.0,
+                userLong != ''? double.parse(userLong):0.0,
+                double.parse(docs.documents[i].data['lat']??0.0),
+                double.parse(docs.documents[i].data['long']??0.0));
+            print('distance::$distance');
             if(docs.documents[i].data['time'] !=''){
               time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
             }else{
@@ -583,6 +590,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
                 specialization: docs.documents[i].data['specialization'] ?? '',
                 specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
                 lat:  docs.documents[i].data['lat'] ?? '',
+                distance:  distance.floor().toString(),
                 long:  docs.documents[i].data['long'] ?? '',
                 isFinished: docs.documents[i].data['isFinished'] ?? false,
                 acceptTime: acceptTime,
@@ -939,9 +947,10 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         databaseReference.collection('archived requests');
     CollectionReference archivedForPatients =
         databaseReference.collection('archivedForPatients');
-
-    int points = int.parse(userData.points);
-    points = points + 50;
+    DocumentSnapshot getPoints=await nursesCollection
+        .document(userData.docId).get();
+    int points = int.parse(getPoints['points']);
+    points = points + int.parse(request.priceAfterDiscount);
     await nursesCollection
         .document(userData.docId)
         .updateData({'points': points.toString()});
@@ -953,7 +962,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         .setData({
       'serviceType': request.serviceType,
       'analysisType': request.analysisType,
-      'points': '50',
+      'points': request.priceAfterDiscount,
       'date': '${dateTime.year}-${dateTime.month}-${dateTime.day}',
       'time': '${dateTime.hour}:${dateTime.minute}',
     });
@@ -979,7 +988,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
     }else{
       convertAllVisitsTime=[];
     }
-    allRequests.document(request.docId).delete();
+    await allRequests.document(request.docId).delete();
     if (request.patientId != '') {
       await patientCollection
           .document(request.patientId)
@@ -1064,13 +1073,13 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
 
   Future<bool> sendRequestToFinish({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
-    allRequests.document(requestId).setData({'isFinished': true}, merge: true);
+    await allRequests.document(requestId).setData({'isFinished': true}, merge: true);
     return true;
   }
 
   Future<bool> sendRequestToCancel({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
-    allRequests.document(requestId).setData({'isFinished': false}, merge: true);
+    await allRequests.document(requestId).setData({'isFinished': false});
     return true;
   }
 

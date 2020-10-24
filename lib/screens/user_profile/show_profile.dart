@@ -6,6 +6,7 @@ import 'package:helpme/models/user_data.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:helpme/screens/shared_widget/show_user_location.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -176,23 +177,38 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
                                 color: Colors.indigo,
                               ),
                               child: Center(
-                                child: SizedBox(
-                                  width: 160,
-                                  height: 130,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.indigo),
-                                      borderRadius: BorderRadius.circular(15),
+                                child: InkWell(
+                                  onTap: (){
+                                    if(_userData.imgUrl !='') {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(builder: (context) =>
+                                              ShowImage(
+                                                title: translator.currentLanguage ==
+                                                    "en" ? 'personal picture'
+                                                    : 'الصوره الشخصيه',
+                                                imgUrl: _userData.imgUrl,
+                                                isImgUrlAsset: false,
+                                              )));
+                                    }
+                                  },
+                                  child: SizedBox(
+                                    width: 160,
+                                    height: 130,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.indigo),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: ClipRRect(
+                                          //backgroundColor: Colors.white,
+                                          //backgroundImage:
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(15)),
+                                          child: FadeInImage.assetNetwork(
+                                              fit: BoxFit.fill,
+                                              placeholder: 'assets/user.png',
+                                              image: _userData.imgUrl)),
                                     ),
-                                    child: ClipRRect(
-                                        //backgroundColor: Colors.white,
-                                        //backgroundImage:
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15)),
-                                        child: FadeInImage.assetNetwork(
-                                            fit: BoxFit.fill,
-                                            placeholder: 'assets/user.png',
-                                            image: _userData.imgUrl)),
                                   ),
                                 ),
                               ),

@@ -9,6 +9,7 @@ import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:helpme/screens/shared_widget/flutter_time_picker_spinner.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -1548,9 +1549,6 @@ class _AddRequestState extends State<AddRequest> {
                                         mainAxisAlignment:
                                         MainAxisAlignment
                                             .spaceEvenly,
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment
-                                            .center,
                                         children: <Widget>[
                                           Padding(
                                             padding:
@@ -2076,40 +2074,54 @@ class _AddRequestState extends State<AddRequest> {
                               ),
                             ),
                             enablePicture
-                                ? Container(
+                                ? InkWell(
+                              onTap: (){
+                                if(_imageFile !=null) {
+                                  Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (context) =>
+                                          ShowImage(
+                                            title: translator.currentLanguage ==
+                                                "en" ? 'Roshta picture'
+                                                : 'صوره الروشته',
+                                            imageFile: _imageFile,
+                                          )));
+                                }
+                              },
+                                  child: Container(
                               width: double.infinity,
                               height: 200,
                               child: Stack(
-                                children: <Widget>[
-                                  ClipRRect(
-                                    //backgroundColor: Colors.white,
-                                    //backgroundImage:
-                                    borderRadius:
-                                    BorderRadius.circular(10),
-                                    child: Image.file(
-                                      _imageFile,
-                                      fit: BoxFit.fill,
-                                      width: double.infinity,
-                                      height: 200,
+                                  children: <Widget>[
+                                    ClipRRect(
+                                      //backgroundColor: Colors.white,
+                                      //backgroundImage:
+                                      borderRadius:
+                                      BorderRadius.circular(10),
+                                      child: Image.file(
+                                        _imageFile,
+                                        fit: BoxFit.fill,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ),
                                     ),
-                                  ),
-                                  Positioned(
-                                      top: 3.0,
-                                      right: 3.0,
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.clear,
-                                            color: Colors.indigo,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _imageFile = null;
-                                              enablePicture = false;
-                                            });
-                                          }))
-                                ],
+                                    Positioned(
+                                        top: 3.0,
+                                        right: 3.0,
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.clear,
+                                              color: Colors.indigo,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _imageFile = null;
+                                                enablePicture = false;
+                                              });
+                                            }))
+                                  ],
                               ),
-                            )
+                            ),
+                                )
                                 : SizedBox(),
                             Padding(
                               padding: const EdgeInsets.only(

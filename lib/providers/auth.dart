@@ -184,6 +184,8 @@ class Auth with ChangeNotifier {
         doc = await patientData.document(_userId).get();
       }
       _userData = UserData(
+        rating: doc.data['rating'] ??'0.0',
+        specialization:doc.data['specialization'] ?? '',specializationBranch: doc.data['specializationBranch'] ?? '',
         isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
         name: doc.data['name'],
         docId: doc.documentID,
@@ -735,6 +737,7 @@ Future<bool>  checkIsPatientVerify()async{
     print('rtr');
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
+    DateTime dateTime = DateTime.now();
     String imgUrl = '';
     String IdImgUrl = '';
     print('picture');
@@ -801,6 +804,8 @@ Future<bool>  checkIsPatientVerify()async{
         'birthDate': birthDate,
         'nationalId': nationalId,
         'gender': gender,
+        'date': '${dateTime.day}/${dateTime.month}/${dateTime.year}',
+        'time': '${dateTime.hour}:${dateTime.minute}',
         'imgUrl': picture.toString().contains('https:')?picture:imgUrl,
         'points': '0'
       }, merge: true);
@@ -821,6 +826,9 @@ Future<bool>  checkIsPatientVerify()async{
       doc = await patientData.document(_userId).get();
     }
     _userData = UserData(
+      rating: '0.0',
+      specializationBranch: doc.data['specializationBranch'] ?? '',
+      specialization: doc.data['specialization'] ?? '',
       isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
         name: doc.data['name'] ?? '',
         points: doc.data['points'] ?? '0',

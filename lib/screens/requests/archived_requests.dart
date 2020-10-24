@@ -5,6 +5,7 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:helpme/screens/user_profile/show_profile.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -186,6 +187,45 @@ class _ArchivedRequestsState extends State<ArchivedRequests> {
                             content: request.suppliesFromPharmacy,
                             infoWidget: infoWidget)
                             : SizedBox(),
+                        request.picture!=''?
+                        Column(
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  translator.currentLanguage == "en"
+                                      ? 'Roshita or analysis Picture: '
+                                      : 'صوره الروشته او التحليل: ',
+                                  style: infoWidget.titleButton.copyWith(color: Colors.indigo),
+                                ),
+                                RaisedButton(
+                                  padding: EdgeInsets.all(0.0),
+                                  onPressed:
+                                      (){
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowImage(
+                                      title: translator.currentLanguage == "en" ? 'Roshita or analysis Picture'
+                                          : 'صوره الروشته او التحليل',
+                                      imgUrl: request.picture,
+                                      isImgUrlAsset: false,
+                                    )));
+                                  },
+                                  color: Colors.indigo,
+                                  child: Text(
+                                    translator.currentLanguage == "en" ?'Show':'اظهار',
+                                    style: infoWidget.titleButton
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15)),
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                          ],
+                        ):SizedBox(),
                         request.startVisitDate != ''
                             ? rowWidget(
                             title: translator.currentLanguage == "en"
@@ -331,6 +371,30 @@ class _ArchivedRequestsState extends State<ArchivedRequests> {
                             : 'نوع التحليل: ${request.analysisType}',
                         style: infoWidget.titleButton
                             .copyWith(color: Colors.indigo),
+                      )
+                          : SizedBox(),
+                      request.specialization != '' && request.specializationBranch !=''
+                          ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            translator.currentLanguage == 'en'
+                                ? 'Nurse specialization: '
+                                : ' تخصص الممرض: ',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          ),
+                          Expanded(
+                            child: Text(
+                              translator.currentLanguage == 'en'
+                                  ? request.specializationBranch!=''?'${request.specialization}-${request.specializationBranch}':'${request.specialization}'
+                                  : request.specializationBranch!=''?'${request.specialization} - ${request.specializationBranch}':'${request.specialization}',
+                              style: infoWidget.titleButton
+                                  .copyWith(color: Colors.indigo),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       )
                           : SizedBox(),
                       request.date != ''

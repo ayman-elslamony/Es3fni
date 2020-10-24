@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/map.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:helpme/screens/sign_in_and_up/sign_in/sign_in.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
@@ -467,7 +468,7 @@ class _AddUserDataState extends State<AddUserData> {
           Toast.show(
               translator.currentLanguage == "en"
                   ? "Welcome ${_auth.userData.name}"
-                  : 'مرحبا ${_auth.userData.name}',
+                  : ' مرحبا ${_auth.userData.name} ',
               context,
               gravity: Toast.BOTTOM);
             Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(context)=>HomeScreen()));
@@ -1077,16 +1078,25 @@ class _AddUserDataState extends State<AddUserData> {
                                       //backgroundColor: Colors.white,
                                       //backgroundImage:
                                       borderRadius: BorderRadius.circular(10),
-                                      child: _userData['UrlImgForId'].runtimeType == String?Image.network(
-                                          _userData['UrlImgForId'],
-                                        fit: BoxFit.fill,
-                                        width: double.infinity,
-                                        height: 200,
-                                      ):Image.file(
-                                        _imageFileForId,
-                                        fit: BoxFit.fill,
-                                        width: double.infinity,
-                                        height: 200,
+                                      child: InkWell(
+                                        onTap: (){
+                                          if(_imageFileForId !=null) {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(builder: (context) =>
+                                                    ShowImage(
+                                                      title: translator.currentLanguage ==
+                                                          "en" ? 'Picture for national id'
+                                                          : 'صوره البطاقه',
+                                                      imageFile: _imageFileForId,
+                                                    )));
+                                          }
+                                        },
+                                        child: Image.file(
+                                          _imageFileForId,
+                                          fit: BoxFit.fill,
+                                          width: double.infinity,
+                                          height: 200,
+                                        ),
                                       ),
                                     ),
                                     Positioned(
@@ -1160,45 +1170,69 @@ class _AddUserDataState extends State<AddUserData> {
                                 ),
                               ),
                               enablePicture
-                                  ? Container(
+                                  ? InkWell(
+                                onTap: (){
+                                  if(_userData['UrlImgForUser'].runtimeType == String) {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) =>
+                                            ShowImage(
+                                              title: translator.currentLanguage ==
+                                                  "en" ? 'personal picture'
+                                                  : 'الصوره الشخصيه',
+                                              imgUrl:_userData['UrlImgForUser'],
+                                              isImgUrlAsset: false,
+                                            )));
+                                  }else{
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) =>
+                                            ShowImage(
+                                              title: translator.currentLanguage ==
+                                                  "en" ? 'personal picture'
+                                                  : 'الصوره الشخصيه',
+                                              imageFile: _imageFileForPersonalImage,
+                                            )));
+                                  }
+                                },
+                                    child: Container(
                                 width: double.infinity,
                                 height: 200,
                                 child: Stack(
-                                  children: <Widget>[
-                                    ClipRRect(
-                                      //backgroundColor: Colors.white,
-                                      //backgroundImage:
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: _userData['UrlImgForUser'].runtimeType == String?Image.network(
-                                          _userData['UrlImgForUser'],
-                                        fit: BoxFit.fill,
-                                        width: double.infinity,
-                                        height: 200,
-                                      ):Image.file(
-                                        _imageFileForPersonalImage,
-                                        fit: BoxFit.fill,
-                                        width: double.infinity,
-                                        height: 200,
+                                    children: <Widget>[
+                                      ClipRRect(
+                                        //backgroundColor: Colors.white,
+                                        //backgroundImage:
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: _userData['UrlImgForUser'].runtimeType == String?Image.network(
+                                            _userData['UrlImgForUser'],
+                                          fit: BoxFit.fill,
+                                          width: double.infinity,
+                                          height: 200,
+                                        ):Image.file(
+                                          _imageFileForPersonalImage,
+                                          fit: BoxFit.fill,
+                                          width: double.infinity,
+                                          height: 200,
+                                        ),
                                       ),
-                                    ),
-                                    Positioned(
-                                        top: 3.0,
-                                        right: 3.0,
-                                        child: IconButton(
-                                            icon: Icon(
-                                              Icons.clear,
-                                              color: Colors.indigo,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _userData['UrlImgForUser'] = '';
-                                                _imageFileForPersonalImage = null;
-                                                enablePicture = false;
-                                              });
-                                            }))
-                                  ],
+                                      Positioned(
+                                          top: 3.0,
+                                          right: 3.0,
+                                          child: IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                color: Colors.indigo,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _userData['UrlImgForUser'] = '';
+                                                  _imageFileForPersonalImage = null;
+                                                  enablePicture = false;
+                                                });
+                                              }))
+                                    ],
                                 ),
-                              )
+                              ),
+                                  )
                                   : SizedBox(),
                             ],
                           ),

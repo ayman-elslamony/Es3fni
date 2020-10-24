@@ -4,6 +4,7 @@ import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/show_user_location.dart';
+import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
@@ -72,23 +73,38 @@ class _UserProfileState extends State<UserProfile> {
                       color: Colors.indigo,
                     ),
                     child: Center(
-                      child: SizedBox(
-                        width: 160,
-                        height: 130,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.indigo),
-                            borderRadius: BorderRadius.circular(15),
+                      child: InkWell(
+                        onTap: (){
+                          if(_auth.userData.imgUrl !='') {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) =>
+                                    ShowImage(
+                                      title: translator.currentLanguage ==
+                                          "en" ? 'personal picture'
+                                          : 'الصوره الشخصيه',
+                                      imgUrl: _auth.userData.imgUrl,
+                                      isImgUrlAsset: false,
+                                    )));
+                          }
+                        },
+                        child: SizedBox(
+                          width: 160,
+                          height: 130,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.indigo),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: ClipRRect(
+                                //backgroundColor: Colors.white,
+                                //backgroundImage:
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                child: FadeInImage.assetNetwork(
+                                    fit: BoxFit.fill,
+                                    placeholder: 'assets/user.png',
+                                    image: _auth.userData.imgUrl)),
                           ),
-                          child: ClipRRect(
-                              //backgroundColor: Colors.white,
-                              //backgroundImage:
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15)),
-                              child: FadeInImage.assetNetwork(
-                                  fit: BoxFit.fill,
-                                  placeholder: 'assets/user.png',
-                                  image: _auth.userData.imgUrl)),
                         ),
                       ),
                     ),
@@ -141,8 +157,8 @@ class _UserProfileState extends State<UserProfile> {
                     ? SizedBox()
                     : personalInfo(
                     title: translator.currentLanguage == "en"
-                        ? 'Specialization'
-                        : 'التخصص',
+                        ? 'Specialization type'
+                        : 'نوع التخصص',
                     subtitle:  _auth.userData.specializationBranch,
                     iconData: Icons.info,
                     infoWidget: infoWidget),
