@@ -157,10 +157,10 @@ class Home with ChangeNotifier {
           print('userlng:$long');
           print('lng:${docs.documents[i].data['long']}');
           distance = _calculateDistance(
-              lat != '' ? double.parse(lat) : 0.0,
-              long != '' ? double.parse(long) : 0.0,
-              double.parse(docs.documents[i].data['lat']??0.0),
-              double.parse(docs.documents[i].data['long']??0.0));
+              lat != '0.0' ? double.parse(lat) : 0.0,
+              long != '0.0' ? double.parse(long) : 0.0,
+              double.parse(docs.documents[i].data['lat']??'0.0'),
+              double.parse(docs.documents[i].data['long']??'0.0'));
           print('distance::$distance');
 
           if (distance <= radiusForAllRequests) {
@@ -466,10 +466,10 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       String acceptTime=''; List<String> convertAllVisitsTime=[];
       for (int i = 0; i < docs.documents.length; i++) {
         distance = _calculateDistance(
-           userLat != ''? double.parse(userLat):0.0,
-            userLong != ''? double.parse(userLong):0.0,
-            double.parse(docs.documents[i].data['lat']??0.0),
-            double.parse(docs.documents[i].data['long']??0.0));
+           userLat != '0.0'? double.parse(userLat):0.0,
+            userLong != '0.0'? double.parse(userLong):0.0,
+            double.parse(docs.documents[i].data['lat']??'0.0'),
+            double.parse(docs.documents[i].data['long']??'0.0'));
         print('distance::$distance');
           if(docs.documents[i].data['time'] !=''){
             time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
@@ -555,10 +555,10 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
           List<String> convertAllVisitsTime=[];
           for (int i = 0; i < docs.documents.length; i++) {
             distance = _calculateDistance(
-                userLat != ''? double.parse(userLat):0.0,
-                userLong != ''? double.parse(userLong):0.0,
-                double.parse(docs.documents[i].data['lat']??0.0),
-                double.parse(docs.documents[i].data['long']??0.0));
+                userLat != '0.0'? double.parse(userLat):0.0,
+                userLong != '0.0'? double.parse(userLong):0.0,
+                double.parse(docs.documents[i].data['lat']??'0.0'),
+                double.parse(docs.documents[i].data['long']??'0.0'));
             print('distance::$distance');
             if(docs.documents[i].data['time'] !=''){
               time=convertTimeToAMOrPM(time: docs.documents[i].data['time']);
@@ -950,7 +950,10 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
     DocumentSnapshot getPoints=await nursesCollection
         .document(userData.docId).get();
     int points = int.parse(getPoints['points']);
-    points = points + int.parse(request.priceAfterDiscount);
+    print('request.priceAfterDiscount');
+    print(request.priceAfterDiscount);
+    double priceAfterDiscount=double.parse(request.priceAfterDiscount);
+    points = points + priceAfterDiscount.floor();
     await nursesCollection
         .document(userData.docId)
         .updateData({'points': points.toString()});
@@ -1079,13 +1082,13 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
 
   Future<bool> sendRequestToCancel({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
-    await allRequests.document(requestId).setData({'isFinished': false});
+    await allRequests.document(requestId).updateData({'isFinished': false});
     return true;
   }
 
   Future<bool> cancelRequest({String requestId}) async {
     CollectionReference allRequests = databaseReference.collection('requests');
-    allRequests.document(requestId).setData({'nurseId': '','acceptTime':null,}, merge: true);
+    allRequests.document(requestId).updateData({'nurseId': '','acceptTime':null,});
     allAcceptedRequests.removeWhere((x)=>x.docId==requestId);
     notifyListeners();
     return true;

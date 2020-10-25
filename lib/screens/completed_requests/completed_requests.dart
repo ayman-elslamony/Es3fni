@@ -148,7 +148,7 @@ class _CompletedRequestsState extends State<CompletedRequests> {
                       : infoWidget.screenWidth * 0.035,
                 ),color: Colors.white, onPressed: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+
                 },),
                 shape: ContinuousRectangleBorder(
                     borderRadius: BorderRadius.only(

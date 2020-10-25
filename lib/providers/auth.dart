@@ -251,6 +251,9 @@ Future<bool>  checkIsPatientVerify()async{
             DocumentSnapshot doc = await patientData.document(_userId).get();
             if(!doc.exists || !doc.data.keys.contains('nationalId')){
               _userData = UserData(
+                specializationBranch: '',
+                  specialization: '',
+                  rating: '0.0',
                   name: user.user.displayName??'',
                   points: '0',
                   docId: user.user.uid,
@@ -268,6 +271,8 @@ Future<bool>  checkIsPatientVerify()async{
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
+                  specializationBranch: doc.data['specializationBranch'].toString() ?? '',
+                  specialization: doc.data['specialization'].toString() ?? '',
                   isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
                   points: doc.data['points'] ?? '0',
@@ -313,6 +318,8 @@ Future<bool>  checkIsPatientVerify()async{
             DocumentSnapshot doc = await patientData.document(_userId).get();
             if(!doc.exists || !doc.data.keys.contains('nationalId')){
               _userData = UserData(
+                  specializationBranch: doc.data['specializationBranch'].toString() ?? '',
+                  specialization: doc.data['specialization'].toString() ?? '',
                   name: user.user.displayName??'',
                   points: '0',
                   docId: user.user.uid,
@@ -330,6 +337,8 @@ Future<bool>  checkIsPatientVerify()async{
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
+                  specializationBranch: doc.data['specializationBranch']?? '',
+                  specialization: doc.data['specialization'] ?? '',
                   isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
                   points: doc.data['points'] ?? '0',
@@ -432,6 +441,8 @@ Future<bool>  checkIsPatientVerify()async{
               DocumentSnapshot doc = await patientData.document(_userId).get();
               if (!doc.exists) {
                 _userData = UserData(
+                    specializationBranch:'',
+                    specialization: '',
                     name: '',
                     points: '0',
                     docId: '',
@@ -447,6 +458,8 @@ Future<bool>  checkIsPatientVerify()async{
                     MaterialPageRoute(builder: (context) => AddUserData()));
               } else {
                 _userData = UserData(
+                  specialization: '',
+                    specializationBranch: '',
                     isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                     name: doc.data['name'] ?? 'Nurse',
                     points: doc.data['points'] ?? '0',
@@ -519,6 +532,8 @@ Future<bool>  checkIsPatientVerify()async{
                       await patientData.document(_userId).get();
                   if (!doc.exists) {
                     _userData = UserData(
+                      specializationBranch: '',
+                        specialization: '',
                         name: '',
                         points: '0',
                         docId: '',
@@ -534,7 +549,8 @@ Future<bool>  checkIsPatientVerify()async{
                         MaterialPageRoute(builder: (context) => AddUserData()));
                   } else {
                     _userData = UserData(      isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
-
+specialization: '',
+                        specializationBranch: '',
                         name: doc.data['name'],
                         points: doc.data['points'] ?? '0',
                         docId: doc.documentID,
@@ -605,6 +621,7 @@ Future<bool>  checkIsPatientVerify()async{
     if(prefs.containsKey('savePhoneNumber')){
       prefs.remove('savePhoneNumber');
     }
+    _userType = 'nurse';
     var users = databaseReference.collection("nurses");
     bool isRegisterData = true;
     bool isLogout = false;
@@ -621,7 +638,7 @@ Future<bool>  checkIsPatientVerify()async{
         } else {
           _temporaryToken = x.token;
         }
-        _userType = 'nurse';
+
         DocumentSnapshot doc = await users.document(_userId).get();
         print(doc.data);
         if (doc.data['address'] == null ||

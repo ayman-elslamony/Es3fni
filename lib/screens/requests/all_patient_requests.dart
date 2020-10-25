@@ -114,10 +114,7 @@ class _PatientRequestsState extends State<PatientRequests> {
                         .copyWith(color: Colors.indigo),
                   ),
                   onPressed: () async{
-                    bool isCancel=await _home.sendRequestToCancel(requestId: request.docId);
-                    if(isCancel){
                       Navigator.of(ctx).pop();
-                    }
                   },
                 ),
               ],

@@ -109,7 +109,6 @@ class _NurseSuppliesState extends State<NurseSupplies> {
                       : infoWidget.screenWidth * 0.035,
                 ),color: Colors.white, onPressed: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).pop();
                 },),
                 shape: ContinuousRectangleBorder(
                     borderRadius: BorderRadius.only(

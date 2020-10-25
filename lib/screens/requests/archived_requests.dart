@@ -533,7 +533,7 @@ class _ArchivedRequestsState extends State<ArchivedRequests> {
                     ? infoWidget.screenWidth * 0.05
                     : infoWidget.screenWidth * 0.035,
               ),color: Colors.white, onPressed: () {
-                Navigator.of(context).pop();Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },),
               shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.only(

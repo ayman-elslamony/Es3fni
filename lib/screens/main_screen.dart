@@ -271,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         isIcon: true,
                         icon: Icons.person,
                         onTap: () {
+                          Navigator.of(context).pop();
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => EditProfile()));
                         }),
@@ -283,6 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             icon: Icons.archive,
                             infoWidget: infoWidget,
                             onTap: () async {
+                              Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => CompletedRequests()));
                             })
@@ -294,6 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             icon: Icons.archive,
                             infoWidget: infoWidget,
                             onTap: () async {
+                              Navigator.of(context).pop();
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => ArchivedRequests()));
                             }),
@@ -305,6 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         icon: Icons.panorama_fish_eye,
                         infoWidget: infoWidget,
                         onTap: () {
+                          Navigator.of(context).pop();
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => NurseSupplies()));
                         }),

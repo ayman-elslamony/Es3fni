@@ -1512,14 +1512,13 @@ class _AddRequestState extends State<AddRequest> {
                               padding: const EdgeInsets.only(
                                   bottom: 8.0, top: 17),
                               child: Row(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+
                                 children: <Widget>[
                                   Padding(
                                     padding: const EdgeInsets
                                         .symmetric(
                                         vertical: 7,
-                                        horizontal: 8),
+                                       ),
                                     child: Text(
                                       translator.currentLanguage ==
                                           "en"
@@ -1535,7 +1534,7 @@ class _AddRequestState extends State<AddRequest> {
                                   Padding(
                                     padding: const EdgeInsets
                                         .symmetric(
-                                        horizontal: 20.0),
+                                        horizontal: 8.0),
                                     child: Material(
                                       shadowColor:
                                       Colors.blueAccent,
@@ -1550,25 +1549,31 @@ class _AddRequestState extends State<AddRequest> {
                                         MainAxisAlignment
                                             .spaceEvenly,
                                         children: <Widget>[
-                                          Padding(
-                                            padding:
-                                            const EdgeInsets
-                                                .only(
-                                                left: 8.0,
-                                                right: 8.0),
-                                            child: Text(
-                                                _isSpecializationSelected ==
-                                                    false
-                                                    ? translator.currentLanguage ==
-                                                    "en"
-                                                    ? 'Nurse Specialization'
-                                                    : 'تخصص الممرض'
-                                                    : _specializationType,
-                                                style: infoWidget
-                                                    .titleButton
-                                                    .copyWith(
-                                                    color: Color(
-                                                        0xff484848))),
+  ConstrainedBox(
+    constraints: BoxConstraints(
+      maxWidth: translator.currentLanguage=='en'?infoWidget.screenWidth*0.27:infoWidget.screenWidth*0.33,
+      minWidth: infoWidget.screenWidth*0.012,
+    ),
+                                            child: Padding(
+                                              padding:
+                                              const EdgeInsets
+                                                  .only(
+                                                  left: 8.0,
+                                                  right: 8.0),
+                                              child: Text(
+                                                  _isSpecializationSelected ==
+                                                      false
+                                                      ? translator.currentLanguage ==
+                                                      "en"
+                                                      ? 'Specialization'
+                                                      : 'التخصص'
+                                                      : _specializationType,
+                                                  style: infoWidget
+                                                      .titleButton
+                                                      .copyWith(
+                                                      color: Color(
+                                                          0xff484848))),
+                                            ),
                                           ),
                                           Container(
                                               height: 40,
@@ -1615,6 +1620,7 @@ class _AddRequestState extends State<AddRequest> {
                                                             () {
                                                           _specializationType =
                                                               val;
+                                                          _specializationBranch='';
                                                           _isSpecializationSelected =
                                                           true;
                                                           _showSpecialization = true;
@@ -1691,7 +1697,7 @@ class _AddRequestState extends State<AddRequest> {
                                             Widget>[
                                           ConstrainedBox(
                                             constraints: BoxConstraints(
-                                              maxWidth: infoWidget.screenWidth*0.35,
+                                              maxWidth: translator.currentLanguage=='en'?infoWidget.screenWidth*0.25:infoWidget.screenWidth*0.33,
                                               minWidth: infoWidget.screenWidth*0.012,
                                             ),
                                             child: Padding(
