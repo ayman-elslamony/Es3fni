@@ -18,13 +18,13 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 class Home with ChangeNotifier {
   var firebaseAuth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
-  final String authToken;
-  final String authId;
-
-  Home(
-    this.authToken,
-    this.authId,
-  );
+//  final String authToken;
+//  final String authId;
+//
+//  Home(
+//    this.authToken,
+//    this.authId,
+//  );
   List<Service> allService = [];
   List<Analysis> allAnalysis = [];
   List<String> allServicesType =
@@ -38,6 +38,7 @@ class Home with ChangeNotifier {
   List<CompleteRequest> allCompleteRequests = [];
   double totalRatingForNurse = 0.0;
   double radiusForAllRequests= 1.0;
+  String specializationForAllRequests= '';
   Price price = Price(allServiceType: [], servicePrice: 0.0);
   Coupon coupon = Coupon(
       docId: '', couponName: '', discountPercentage: '0.0', numberOfUses: '0');
@@ -140,8 +141,18 @@ class Home with ChangeNotifier {
     notifyListeners();
   }
   Future getAllRequests({String lat='0.0',String long='0.0'}) async {
+    List<String> specialization=[''];
+    if(specializationForAllRequests=='All specialization'||specializationForAllRequests=='كل التخصصات'){
+      specialization =  ['','Human medicine',
+    'Physiotherapy',
+    'طب بشرى', 'علاج طبيعى'];
+    }else if(specializationForAllRequests=='Human medicine'||specializationForAllRequests=='طب بشرى'){
+      specialization = ['Human medicine','طب بشرى'];
+    }else{
+    specialization =['Physiotherapy','علاج طبيعى'];
+    }
     CollectionReference requests = databaseReference.collection('requests');
-    requests.where('nurseId', isEqualTo: '').snapshots().listen((docs) {
+    requests.where('nurseId', isEqualTo: '').where('specialization',whereIn: specialization).snapshots().listen((docs) {
       print(docs.documents);
       allPatientsRequests.clear();
       double distance = 0.0;
@@ -401,8 +412,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
       DocumentSnapshot doc = await patientCollection.document(userId).get();
       if (doc.data != null) {
         user = UserData(
-          specializationBranch: doc.data['specializationBranch'].toString() ?? '',
-          specialization: doc.data['specialization'].toString() ?? '',
+          specializationBranch: doc.data['specializationBranch'] ?? '',
+          specialization: doc.data['specialization'] ?? '',
           name: doc.data['name'] ?? '',
           docId: doc.documentID ?? '',
           lat: doc.data['lat'] ?? '',
@@ -432,8 +443,8 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
                 (one + two + three + four + five);
       }
       user = UserData(
-        specializationBranch: doc.data['specializationBranch'].toString() ?? '',
-        specialization: doc.data['specialization'].toString() ?? '',
+        specializationBranch: doc.data['specializationBranch'] ?? '',
+        specialization: doc.data['specialization'] ?? '',
         rating: totalRatingForNurse.toString(),
         name: doc.data['name'] ?? '',
         docId: doc.documentID ?? '',

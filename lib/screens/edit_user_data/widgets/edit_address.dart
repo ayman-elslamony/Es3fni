@@ -143,7 +143,7 @@ class _EditAddressState extends State<EditAddress> {
   void initState() {
     if(widget.address !=null){
       _locationTextEditingController.text= widget.address;
-      _isEditLocationEnable = true;
+      _isEditLocationEnable = false;
     }
     super.initState();
   }

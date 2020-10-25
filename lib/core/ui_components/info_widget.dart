@@ -21,7 +21,7 @@ class InfoWidget extends StatelessWidget {
             localHeight: constrains.maxHeight,
             localWidth: constrains.maxWidth,
             titleButton: TextStyle(
-                fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.04:mediaQueryData.size.width * 0.03,
+                fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.04:mediaQueryData.size.width * 0.025,
                 color: Colors.white,
                 fontWeight: FontWeight.bold),
             title: TextStyle(

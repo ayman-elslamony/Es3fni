@@ -418,25 +418,30 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                             .copyWith(color: Colors.indigo),
                       )
                           : SizedBox(),
-                      request.specialization != '' && request.specializationBranch !=''
+                      request.specialization != ''
                           ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
                             translator.currentLanguage == 'en'
-                                ? 'Nurse specialization: '
-                                : ' تخصص الممرض: ',
+                                ? 'Specialization: '
+                                : 'التخصص: ',
                             style: infoWidget.titleButton
                                 .copyWith(color: Colors.indigo),
                           ),
                           Expanded(
                             child: Text(
                               translator.currentLanguage == 'en'
-                                  ? request.specializationBranch!=''?'${request.specialization}-${request.specializationBranch}':'${request.specialization}'
-                                  : request.specializationBranch!=''?'${request.specialization} - ${request.specializationBranch}':'${request.specialization}',
+                                  ? request.specializationBranch != ''
+                                  ? '${request.specialization}-${request
+                                  .specializationBranch}'
+                                  : '${request.specialization}'
+                                  : request.specializationBranch != ''
+                                  ? '${request.specialization} - ${request
+                                  .specializationBranch}'
+                                  : '${request.specialization}',
                               style: infoWidget.titleButton
                                   .copyWith(color: Colors.indigo),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         ],

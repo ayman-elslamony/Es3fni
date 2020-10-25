@@ -100,9 +100,10 @@ class _AddRequestState extends State<AddRequest> {
  List<String> _humanMedicineBranch = [];
  List<String> _physiotherapyBranch = [];
  bool _isSpecializationSelected = false;
+ String _specializationType = '';
  bool _showSpecialization= false;
  String _specializationBranch = '';
- String _specializationType = '';
+
   final ImagePicker _picker = ImagePicker();
 
   //List<Step> steps = [];
@@ -1510,133 +1511,128 @@ class _AddRequestState extends State<AddRequest> {
                                 : SizedBox(),
                             Padding(
                               padding: const EdgeInsets.only(
-                                  bottom: 8.0, top: 17),
-                              child: Row(
-
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets
-                                        .symmetric(
-                                        vertical: 7,
-                                       ),
-                                    child: Text(
-                                      translator.currentLanguage ==
-                                          "en"
-                                          ? 'Nurse Specialization:'
-                                          : 'تخصص الممرض:',
-                                      style: infoWidget
-                                          .titleButton
-                                          .copyWith(
-                                          color: Color(
-                                              0xff484848)),
+                                  bottom: 8.0, top: 10),
+                              child: ListTile(
+                                contentPadding: EdgeInsets.all(0.0),
+title: Padding(
+  padding: const EdgeInsets
+      .symmetric(
+    vertical: 7,
+  ),
+  child: Text(
+    translator.currentLanguage ==
+        "en"
+        ? 'Nurse Specialization:'
+        : 'تخصص الممرض:',
+    style: infoWidget
+        .titleButton
+        .copyWith(
+        color: Color(
+            0xff484848)),
+  ),
+),
+                                subtitle:  Padding(
+                                  padding: const EdgeInsets
+                                      .symmetric(
+                                      horizontal: 8.0),
+                                  child: Material(
+                                    shadowColor:
+                                    Colors.blueAccent,
+                                    elevation: 2.0,
+                                    borderRadius:
+                                    BorderRadius.all(
+                                        Radius.circular(
+                                            10)),
+                                    type: MaterialType.card,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .spaceEvenly,
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Padding(
+                                            padding:
+                                            const EdgeInsets
+                                                .only(
+                                                left: 8.0,
+                                                right: 8.0),
+                                            child: Text(
+                                                _isSpecializationSelected ==
+                                                    false
+                                                    ? translator.currentLanguage ==
+                                                    "en"
+                                                    ? 'Specialization'
+                                                    : 'التخصص'
+                                                    : _specializationType,
+                                                textAlign: TextAlign.center,
+                                                style: infoWidget
+                                                    .titleButton
+                                                    .copyWith(
+                                                    color: Color(
+                                                        0xff484848))),
+                                          ),
+                                        ),
+                                        Container(
+                                            height: 40,
+                                            width: 35,
+                                            child:
+                                            PopupMenuButton(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  side: BorderSide(color: Colors.indigo)
+                                              ),
+                                              initialValue: translator
+                                                  .currentLanguage ==
+                                                  "en"
+                                                  ? 'otherwise'
+                                                  : 'غير ذلك',
+                                              tooltip:
+                                              'Select Specialization',
+                                              itemBuilder: (ctx) =>
+                                                  _specialization
+                                                      .map((String
+                                                  val) =>
+                                                      PopupMenuItem<String>(
+                                                        value: val,
+                                                        child: Text(val.toString()),
+                                                      ))
+                                                      .toList(),
+                                              onSelected:
+                                                  (val) {
+                                                if (val ==
+                                                    'otherwise' ||
+                                                    val ==
+                                                        'غير ذلك') {
+                                                  setState(
+                                                          () {
+                                                        _specializationType =
+                                                        '';
+                                                        _showSpecialization = false;
+                                                        _specializationBranch='';
+                                                        _isSpecializationSelected =
+                                                        false;
+                                                      });
+                                                } else {
+                                                  setState(
+                                                          () {
+                                                        _specializationType =
+                                                            val;
+                                                        _specializationBranch='';
+                                                        _isSpecializationSelected =
+                                                        true;
+                                                        _showSpecialization = true;
+                                                      });
+                                                }
+                                              },
+                                              icon: Icon(
+                                                Icons
+                                                    .keyboard_arrow_down,
+                                              ),
+                                            )),
+                                      ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets
-                                        .symmetric(
-                                        horizontal: 8.0),
-                                    child: Material(
-                                      shadowColor:
-                                      Colors.blueAccent,
-                                      elevation: 2.0,
-                                      borderRadius:
-                                      BorderRadius.all(
-                                          Radius.circular(
-                                              10)),
-                                      type: MaterialType.card,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .spaceEvenly,
-                                        children: <Widget>[
-  ConstrainedBox(
-    constraints: BoxConstraints(
-      maxWidth: translator.currentLanguage=='en'?infoWidget.screenWidth*0.27:infoWidget.screenWidth*0.33,
-      minWidth: infoWidget.screenWidth*0.012,
-    ),
-                                            child: Padding(
-                                              padding:
-                                              const EdgeInsets
-                                                  .only(
-                                                  left: 8.0,
-                                                  right: 8.0),
-                                              child: Text(
-                                                  _isSpecializationSelected ==
-                                                      false
-                                                      ? translator.currentLanguage ==
-                                                      "en"
-                                                      ? 'Specialization'
-                                                      : 'التخصص'
-                                                      : _specializationType,
-                                                  style: infoWidget
-                                                      .titleButton
-                                                      .copyWith(
-                                                      color: Color(
-                                                          0xff484848))),
-                                            ),
-                                          ),
-                                          Container(
-                                              height: 40,
-                                              width: 35,
-                                              child:
-                                              PopupMenuButton(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(20),
-                                                    side: BorderSide(color: Colors.indigo)
-                                                ),
-                                                initialValue: translator
-                                                    .currentLanguage ==
-                                                    "en"
-                                                    ? 'otherwise'
-                                                    : 'غير ذلك',
-                                                tooltip:
-                                                'Select Specialization',
-                                                itemBuilder: (ctx) =>
-                                                    _specialization
-                                                        .map((String
-                                                    val) =>
-                                                        PopupMenuItem<String>(
-                                                          value: val,
-                                                          child: Text(val.toString()),
-                                                        ))
-                                                        .toList(),
-                                                onSelected:
-                                                    (val) {
-                                                  if (val ==
-                                                      'otherwise' ||
-                                                      val ==
-                                                          'غير ذلك') {
-                                                    setState(
-                                                            () {
-                                                          _specializationType =
-                                                          '';
-                                                          _showSpecialization = false;
-                                                          _specializationBranch='';
-                                                          _isSpecializationSelected =
-                                                          false;
-                                                        });
-                                                  } else {
-                                                    setState(
-                                                            () {
-                                                          _specializationType =
-                                                              val;
-                                                          _specializationBranch='';
-                                                          _isSpecializationSelected =
-                                                          true;
-                                                          _showSpecialization = true;
-                                                        });
-                                                  }
-                                                },
-                                                icon: Icon(
-                                                  Icons
-                                                      .keyboard_arrow_down,
-                                                ),
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                ],
+                                ),
                               ),
                             ),
                             _showSpecialization
@@ -1644,165 +1640,158 @@ class _AddRequestState extends State<AddRequest> {
                               padding:
                               const EdgeInsets.only(
                                   bottom: 8.0,
-                                  top: 17),
-                              child: Row(
-                                crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-                                children: <Widget>[
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets
-                                        .symmetric(
-                                        vertical: 7,
-                                        horizontal:
-                                        8),
-                                    child: Text(
-                                      translator.currentLanguage ==
-                                          "en"
-                                          ? 'Specialization type:'
-                                          : 'نوع التخصص:',
-                                      style: infoWidget
-                                          .titleButton
-                                          .copyWith(
-                                          color: Color(
-                                              0xff484848)),
+                                  top: 10),
+                              child: ListTile(
+                                contentPadding: EdgeInsets.all(0.0),
+                                title: Padding(
+                                  padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                      vertical: 7,
+                                      horizontal:
+                                      8),
+                                  child: Text(
+                                    translator.currentLanguage ==
+                                        "en"
+                                        ? 'Specialization type:'
+                                        : 'نوع التخصص:',
+                                    style: infoWidget
+                                        .titleButton
+                                        .copyWith(
+                                        color: Color(
+                                            0xff484848)),
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                      20.0),
+                                  child: Material(
+                                    shadowColor: Colors
+                                        .blueAccent,
+                                    elevation: 2.0,
+                                    borderRadius:
+                                    BorderRadius
+                                        .all(Radius
+                                        .circular(
+                                        10)),
+                                    type: MaterialType
+                                        .card,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .spaceEvenly,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .center,
+                                      children: <
+                                          Widget>[
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets
+                                                .only(
+                                                left: 8.0,
+                                                right:
+                                                8.0),
+                                            child: Text(
+                                                _specializationBranch ==
+                                                    ''
+                                                    ? translator.currentLanguage == "en"
+                                                    ? 'Specialization type'
+                                                    : 'نوع التخصص'
+                                                    : _specializationBranch,
+                                                textAlign: TextAlign.center,
+                                                style: infoWidget
+                                                    .titleButton
+                                                    .copyWith(
+                                                    color: Color(0xff484848))),
+                                          ),
+                                        ),
+                                        Container(
+                                            height: 40,
+                                            width: 35,
+                                            child: _specializationType ==
+                                                'Human medicine' ||
+                                                _specializationType ==
+                                                    'علاج طبيعى'
+                                                ? PopupMenuButton(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  side: BorderSide(color: Colors.indigo)
+                                              ),
+                                              initialValue: translator.currentLanguage == "en"
+                                                  ? 'otherwise'
+                                                  : 'غير ذلك',
+                                              tooltip: translator.currentLanguage == "en"
+                                                  ? 'Specialization type:'
+                                                  : 'نوع التخصص:',
+//
+                                              itemBuilder: (ctx) => _humanMedicineBranch
+                                                  .map((String val) => PopupMenuItem<String>(
+                                                value: val,
+                                                child: Text(val.toString()),
+                                              ))
+                                                  .toList(),
+                                              onSelected:
+                                                  (val) {
+                                                if (val == 'otherwise' || val == 'غير ذلك') {
+                                                  setState(() {
+                                                    _showSpecialization = false;
+                                                    _specializationBranch = '';
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    _specializationBranch = val.trim();
+                                                  });
+                                                }
+                                              },
+                                              icon:
+                                              Icon(
+                                                Icons.keyboard_arrow_down,
+                                              ),
+                                            )
+                                                : PopupMenuButton(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  side: BorderSide(color: Colors.indigo)
+                                              ),
+                                              initialValue: translator.currentLanguage == "en"
+                                                  ? 'otherwise'
+                                                  : 'غير ذلك',
+                                              tooltip: translator.currentLanguage == "en"
+                                                  ? 'Specialization type'
+                                                  : 'نوع التخصص',
+//
+                                              itemBuilder: (ctx) => _physiotherapyBranch
+                                                  .map((String val) => PopupMenuItem<String>(
+                                                value: val,
+                                                child: Text(val.toString()),
+                                              ))
+                                                  .toList(),
+                                              onSelected:
+                                                  (val) {
+                                                if (val == 'otherwise' || val == 'غير ذلك') {
+                                                  setState(() {
+                                                    _showSpecialization = false;
+                                                    _specializationBranch = '';
+                                                  });
+                                                } else {
+                                                  setState(() {
+                                                    _specializationBranch = val.trim();
+                                                  });
+                                                }
+                                              },
+                                              icon:
+                                              Icon(
+                                                Icons.keyboard_arrow_down,
+                                              ),
+                                            )),
+                                      ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets
-                                        .symmetric(
-                                        horizontal:
-                                        20.0),
-                                    child: Material(
-                                      shadowColor: Colors
-                                          .blueAccent,
-                                      elevation: 2.0,
-                                      borderRadius:
-                                      BorderRadius
-                                          .all(Radius
-                                          .circular(
-                                          10)),
-                                      type: MaterialType
-                                          .card,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .spaceEvenly,
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment
-                                            .center,
-                                        children: <
-                                            Widget>[
-                                          ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxWidth: translator.currentLanguage=='en'?infoWidget.screenWidth*0.25:infoWidget.screenWidth*0.33,
-                                              minWidth: infoWidget.screenWidth*0.012,
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets
-                                                  .only(
-                                                  left: 8.0,
-                                                  right:
-                                                  8.0),
-                                              child: Text(
-                                                  _specializationBranch ==
-                                                      ''
-                                                      ? translator.currentLanguage == "en"
-                                                      ? 'Specialization type'
-                                                      : 'نوع التخصص'
-                                                      : _specializationBranch,
-                                                  style: infoWidget
-                                                      .titleButton
-                                                      .copyWith(
-                                                      color: Color(0xff484848))),
-                                            ),
-                                          ),
-                                          Container(
-                                              height: 40,
-                                              width: 35,
-                                              child: _specializationType ==
-                                                  'Human medicine' ||
-                                                  _specializationType ==
-                                                      'علاج طبيعى'
-                                                  ? PopupMenuButton(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(20),
-                                                    side: BorderSide(color: Colors.indigo)
-                                                ),
-                                                initialValue: translator.currentLanguage == "en"
-                                                    ? 'otherwise'
-                                                    : 'غير ذلك',
-                                                tooltip: translator.currentLanguage == "en"
-                                                    ? 'Specialization type:'
-                                                    : 'نوع التخصص:',
-//
-                                                itemBuilder: (ctx) => _humanMedicineBranch
-                                                    .map((String val) => PopupMenuItem<String>(
-                                                  value: val,
-                                                  child: Text(val.toString()),
-                                                ))
-                                                    .toList(),
-                                                onSelected:
-                                                    (val) {
-                                                  if (val == 'otherwise' || val == 'غير ذلك') {
-                                                    setState(() {
-                                                      _showSpecialization = false;
-                                                      _specializationBranch = '';
-                                                    });
-                                                  } else {
-                                                    setState(() {
-                                                      _specializationBranch = val.trim();
-                                                    });
-                                                  }
-                                                },
-                                                icon:
-                                                Icon(
-                                                  Icons.keyboard_arrow_down,
-                                                ),
-                                              )
-                                                  : PopupMenuButton(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(20),
-                                                    side: BorderSide(color: Colors.indigo)
-                                                ),
-                                                initialValue: translator.currentLanguage == "en"
-                                                    ? 'otherwise'
-                                                    : 'غير ذلك',
-                                                tooltip: translator.currentLanguage == "en"
-                                                    ? 'Specialization type'
-                                                    : 'نوع التخصص',
-//
-                                                itemBuilder: (ctx) => _physiotherapyBranch
-                                                    .map((String val) => PopupMenuItem<String>(
-                                                  value: val,
-                                                  child: Text(val.toString()),
-                                                ))
-                                                    .toList(),
-                                                onSelected:
-                                                    (val) {
-                                                  if (val == 'otherwise' || val == 'غير ذلك') {
-                                                    setState(() {
-                                                      _showSpecialization = false;
-                                                      _specializationBranch = '';
-                                                    });
-                                                  } else {
-                                                    setState(() {
-                                                      _specializationBranch = val.trim();
-                                                    });
-                                                  }
-                                                },
-                                                icon:
-                                                Icon(
-                                                  Icons.keyboard_arrow_down,
-                                                ),
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                ],
+                                ),
                               ),
                             )
                                 : SizedBox(),

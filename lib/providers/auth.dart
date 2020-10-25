@@ -21,34 +21,33 @@ import 'package:toast/toast.dart';
 import 'home.dart';
 
 class Auth with ChangeNotifier {
-  var firebaseAuth = FirebaseAuth.instance;
-  final databaseReference = Firestore.instance;
-   String _token;
-  String _userId = '';
-
-  String get userId => _userId;
-  double totalRatingForNurse = 0.0;
-
-  String signInType = '';
+  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final Firestore databaseReference = Firestore.instance;
+  String _token;
+  static String _userId = '';
   static String _userType = 'patient';
   static UserData _userData;
+  double lat= 30.033333;
+  double lng=31.233334;
+  String address;
+  String get userId => _userId;
+  double totalRatingForNurse = 0.0;
+  String signInType = '';
   PhoneNumber phoneNumber;
-
   String get getUserType {
     return _userType;
   }
   String _temporaryToken = '';
-
   UserData get userData => _userData;
 
   bool get isAuth {
-    return _token != null;
+   if(_token != null ){
+     return true;
+   }else{
+     return false;
+   }
   }
 
-  String getToken() {
-    print(_token);
-    return _token;
-  }
 
   Future<String> get getUserId async {
     var user = await firebaseAuth.currentUser();
@@ -60,23 +59,23 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryToLogin() async {
+    print('xx');
     final prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('signInUsingFBorG')) {
       final dataToSignIn = await json
           .decode(prefs.getString('signInUsingFBorG')) as Map<String, Object>;
-      if (dataToSignIn['isSignInUsingFaceBook'] == true) {
+      if (dataToSignIn['isSignInUsingFaceBook'] == 'true') {
         await signInUsingFBorG(type: 'FB').then((x) {
           if (x=='true') {
             signInType = 'signInUsingFBorG';
           }
         });
       }
-      if (dataToSignIn['isSignInUsingGoogle'] == true) {
-        await signInUsingFBorG(type: 'G').then((x) {
+      if (dataToSignIn['isSignInUsingGoogle'] == 'true') {
+        String x = await signInUsingFBorG(type: 'G');
           if (x=='true') {
             signInType = 'signInUsingFBorG';
           }
-        });
       }
     }
     if (prefs.containsKey('signInUsingEmail')) {
@@ -91,13 +90,11 @@ class Auth with ChangeNotifier {
       });
     }
     if (prefs.containsKey('signInUsingPhone')) {
-      print('bdfbdf');
       final dataToSignIn = await json
           .decode(prefs.getString('signInUsingPhone')) as Map<String, Object>;
       print(dataToSignIn['phoneToken']);
       AuthResult x = await firebaseAuth.signInWithCustomToken(
           token: dataToSignIn['phoneToken'].toString());
-      print(x);
       _userId = x.user.uid;
       await x.user.getIdToken().then((x) {
         _token = x.token;
@@ -230,28 +227,20 @@ Future<bool>  checkIsPatientVerify()async{
     }
     String returns='true';
     _userType = 'patient';
-    try {
-      switch (type) {
-        case "FB":
-         try{
-           FacebookLoginResult facebookLoginResult = await _handleFBSignIn();
-           print('iam');
+     if(type == "FB"){
+          FacebookLoginResult facebookLoginResult = await _handleFBSignIn();
           final accessToken = facebookLoginResult.accessToken.token;
-          print(accessToken);
           if (facebookLoginResult.status == FacebookLoginStatus.loggedIn) {
-            print('dvdxvbxdv');
             final facebookAuthCred =
-                FacebookAuthProvider.getCredential(accessToken: accessToken);
+            FacebookAuthProvider.getCredential(accessToken: accessToken);
             final user =
             await firebaseAuth.signInWithCredential(facebookAuthCred);
             _userId = user.user.uid;
-            print(_userId);
-
             var patientData = databaseReference.collection("users");
             DocumentSnapshot doc = await patientData.document(_userId).get();
             if(!doc.exists || !doc.data.keys.contains('nationalId')){
               _userData = UserData(
-                specializationBranch: '',
+                  specializationBranch: '',
                   specialization: '',
                   rating: '0.0',
                   name: user.user.displayName??'',
@@ -265,79 +254,12 @@ Future<bool>  checkIsPatientVerify()async{
                   imgUrl: user.user.photoUrl??'',
                   email:user.user.email??'',
                   aboutYou:'');
-              IdTokenResult x =await  user.user.getIdToken();
-              print('x.token');print(x.token);
-                _temporaryToken= x.token;
+              IdTokenResult x =await  user.user.getIdToken(refresh: true);
+              _temporaryToken= x.token;
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
-                  specializationBranch: doc.data['specializationBranch'].toString() ?? '',
-                  specialization: doc.data['specialization'].toString() ?? '',
-                  isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
-                  name: doc.data['name'] ?? 'Patient',
-                  points: doc.data['points'] ?? '0',
-                  docId: doc.documentID,
-                  nationalId: doc.data['nationalId'] ?? '',
-                  gender: doc.data['gender'] ?? '',
-                  birthDate: doc.data['birthDate'] ?? '',
-                  address: doc.data['address'] ?? '',
-                  lat: doc.data['lat'] ?? '',
-                  lng: doc.data['lng'] ?? '',
-                  phoneNumber: doc.data['phoneNumber'] ?? '',
-                  imgUrl: doc.data['imgUrl'] ?? '',
-                  email: doc.data['email'] ?? '',
-                  aboutYou: doc.data['aboutYou'] ?? '');
-              IdTokenResult x =await  user.user.getIdToken();
-                _token = x.token;
-
-              final _signInUsingFBorG = json.encode({
-                'isSignInUsingFaceBook': true,
-                'isSignInUsingGoogle': false,
-              });
-              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
-              returns = 'true';
-            }
-          }}catch (error) {
-           print('error');
-           print(error);
-           returns= 'false';
-         }
-          break;
-        case "G":
-          try {
-            GoogleSignInAccount googleSignInAccount =
-                await _handleGoogleSignIn();
-            final googleAuth = await googleSignInAccount.authentication;
-            final googleAuthCred = GoogleAuthProvider.getCredential(
-                idToken: googleAuth.idToken,
-                accessToken: googleAuth.accessToken);
-            final user =
-                await firebaseAuth.signInWithCredential(googleAuthCred);
-            _userId = user.user.uid;
-            var patientData = databaseReference.collection("users");
-            DocumentSnapshot doc = await patientData.document(_userId).get();
-            if(!doc.exists || !doc.data.keys.contains('nationalId')){
-              _userData = UserData(
-                  specializationBranch: doc.data['specializationBranch'].toString() ?? '',
-                  specialization: doc.data['specialization'].toString() ?? '',
-                  name: user.user.displayName??'',
-                  points: '0',
-                  docId: user.user.uid,
-                  nationalId: '',
-                  gender: '',
-                  birthDate: '',
-                  address: '',
-                  phoneNumber: phoneNumber??'',
-                  imgUrl: user.user.photoUrl??'',
-                  email:user.user.email??'',
-                  aboutYou:'');
-              await user.user.getIdToken().then((x) {
-                _temporaryToken= x.token;
-              });
-              returns = 'GoToRegister';
-            }else{
-              _userData = UserData(
-                  specializationBranch: doc.data['specializationBranch']?? '',
+                  specializationBranch: doc.data['specializationBranch'] ?? '',
                   specialization: doc.data['specialization'] ?? '',
                   isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
@@ -353,25 +275,84 @@ Future<bool>  checkIsPatientVerify()async{
                   imgUrl: doc.data['imgUrl'] ?? '',
                   email: doc.data['email'] ?? '',
                   aboutYou: doc.data['aboutYou'] ?? '');
-              await user.user.getIdToken().then((x) {
-                _token = x.token;
-              });
+              IdTokenResult x =await  user.user.getIdToken(refresh: true);
+              _token = x.token;
+
               final _signInUsingFBorG = json.encode({
-                'isSignInUsingFaceBook': false,
-                'isSignInUsingGoogle': true,
+                'isSignInUsingFaceBook': 'true',
+                'isSignInUsingGoogle': 'false',
               });
               prefs.setString('signInUsingFBorG', _signInUsingFBorG);
               returns = 'true';
             }
-          } catch (error) {
-            returns= 'false';
           }
+          print('D');
+          return returns;
+      }else{
+          GoogleSignInAccount googleSignInAccount =
+          await _handleGoogleSignIn();
+          final googleAuth = await googleSignInAccount.authentication;
+          final googleAuthCred = GoogleAuthProvider.getCredential(
+              idToken: googleAuth.idToken,
+              accessToken: googleAuth.accessToken);
+          final  AuthResult user =
+          await firebaseAuth.signInWithCredential(googleAuthCred);
+          _userId = user.user.uid;
+          var patientData = databaseReference.collection("users");
+          DocumentSnapshot doc = await patientData.document(_userId).get();
+          print('A');
+          if(!doc.exists || !doc.data.keys.contains('nationalId')){
+            _userData = UserData(
+                specializationBranch: doc.data['specializationBranch'] ?? '',
+                specialization: doc.data['specialization'] ?? '',
+                name: user.user.displayName??'',
+                points: '0',
+                docId: user.user.uid,
+                nationalId: '',
+                gender: '',
+                birthDate: '',
+                address: '',
+                phoneNumber: phoneNumber??'',
+                imgUrl: user.user.photoUrl??'',
+                email:user.user.email??'',
+                aboutYou:'');
+            await user.user.getIdToken(refresh: true).then((x) {
+              _temporaryToken= x.token;
+            });
+            returns = 'GoToRegister';
+          }else{
+            print('B');
+            _userData = UserData(
+                specializationBranch: doc.data['specializationBranch']?? '',
+                specialization: doc.data['specialization'] ?? '',
+                isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
+                name: doc.data['name'] ?? 'Patient',
+                points: doc.data['points'] ?? '0',
+                docId: doc.documentID,
+                nationalId: doc.data['nationalId'] ?? '',
+                gender: doc.data['gender'] ?? '',
+                birthDate: doc.data['birthDate'] ?? '',
+                address: doc.data['address'] ?? '',
+                lat: doc.data['lat'] ?? '',
+                lng: doc.data['lng'] ?? '',
+                phoneNumber: doc.data['phoneNumber'] ?? '',
+                imgUrl: doc.data['imgUrl'] ?? '',
+                email: doc.data['email'] ?? '',
+                aboutYou: doc.data['aboutYou'] ?? '');
+            IdTokenResult token=await user.user.getIdToken(refresh: true);
+            _token=token.token;
+            final _signInUsingFBorG = json.encode({
+              'isSignInUsingFaceBook': 'false',
+              'isSignInUsingGoogle': 'true',
+            });
+             prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+            returns = 'true';
+
+          }
+
+          return returns;
       }
-      return returns;
-    } catch (e) {
-      returns ='false';
-      return returns;
-    }
+
   }
 
   Future<FacebookLoginResult> _handleFBSignIn() async {
@@ -638,7 +619,6 @@ specialization: '',
         } else {
           _temporaryToken = x.token;
         }
-
         DocumentSnapshot doc = await users.document(_userId).get();
         print(doc.data);
         if (doc.data['address'] == null ||
@@ -669,8 +649,8 @@ specialization: '',
         } else {
 
           _userData = UserData(
-            specializationBranch: doc.data['specializationBranch'].toString() ?? '',
-              specialization: doc.data['specialization'].toString() ?? '',
+            specializationBranch: doc.data['specializationBranch'] ?? '',
+              specialization: doc.data['specialization'] ?? '',
               name: doc.data['name'] ?? 'Nurse',
               points: doc.data['points'].toString() ?? '0',
               docId: doc.documentID,
@@ -830,8 +810,8 @@ specialization: '',
       _token = _temporaryToken;
       if(this.phoneNumber ==null){
         final _signInUsingFBorG = json.encode({
-          'isSignInUsingFaceBook': false,
-          'isSignInUsingGoogle': true,
+          'isSignInUsingFaceBook': 'false',
+          'isSignInUsingGoogle': 'true',
         });
         prefs.setString('signInUsingFBorG', _signInUsingFBorG);
       }

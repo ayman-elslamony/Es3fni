@@ -6,6 +6,7 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/requests.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
+import 'package:helpme/screens/edit_user_data/widgets/edit_address.dart';
 import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
 import 'package:helpme/screens/user_profile/show_profile.dart';
 import 'package:loading_indicator/loading_indicator.dart';
@@ -26,8 +27,12 @@ class _AllRequestsState extends State<AllRequests> {
   Home _home;
   Auth _auth;
   bool loadingBody = false;
+  bool _isSpecializationSelected = false;
 
+  bool _showFloating = true;
+  ScrollController _scrollController;
 
+  List<String> _specialization = [];
   Widget content({Requests request, DeviceInfo infoWidget}) {
     String visitDays = '';
     String visitTime = '';
@@ -92,131 +97,132 @@ class _AllRequestsState extends State<AllRequests> {
                         ),
                         request.patientName != _auth.userData.name
                             ? Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                 Expanded(
-                                          child: rowWidget(
-                                              title:
-                                                  translator.currentLanguage ==
-                                                          "en"
-                                                      ? 'Patient Name: '
-                                                      : 'اسم المريض: ',
-                                              content: request.patientName,
-                                              infoWidget: infoWidget),
-                                        ),
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Expanded(
+                              child: rowWidget(
+                                  title:
+                                  translator.currentLanguage ==
+                                      "en"
+                                      ? 'Patient Name: '
+                                      : 'اسم المريض: ',
+                                  content: request.patientName,
+                                  infoWidget: infoWidget),
+                            ),
 
 
-                                  IconButton(
-                                          icon: Icon(
-                                            Icons.more_horiz,
-                                            color: Colors.indigo,
-                                          ),
-                                          onPressed: () {
-                                            print(request.patientId);
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ShowUserProfile(
-                                                          type: translator
-                                                                      .currentLanguage ==
-                                                                  "en"
-                                                              ? 'Patient'
-                                                              : 'مريض',
-                                                          userId:
-                                                              request.patientId,
-                                                        )));
-                                          })
+                            IconButton(
+                                icon: Icon(
+                                  Icons.more_horiz,
+                                  color: Colors.indigo,
+                                ),
+                                onPressed: () {
+                                  print(request.patientId);
+                                  Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ShowUserProfile(
+                                                type: translator
+                                                    .currentLanguage ==
+                                                    "en"
+                                                    ? 'Patient'
+                                                    : 'مريض',
+                                                userId:
+                                                request.patientId,
+                                              )));
+                                })
 
-                                ],
-                              )
+                          ],
+                        )
                             : request.patientName != ''
-                                ? rowWidget(
-                                    title: translator.currentLanguage == "en"
-                                        ? 'Patient Name: '
-                                        : 'اسم المريض: ',
-                                    content: request.patientName,
-                                    infoWidget: infoWidget)
-                                : SizedBox(),
+                            ? rowWidget(
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Name: '
+                                : 'اسم المريض: ',
+                            content: request.patientName,
+                            infoWidget: infoWidget)
+                            : SizedBox(),
                         request.patientPhone != ''
                             ? InkWell(
-                                onTap: () {
-                                  launch("tel://${request.patientPhone}");
-                                },
-                                child: rowWidget(
-                                    title: translator.currentLanguage == "en"
-                                        ? 'Patient Phone: '
-                                        : 'رقم الهاتف: ',
-                                    content: request.patientPhone,
-                                    infoWidget: infoWidget),
-                              )
+                          onTap: () {
+                            launch("tel://${request.patientPhone}");
+                          },
+                          child: rowWidget(
+                              title: translator.currentLanguage == "en"
+                                  ? 'Patient Phone: '
+                                  : 'رقم الهاتف: ',
+                              content: request.patientPhone,
+                              infoWidget: infoWidget),
+                        )
                             : SizedBox(),
                         request.patientLocation != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Patient Location: '
-                                    : 'موقع المريض: ',
-                                content: request.patientLocation,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Location: '
+                                : 'موقع المريض: ',
+                            content: request.patientLocation,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.distance != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Distance between you: '
-                                    : 'المسافه بينكم: ',
-                                content:  translator.currentLanguage == "en"
-                                    ? '${request.distance} KM':'${request.distance} كم ',
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Distance between you: '
+                                : 'المسافه بينكم: ',
+                            content: translator.currentLanguage == "en"
+                                ? '${request.distance} KM' : '${request
+                                .distance} كم ',
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.patientAge != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Patient Age: '
-                                    : 'عمر المريض: ',
-                                content: request.patientAge,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Age: '
+                                : 'عمر المريض: ',
+                            content: request.patientAge,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.patientGender != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Patient Gender: '
-                                    : 'نوع المريض: ',
-                                content: request.patientGender,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Patient Gender: '
+                                : 'نوع المريض: ',
+                            content: request.patientGender,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.serviceType != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Service Type: '
-                                    : 'نوع الخدمه: ',
-                                content: request.serviceType,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Service Type: '
+                                : 'نوع الخدمه: ',
+                            content: request.serviceType,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.servicePrice != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Service Price: '
-                                    : 'سعر الخدمه: ',
-                                content: request.servicePrice,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Service Price: '
+                                : 'سعر الخدمه: ',
+                            content: request.servicePrice,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.analysisType != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Analysis Type: '
-                                    : 'نوع التحليل: ',
-                                content: request.analysisType,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Analysis Type: '
+                                : 'نوع التحليل: ',
+                            content: request.analysisType,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.suppliesFromPharmacy != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Supplies From Pharmacy: '
-                                    : 'مستلزمات من الصيدليه: ',
-                                content: request.suppliesFromPharmacy,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Supplies From Pharmacy: '
+                                : 'مستلزمات من الصيدليه: ',
+                            content: request.suppliesFromPharmacy,
+                            infoWidget: infoWidget)
                             : SizedBox(),
-                        request.picture!=''?
+                        request.picture != '' ?
                         Column(
                           children: <Widget>[
                             Row(
@@ -226,22 +232,29 @@ class _AllRequestsState extends State<AllRequests> {
                                   translator.currentLanguage == "en"
                                       ? 'Roshita or analysis Picture: '
                                       : 'صوره الروشته او التحليل: ',
-                                  style: infoWidget.titleButton.copyWith(color: Colors.indigo),
+                                  style: infoWidget.titleButton.copyWith(
+                                      color: Colors.indigo),
                                 ),
                                 RaisedButton(
                                   padding: EdgeInsets.all(0.0),
                                   onPressed:
-                                      (){
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ShowImage(
-                                      title: translator.currentLanguage == "en" ? 'Roshita or analysis Picture'
-                                          : 'صوره الروشته او التحليل',
-                                      imgUrl: request.picture,
-                                      isImgUrlAsset: false,
-                                    )));
+                                      () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) =>
+                                            ShowImage(
+                                              title: translator
+                                                  .currentLanguage == "en"
+                                                  ? 'Roshita or analysis Picture'
+                                                  : 'صوره الروشته او التحليل',
+                                              imgUrl: request.picture,
+                                              isImgUrlAsset: false,
+                                            )));
                                   },
                                   color: Colors.indigo,
                                   child: Text(
-                                    translator.currentLanguage == "en" ?'Show':'اظهار',
+                                    translator.currentLanguage == "en"
+                                        ? 'Show'
+                                        : 'اظهار',
                                     style: infoWidget.titleButton
                                         .copyWith(color: Colors.white),
                                   ),
@@ -254,86 +267,86 @@ class _AllRequestsState extends State<AllRequests> {
                               height: 5,
                             ),
                           ],
-                        ):SizedBox(),
+                        ) : SizedBox(),
                         request.startVisitDate != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Start Visit Date: '
-                                    : 'بدايه تاريخ الزياره: ',
-                                content: request.startVisitDate,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Start Visit Date: '
+                                : 'بدايه تاريخ الزياره: ',
+                            content: request.startVisitDate,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.endVisitDate != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'End Visit Date: '
-                                    : 'انتهاء تاريخ الزياره: ',
-                                content: request.endVisitDate,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'End Visit Date: '
+                                : 'انتهاء تاريخ الزياره: ',
+                            content: request.endVisitDate,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         visitDays != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Visit Days: '
-                                    : 'ايام الزياره: ',
-                                content: visitDays,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Visit Days: '
+                                : 'ايام الزياره: ',
+                            content: visitDays,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         visitTime != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Visit Time: '
-                                    : 'وقت الزياره: ',
-                                content: visitTime,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Visit Time: '
+                                : 'وقت الزياره: ',
+                            content: visitTime,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.discountCoupon != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Discount Coupon: '
-                                    : 'كوبون الخصم: ',
-                                content: request.discountCoupon,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Discount Coupon: '
+                                : 'كوبون الخصم: ',
+                            content: request.discountCoupon,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.discountPercentage != '0.0'
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Discount Percentage: '
-                                    : 'نسبه الخصم: ',
-                                content: '${request.discountPercentage} %',
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Discount Percentage: '
+                                : 'نسبه الخصم: ',
+                            content: '${request.discountPercentage} %',
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.numOfPatients != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Num Of Patients use service: '
-                                    : 'عدد مستخدمى الخدمه: ',
-                                content: request.numOfPatients,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Num Of Patients use service: '
+                                : 'عدد مستخدمى الخدمه: ',
+                            content: request.numOfPatients,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.priceBeforeDiscount != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'priceBeforeDiscount: '
-                                    : 'السعر قبل الخصم: ',
-                                content: request.priceBeforeDiscount,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'priceBeforeDiscount: '
+                                : 'السعر قبل الخصم: ',
+                            content: request.priceBeforeDiscount,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.priceAfterDiscount != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Price After Discount: '
-                                    : 'السعر بعد الخصم: ',
-                                content: request.priceAfterDiscount,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Price After Discount: '
+                                : 'السعر بعد الخصم: ',
+                            content: request.priceAfterDiscount,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                         request.notes != ''
                             ? rowWidget(
-                                title: translator.currentLanguage == "en"
-                                    ? 'Notes: '
-                                    : 'ملاحظات: ',
-                                content: request.notes,
-                                infoWidget: infoWidget)
+                            title: translator.currentLanguage == "en"
+                                ? 'Notes: '
+                                : 'ملاحظات: ',
+                            content: request.notes,
+                            infoWidget: infoWidget)
                             : SizedBox(),
                       ],
                     ),
@@ -372,69 +385,77 @@ class _AllRequestsState extends State<AllRequests> {
                         children: <Widget>[
                           request.patientName != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Patient Name: ${request.patientName}'
-                                      : 'اسم المريض: ${request.patientName}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Patient Name: ${request.patientName}'
+                                : 'اسم المريض: ${request.patientName}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
                               : SizedBox(),
                           request.patientLocation != ''
                               ? Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Text(
-                                        translator.currentLanguage == 'en'
-                                            ? 'Patient Location: ${request.patientLocation}'
-                                            : 'موقع المريض: ${request.patientLocation}',
-                                        style: infoWidget.titleButton
-                                            .copyWith(color: Colors.indigo),
-                                        maxLines: 3,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 0.1,
-                                    ),
-                                  ],
-                                )
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  translator.currentLanguage == 'en'
+                                      ? 'Patient Location: ${request
+                                      .patientLocation}'
+                                      : 'موقع المريض: ${request
+                                      .patientLocation}',
+                                  style: infoWidget.titleButton
+                                      .copyWith(color: Colors.indigo),
+                                  maxLines: 3,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 0.1,
+                              ),
+                            ],
+                          )
                               : SizedBox(),
                           request.serviceType != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Service Type: ${request.serviceType}'
-                                      : 'نوع الخدمه: ${request.serviceType}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Service Type: ${request.serviceType}'
+                                : 'نوع الخدمه: ${request.serviceType}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
                               : SizedBox(),
                           request.analysisType != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Analysis Type: ${request.priceBeforeDiscount} EGP'
-                                      : 'نوع التحليل: ${request.analysisType}',
-                                  style: infoWidget.titleButton
-                                      .copyWith(color: Colors.indigo),
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Analysis Type: ${request
+                                .priceBeforeDiscount} EGP'
+                                : 'نوع التحليل: ${request.analysisType}',
+                            style: infoWidget.titleButton
+                                .copyWith(color: Colors.indigo),
+                          )
                               : SizedBox(),
-                          request.specialization != '' && request.specializationBranch !=''
+                          request.specialization != ''
                               ? Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
                                 translator.currentLanguage == 'en'
-                                    ? 'Nurse specialization: '
-                                    : ' تخصص الممرض: ',
+                                    ? 'Specialization: '
+                                    : 'التخصص: ',
                                 style: infoWidget.titleButton
                                     .copyWith(color: Colors.indigo),
                               ),
                               Expanded(
                                 child: Text(
                                   translator.currentLanguage == 'en'
-                                      ? request.specializationBranch!=''?'${request.specialization}-${request.specializationBranch}':'${request.specialization}'
-                                      : request.specializationBranch!=''?'${request.specialization} - ${request.specializationBranch}':'${request.specialization}',
+                                      ? request.specializationBranch != ''
+                                      ? '${request.specialization}-${request
+                                      .specializationBranch}'
+                                      : '${request.specialization}'
+                                      : request.specializationBranch != ''
+                                      ? '${request.specialization} - ${request
+                                      .specializationBranch}'
+                                      : '${request.specialization}',
                                   style: infoWidget.titleButton
                                       .copyWith(color: Colors.indigo),
-                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ],
@@ -442,35 +463,39 @@ class _AllRequestsState extends State<AllRequests> {
                               : SizedBox(),
                           request.date != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Dtate: ${request.date}'
-                                      : 'التاريخ: ${request.date}',
-                                  style: infoWidget.subTitle,
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Dtate: ${request.date}'
+                                : 'التاريخ: ${request.date}',
+                            style: infoWidget.subTitle,
+                          )
                               : SizedBox(),
                           request.time != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Time: ${request.time}'
-                                      : 'الوقت: ${request.time}',
-                                  style: infoWidget.subTitle,
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Time: ${request.time}'
+                                : 'الوقت: ${request.time}',
+                            style: infoWidget.subTitle,
+                          )
                               : SizedBox(),
                           request.priceBeforeDiscount != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Price before discount: ${request.priceBeforeDiscount} EGP'
-                                      : 'السعر قبل الخصم: ${request.priceBeforeDiscount} جنيه ',
-                                  style: infoWidget.subTitle,
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Price before discount: ${request
+                                .priceBeforeDiscount} EGP'
+                                : 'السعر قبل الخصم: ${request
+                                .priceBeforeDiscount} جنيه ',
+                            style: infoWidget.subTitle,
+                          )
                               : SizedBox(),
                           request.priceAfterDiscount != ''
                               ? Text(
-                                  translator.currentLanguage == 'en'
-                                      ? 'Price after discount: ${request.priceAfterDiscount} EGP'
-                                      : 'السعر بعد الخصم: ${request.priceAfterDiscount} جنيه ',
-                                  style: infoWidget.subTitle,
-                                )
+                            translator.currentLanguage == 'en'
+                                ? 'Price after discount: ${request
+                                .priceAfterDiscount} EGP'
+                                : 'السعر بعد الخصم: ${request
+                                .priceAfterDiscount} جنيه ',
+                            style: infoWidget.subTitle,
+                          )
                               : SizedBox(),
                         ],
                       ),
@@ -486,32 +511,32 @@ class _AllRequestsState extends State<AllRequests> {
                 children: <Widget>[
                   request.isLoading
                       ? CircularProgressIndicator(
-                          backgroundColor: Colors.indigo,
-                        )
+                    backgroundColor: Colors.indigo,
+                  )
                       : RaisedButton(
-                          onPressed: () async {
-                            setState(() {
-                              request.isLoading = true;
-                            });
-                            _home.acceptRequest(
-                                request: request, userData: _auth.userData);
-                            setState(() {
-                              request.isLoading = false;
-                            });
-                          },
-                          color: Colors.white,
-                          child: Text(
-                            translator.currentLanguage == "en"
-                                ? 'Accept'
-                                : 'قبول',
-                            style: infoWidget.subTitle
-                                .copyWith(color: Colors.indigo),
-                          ),
-                          padding: EdgeInsets.all(0.0),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: Colors.indigoAccent)),
-                        ),
+                    onPressed: () async {
+                      setState(() {
+                        request.isLoading = true;
+                      });
+                      _home.acceptRequest(
+                          request: request, userData: _auth.userData);
+                      setState(() {
+                        request.isLoading = false;
+                      });
+                    },
+                    color: Colors.white,
+                    child: Text(
+                      translator.currentLanguage == "en"
+                          ? 'Accept'
+                          : 'قبول',
+                      style: infoWidget.subTitle
+                          .copyWith(color: Colors.indigo),
+                    ),
+                    padding: EdgeInsets.all(0.0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(color: Colors.indigoAccent)),
+                  ),
                 ],
               ),
               bottom: 8.0,
@@ -556,33 +581,82 @@ class _AllRequestsState extends State<AllRequests> {
         loadingBody = true;
       });
       final prefs = await SharedPreferences.getInstance();
-      if(_home.radiusForAllRequests==1.0){
-        if (prefs.containsKey('radiusForAllRequests')) {
+//      prefs.clear();
+      if (_home.radiusForAllRequests == 1.0 ||
+          _home.specializationForAllRequests == '') {
+        if (prefs.containsKey('filter')) {
           print('bdfbdf');
-          final _radiusForAllRequests = await json
-              .decode(prefs.getString('radiusForAllRequests')) as Map<String, Object>;
-          print(_radiusForAllRequests['radiusForAllRequests']);
-          _home.radiusForAllRequests =double.parse(_radiusForAllRequests['radiusForAllRequests']);
-        }else{
-          _home.radiusForAllRequests = 3.0;
+          final _filter = await json
+              .decode(prefs.getString('filter')) as Map<String, Object>;
+          print(_filter['radiusForAllRequests']);
+          _home.radiusForAllRequests =
+              double.parse(_filter['radiusForAllRequests']);
+          _home.specializationForAllRequests = _filter['specialization'];
+          if(_filter['specialization'] !='') {
+            _isSpecializationSelected = true;
+          } _auth.lat = double.parse(_filter['lat']);
+            _auth.lng = double.parse(_filter['lng']);
+            _auth.address = _filter['address'];
+        } else {
+          _home.radiusForAllRequests = 10.0;
+
+          if (_auth.userData.lat != '' && _auth.userData.lat != '') {
+            _auth.lat = double.parse(_auth.userData.lat);
+            _auth.lng = double.parse(_auth.userData.lng);
+            _auth.address = _auth.userData.address;
+          } else {
+            _auth.lat = 30.033333;
+            _auth.lng = 31.233334;
+            _auth.address = translator.currentLanguage=='en'?'Cairo':'القاهره';
+          }
+          _isSpecializationSelected = true;
+          if(_auth.userData.specialization !=''){
+            _home.specializationForAllRequests =_auth.userData.specialization;
+          }else{
+            _home.specializationForAllRequests =translator.currentLanguage=='en'?'All specialization':'كل التخصصات';
+          }
         }
-      }
+    }
       await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
       setState(() {
         loadingBody = false;
       });
     }
   }
-
+  bool get _isAppBarExpanded {
+    return _scrollController.hasClients &&
+        _scrollController.offset < (MediaQuery.of(context).size.height*0.1 - kToolbarHeight);
+  }
   @override
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
     _auth = Provider.of<Auth>(context, listen: false);
-
+    _specialization = translator.currentLanguage == 'en'
+        ? [
+      'Human medicine',
+      'Physiotherapy',
+      'All specialization',
+    ]
+        : ['طب بشرى', 'علاج طبيعى', 'كل التخصصات'];
+    _scrollController = ScrollController()
+      ..addListener(() {
+        _isAppBarExpanded
+            ? setState(() {
+          _showFloating = true;
+        })
+            : setState(() {
+          _showFloating = false;
+        });
+      });
     getAllRequests();
     super.initState();
   }
 
+  getAddress(String add,String lat,String lng) {
+    _auth.address = add;
+    _auth.lat =double.parse(lat);
+    _auth.lng =double.parse(lng);
+  }
   @override
   Widget build(BuildContext context) {
     return InfoWidget(
@@ -628,6 +702,7 @@ class _AllRequestsState extends State<AllRequests> {
                             );
                           } else {
                             return ListView.builder(
+                                controller: _scrollController,
                                 itemCount: data.allPatientsRequests.length,
                                 itemBuilder: (context, index) => content(
                                     infoWidget: infoWidget,
@@ -636,10 +711,9 @@ class _AllRequestsState extends State<AllRequests> {
                         },
                       ),
                     ),
-              floatingActionButton: FloatingActionButton(
+              floatingActionButton: _showFloating?FloatingActionButton(
                 onPressed: () {
                   showModalBottomSheet(
-                      isDismissible: false,
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
@@ -653,7 +727,7 @@ class _AllRequestsState extends State<AllRequests> {
                             builder: (context, setState) => Container(
                               height: MediaQuery.of(context).orientation ==
                                       Orientation.portrait
-                                  ? MediaQuery.of(context).size.height * 0.16
+                                  ? MediaQuery.of(context).size.height * 0.4
                                   : MediaQuery.of(context).size.height * 0.28,
                               padding: EdgeInsets.all(10.0),
                               child: Column(children: [
@@ -679,14 +753,18 @@ class _AllRequestsState extends State<AllRequests> {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 10),
                                       child: InkWell(onTap: ()async{
-                                        await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
+                                        _home.getAllRequests(long: _auth.lng.toString(),lat: _auth.lat.toString());
                                         Navigator.of(context).pop();
                                         final prefs = await SharedPreferences.getInstance();
-                                        final _radiusForAllRequests = json.encode({
+                                        final _filter = json.encode({
+                                          'lat': _auth.lat.toString(),
+                                          'lng': _auth.lng.toString(),
+                                          'address':_auth.address,
                                           'radiusForAllRequests': _home.radiusForAllRequests.toString(),
+                                          'specialization': _home.specializationForAllRequests
                                         });
-                                        prefs.setString('radiusForAllRequests', _radiusForAllRequests);
-                                      }, child: Text(translator.currentLanguage == "en" ?'Save':'حفظ',style: infoWidget.subTitle.copyWith(color: Colors.indigo),)),
+                                        prefs.setString('filter', _filter);
+                                        }, child: Text(translator.currentLanguage == "en" ?'Save':'حفظ',style: infoWidget.subTitle.copyWith(color: Colors.indigo),)),
                                     ),
                                   ],
                                 ),
@@ -706,7 +784,128 @@ class _AllRequestsState extends State<AllRequests> {
                                     activeColor: Colors.indigo,
                                   ),
                                 ),
-                              ]),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: EditAddress(
+                                    getAddress: getAddress,
+                                    address: _auth.address,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: 8.0,right: 8.0,left: 8.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets
+                                            .symmetric(
+                                          vertical: 7,
+                                        ),
+                                        child: Text(
+                                          translator.currentLanguage ==
+                                              "en"
+                                              ? 'Specialization:'
+                                              : 'التخصص:',
+                                          style: infoWidget
+                                              .titleButton
+                                              .copyWith(
+                                              color: Color(
+                                                  0xff484848)),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets
+                                            .symmetric(
+                                            horizontal: 8.0),
+                                        child: Material(
+                                          shadowColor:
+                                          Colors.blueAccent,
+                                          elevation: 2.0,
+                                          borderRadius:
+                                          BorderRadius.all(
+                                              Radius.circular(
+                                                  10)),
+                                          type: MaterialType.card,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment
+                                                .spaceEvenly,
+                                            children: <Widget>[
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  maxWidth: translator.currentLanguage=='en'?infoWidget.screenWidth*0.27:infoWidget.screenWidth*0.33,
+                                                  minWidth: infoWidget.screenWidth*0.012,
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                  const EdgeInsets
+                                                      .only(
+                                                      left: 8.0,
+                                                      right: 8.0),
+                                                  child: Text(
+                                                      _isSpecializationSelected ==
+                                                          false
+                                                          ? translator.currentLanguage ==
+                                                          "en"
+                                                          ? 'Specialization'
+                                                          : 'التخصص'
+                                                          : _home.specializationForAllRequests,
+                                                      style: infoWidget
+                                                          .titleButton
+                                                          .copyWith(
+                                                          color: Color(
+                                                              0xff484848))),
+                                                ),
+                                              ),
+                                              Container(
+                                                  height: 40,
+                                                  width: 35,
+                                                  child:
+                                                  PopupMenuButton(
+                                                    shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(20),
+                                                        side: BorderSide(color: Colors.indigo)
+                                                    ),
+                                                    initialValue: translator
+                                                        .currentLanguage ==
+                                                        "en"
+                                                        ? 'All specialization'
+                                                        : 'كل التخصصات',
+                                                    tooltip:
+                                                    'Select Specialization',
+                                                    itemBuilder: (ctx) =>
+                                                        _specialization
+                                                            .map((String
+                                                        val) =>
+                                                            PopupMenuItem<String>(
+                                                              value: val,
+                                                              child: Text(val.toString()),
+                                                            ))
+                                                            .toList(),
+                                                    onSelected:
+                                                        (val) {
+
+                                                        setState(
+                                                                () {
+                                                                  _home.specializationForAllRequests =
+                                                                  val;
+                                                              _isSpecializationSelected =
+                                                              true;
+                                                            });
+
+                                                    },
+                                                    icon: Icon(
+                                                      Icons
+                                                          .keyboard_arrow_down,
+                                                    ),
+                                                  )),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),]),
                             ),
                           ),
                         );
@@ -719,7 +918,7 @@ class _AllRequestsState extends State<AllRequests> {
                   color: Colors.white,
                 ),
                 backgroundColor: Colors.indigo,
-              ),
+              ):SizedBox(),
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.endFloat,
             ));
