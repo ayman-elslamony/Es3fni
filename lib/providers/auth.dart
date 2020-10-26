@@ -24,20 +24,23 @@ class Auth with ChangeNotifier {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final Firestore databaseReference = Firestore.instance;
   String _token;
-  static String _userId = '';
-  static String _userType = 'patient';
-  static UserData _userData;
+ static String _userId = '';
   double lat= 30.033333;
   double lng=31.233334;
-  String address;
+  String address='Cairo';
   String get userId => _userId;
-  double totalRatingForNurse = 0.0;
+   double totalRatingForNurse = 0.0;
+
   String signInType = '';
+  static String _userType = 'patient';
+  static UserData _userData;
   PhoneNumber phoneNumber;
+
   String get getUserType {
     return _userType;
   }
   String _temporaryToken = '';
+
   UserData get userData => _userData;
 
   bool get isAuth {
@@ -59,7 +62,6 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryToLogin() async {
-    print('xx');
     final prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('signInUsingFBorG')) {
       final dataToSignIn = await json
@@ -340,6 +342,8 @@ Future<bool>  checkIsPatientVerify()async{
                 email: doc.data['email'] ?? '',
                 aboutYou: doc.data['aboutYou'] ?? '');
             IdTokenResult token=await user.user.getIdToken(refresh: true);
+            print('token.token');
+            print(token.token);
             _token=token.token;
             final _signInUsingFBorG = json.encode({
               'isSignInUsingFaceBook': 'false',
@@ -614,13 +618,7 @@ specialization: '',
       if (auth != null) {
         _userId = auth.user.uid;
         IdTokenResult x = await auth.user.getIdToken();
-        if (isTryToLogin) {
-          _token = x.token;
-        } else {
-          _temporaryToken = x.token;
-        }
         DocumentSnapshot doc = await users.document(_userId).get();
-        print(doc.data);
         if (doc.data['address'] == null ||
             doc.data['phoneNumber'] == null ||
             doc.data['gender'] == null) {
@@ -665,6 +663,11 @@ specialization: '',
               lng: doc.data['lng'] ?? '',
               aboutYou: doc.data['aboutYou'] ?? '');
           isRegisterData = true;
+        }
+        if (isTryToLogin) {
+          _token = x.token;
+        } else {
+          _temporaryToken = x.token;
         }
         print('isLogout ');
         print(isLogout);

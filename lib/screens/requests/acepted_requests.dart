@@ -942,7 +942,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
       setState(() {
         loadingBody = true;
       });
-      await _home.getAllAcceptedRequests(userId: _auth.userId,userLat: _auth.userData.lat,userLong: _auth.userData.lng);
+      await _home.getAllAcceptedRequests(userId: _auth.userId,userLat: _auth.lat.toString(),userLong: _auth.lng.toString());
       setState(() {
         loadingBody = false;
       });

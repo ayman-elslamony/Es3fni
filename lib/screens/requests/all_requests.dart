@@ -591,16 +591,20 @@ class _AllRequestsState extends State<AllRequests> {
           print(_filter['radiusForAllRequests']);
           _home.radiusForAllRequests =
               double.parse(_filter['radiusForAllRequests']);
-          _home.specializationForAllRequests = _filter['specialization'];
+
           if(_filter['specialization'] !='') {
             _isSpecializationSelected = true;
-          } _auth.lat = double.parse(_filter['lat']);
+            _home.specializationForAllRequests = _filter['specialization'];
+          }else{
+            _isSpecializationSelected = true;
+            _home.specializationForAllRequests =translator.currentLanguage=='en'?'All specialization':'كل التخصصات';
+          }
+            _auth.lat = double.parse(_filter['lat']);
             _auth.lng = double.parse(_filter['lng']);
             _auth.address = _filter['address'];
         } else {
           _home.radiusForAllRequests = 10.0;
-
-          if (_auth.userData.lat != '' && _auth.userData.lat != '') {
+          if (_auth.userData.lat != '' && _auth.userData.lng != '') {
             _auth.lat = double.parse(_auth.userData.lat);
             _auth.lng = double.parse(_auth.userData.lng);
             _auth.address = _auth.userData.address;

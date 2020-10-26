@@ -736,7 +736,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
 
   Future getNurseSupplies({String userId}) async {
     var supplies = databaseReference.collection("nurses").document(userId);
-    var docs = await supplies.collection('supplies').getDocuments();
+    var docs = await supplies.collection('supplying').getDocuments();
     if (docs.documents.length != 0) {
       allNurseSupplies.clear();
       String time='';
