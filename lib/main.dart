@@ -58,7 +58,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return  MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Es3fni',
+        title: translator.currentLanguage=='en'?'Es3fni':'اسعفنى',
         theme: ThemeData(
           primarySwatch: Colors.indigo,
           accentColor: Colors.white,

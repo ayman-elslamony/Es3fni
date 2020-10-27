@@ -581,30 +581,37 @@ class _AllRequestsState extends State<AllRequests> {
         loadingBody = true;
       });
       final prefs = await SharedPreferences.getInstance();
-//      prefs.clear();
-      if (_home.radiusForAllRequests == 1.0 ||
-          _home.specializationForAllRequests == '') {
+      Map<String, Object> _filter;
+
+      if(_home.radiusForAllRequests==1.0||
+          _home.specializationForAllRequests == ''){
         if (prefs.containsKey('filter')) {
-          print('bdfbdf');
-          final _filter = await json
+          _filter = await json
               .decode(prefs.getString('filter')) as Map<String, Object>;
-          print(_filter['radiusForAllRequests']);
-          _home.radiusForAllRequests =
-              double.parse(_filter['radiusForAllRequests']);
+
+          print(_filter['filter']);
+          _home.radiusForAllRequests =double.parse(_filter['radiusForAllRequests']??'10.0');
 
           if(_filter['specialization'] !='') {
-            _isSpecializationSelected = true;
+           print('A');
+//            _isSpecializationSelected = true;
             _home.specializationForAllRequests = _filter['specialization'];
+           print('AAA');
+            print( _filter['specialization']);
+            print( _home.specializationForAllRequests);
           }else{
-            _isSpecializationSelected = true;
+            print('B');
+//            _isSpecializationSelected = true;
             _home.specializationForAllRequests =translator.currentLanguage=='en'?'All specialization':'كل التخصصات';
           }
-            _auth.lat = double.parse(_filter['lat']);
-            _auth.lng = double.parse(_filter['lng']);
-            _auth.address = _filter['address'];
-        } else {
+          _auth.lat = double.parse(_filter['lat']);
+          _auth.lng = double.parse(_filter['lng']);
+          _auth.address = _filter['address'];
+
+        }else{
+
           _home.radiusForAllRequests = 10.0;
-          if (_auth.userData.lat != '' && _auth.userData.lng != '') {
+          if (_auth.userData.lat != '' && _auth.userData.lng != '' &&_auth.userData.address!='') {
             _auth.lat = double.parse(_auth.userData.lat);
             _auth.lng = double.parse(_auth.userData.lng);
             _auth.address = _auth.userData.address;
@@ -613,16 +620,21 @@ class _AllRequestsState extends State<AllRequests> {
             _auth.lng = 31.233334;
             _auth.address = translator.currentLanguage=='en'?'Cairo':'القاهره';
           }
-          _isSpecializationSelected = true;
+//          _isSpecializationSelected = true;
           if(_auth.userData.specialization !=''){
             _home.specializationForAllRequests =_auth.userData.specialization;
           }else{
             _home.specializationForAllRequests =translator.currentLanguage=='en'?'All specialization':'كل التخصصات';
           }
         }
-    }
-      await _home.getAllRequests(long: _auth.userData.lng,lat: _auth.userData.lat);
+      }
+      print('_home.specializationForAllRequests');
+      print(_home.specializationForAllRequests);
+      await _home.getAllRequests(long: _auth.lng.toString(),lat: _auth.lat.toString());
       setState(() {
+        if(_home.specializationForAllRequests != ''){
+          _isSpecializationSelected = true;
+        }
         loadingBody = false;
       });
     }
@@ -757,7 +769,6 @@ class _AllRequestsState extends State<AllRequests> {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 10),
                                       child: InkWell(onTap: ()async{
-                                        _home.getAllRequests(long: _auth.lng.toString(),lat: _auth.lat.toString());
                                         Navigator.of(context).pop();
                                         final prefs = await SharedPreferences.getInstance();
                                         final _filter = json.encode({
@@ -768,6 +779,7 @@ class _AllRequestsState extends State<AllRequests> {
                                           'specialization': _home.specializationForAllRequests
                                         });
                                         prefs.setString('filter', _filter);
+                                        getAllRequests();
                                         }, child: Text(translator.currentLanguage == "en" ?'Save':'حفظ',style: infoWidget.subTitle.copyWith(color: Colors.indigo),)),
                                     ),
                                   ],

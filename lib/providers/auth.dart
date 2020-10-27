@@ -261,8 +261,8 @@ Future<bool>  checkIsPatientVerify()async{
               returns = 'GoToRegister';
             }else{
               _userData = UserData(
-                  specializationBranch: doc.data['specializationBranch'] ?? '',
-                  specialization: doc.data['specialization'] ?? '',
+                  specializationBranch: '',
+                  specialization: '',
                   isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                   name: doc.data['name'] ?? 'Patient',
                   points: doc.data['points'] ?? '0',
@@ -305,8 +305,8 @@ Future<bool>  checkIsPatientVerify()async{
           print('A');
           if(!doc.exists || !doc.data.keys.contains('nationalId')){
             _userData = UserData(
-                specializationBranch: doc.data['specializationBranch'] ?? '',
-                specialization: doc.data['specialization'] ?? '',
+                specializationBranch: '',
+                specialization: '',
                 name: user.user.displayName??'',
                 points: '0',
                 docId: user.user.uid,
@@ -325,8 +325,8 @@ Future<bool>  checkIsPatientVerify()async{
           }else{
             print('B');
             _userData = UserData(
-                specializationBranch: doc.data['specializationBranch']?? '',
-                specialization: doc.data['specialization'] ?? '',
+                specializationBranch: '',
+                specialization: '',
                 isVerify:  doc.data['isVerify'] == null? '':doc.data['isVerify'] =='false'?'false':'true',
                 name: doc.data['name'] ?? 'Patient',
                 points: doc.data['points'] ?? '0',
@@ -739,7 +739,7 @@ specialization: '',
     var patientData = databaseReference.collection("users");
     DateTime dateTime = DateTime.now();
     String imgUrl = '';
-    String IdImgUrl = '';
+    String idImgUrl = '';
     print('picture');
     print(picture);
     final prefs = await SharedPreferences.getInstance();
@@ -768,7 +768,7 @@ specialization: '',
         'gender': gender,
         'imgUrl': imgUrl,
         'aboutYou': aboutYou,
-        'points': '0'
+        'points': '0'//initial points for user
       }, merge: true);
       _userType = 'nurse';
       _token = _temporaryToken;
@@ -788,7 +788,7 @@ specialization: '',
           StorageUploadTask uploadTask = storageReference.putFile(pictureId);
           await uploadTask.onComplete;
           await storageReference.getDownloadURL().then((fileURL) async {
-            IdImgUrl = fileURL;
+            idImgUrl = fileURL;
           });
         } catch (e) {
           print(e);
@@ -799,7 +799,7 @@ specialization: '',
         'lat':lat??'',
         'lng':lng??'',
         'isVerify': 'false',
-        'pictureId':IdImgUrl,
+        'pictureId':idImgUrl,
         'phoneNumber': phoneNumber,
         'birthDate': birthDate,
         'nationalId': nationalId,
