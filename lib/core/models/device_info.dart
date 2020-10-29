@@ -8,8 +8,6 @@ class DeviceInfo {
   final DeviceType deviceType;
   final double screenWidth;
   final double screenHeight;
-  final double localWidth;
-  final double localHeight;
   final TextStyle title;
   final TextStyle subTitle;
   final double defaultVerticalPadding;
@@ -20,11 +18,10 @@ class DeviceInfo {
       this.deviceType,
       this.screenWidth,
       this.screenHeight,
-      this.localWidth,
         this.title,
         this.subTitle,
         this.titleButton,
         this.defaultVerticalPadding,
         this.defaultHorizontalPadding,
-      this.localHeight});
+      });
 }

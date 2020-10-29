@@ -5,7 +5,6 @@ import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/screens/shared_widget/show_user_location.dart';
 import 'package:helpme/screens/shared_widget/zoom_in_and_out_to_image.dart';
-import 'package:helpme/screens/user_profile/widgets/personal_info_card.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +24,7 @@ class _UserProfileState extends State<UserProfile> {
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
-    if(_auth.getUserType == 'nurse'){
+    if(_auth.getUserType == 'nurse'&& _auth.totalRatingForNurse != 0.0){
       getNurseRating();
     }
   }

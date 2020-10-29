@@ -9,7 +9,6 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  ImageProvider logo = AssetImage("images/logo_rienpa.png");
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +25,8 @@ class _SplashState extends State<Splash> {
                   child: Image.asset('assets/Logo.png',
                       fit: BoxFit.fill,
                       width: infoWidget.orientation == Orientation.landscape
-                          ? infoWidget.localWidth * 0.2
-                          : infoWidget.localWidth * 0.28),
+                          ? infoWidget.screenWidth * 0.2
+                          : infoWidget.screenWidth * 0.28),
                 ),
               ),
             ),

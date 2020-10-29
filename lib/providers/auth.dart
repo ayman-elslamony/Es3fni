@@ -18,8 +18,6 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 
-import 'home.dart';
-
 class Auth with ChangeNotifier {
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final Firestore databaseReference = Firestore.instance;
@@ -29,10 +27,12 @@ class Auth with ChangeNotifier {
   double lng=31.233334;
   String address='Cairo';
   String get userId => _userId;
-   double totalRatingForNurse = 0.0;
+  double totalRatingForNurse = 0.0;
 
   String signInType = '';
+
   static String _userType = 'patient';
+
   static UserData _userData;
   PhoneNumber phoneNumber;
 
@@ -207,6 +207,7 @@ class Auth with ChangeNotifier {
       return false;
     }
   }
+
 Future<bool>  checkIsPatientVerify()async{
     CollectionReference patientData = databaseReference.collection("users");
     DocumentSnapshot doc =await patientData.document(_userId).get();
@@ -222,6 +223,8 @@ Future<bool>  checkIsPatientVerify()async{
     }
     return isVerify;
   }
+
+
   Future<String> signInUsingFBorG({String type, BuildContext context}) async {
     final prefs = await SharedPreferences.getInstance();
     if(prefs.containsKey('savePhoneNumber')){
@@ -299,6 +302,7 @@ Future<bool>  checkIsPatientVerify()async{
               accessToken: googleAuth.accessToken);
           final  AuthResult user =
           await firebaseAuth.signInWithCredential(googleAuthCred);
+
           _userId = user.user.uid;
           var patientData = databaseReference.collection("users");
           DocumentSnapshot doc = await patientData.document(_userId).get();
@@ -345,18 +349,15 @@ Future<bool>  checkIsPatientVerify()async{
             print('token.token');
             print(token.token);
             _token=token.token;
-            final _signInUsingFBorG = json.encode({
-              'isSignInUsingFaceBook': 'false',
-              'isSignInUsingGoogle': 'true',
-            });
-             prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+              final _signInUsingFBorG = json.encode({
+                'isSignInUsingFaceBook': 'false',
+                'isSignInUsingGoogle': 'true',
+              });
+              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
             returns = 'true';
-
           }
-
           return returns;
       }
-
   }
 
   Future<FacebookLoginResult> _handleFBSignIn() async {
@@ -398,7 +399,6 @@ Future<bool>  checkIsPatientVerify()async{
           AuthResult result =
               await firebaseAuth.signInWithCredential(credential);
           FirebaseUser user = result.user;
-
           if (user != null) {
             _userId = user.uid;
             if (_token == null) {
@@ -568,7 +568,6 @@ specialization: '',
                   gravity: Toast.BOTTOM);
             }
           }
-
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => VerifyCode(
                     phoneNumber: phone,
@@ -577,6 +576,7 @@ specialization: '',
         },
         codeAutoRetrievalTimeout: null);
   }
+
   Future<void>  getNurseRating()async{
     var users = databaseReference.collection("nurses");
      users.document(_userId).collection('rating').document('rating').snapshots().listen((rating){
@@ -589,11 +589,14 @@ specialization: '',
           totalRatingForNurse =
               (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
                   (one + two + three + four + five);
-          notifyListeners();
+        }else{
+          totalRatingForNurse =0.0;
         }
+        notifyListeners();
       });
 
     }
+
   Future<bool> signInUsingEmailForNurse(
       {String email,
       String password,
@@ -645,9 +648,8 @@ specialization: '',
             isRegisterData = false;
           }
         } else {
-
           _userData = UserData(
-            specializationBranch: doc.data['specializationBranch'] ?? '',
+              specializationBranch: doc.data['specializationBranch'] ?? '',
               specialization: doc.data['specialization'] ?? '',
               name: doc.data['name'] ?? 'Nurse',
               points: doc.data['points'].toString() ?? '0',
@@ -662,7 +664,7 @@ specialization: '',
               lat: doc.data['lat'] ?? '',
               lng: doc.data['lng'] ?? '',
               aboutYou: doc.data['aboutYou'] ?? '');
-          isRegisterData = true;
+              isRegisterData = true;
         }
         if (isTryToLogin) {
           _token = x.token;
@@ -721,7 +723,7 @@ specialization: '',
     return verify;
   }
 
-  Future<bool> updateUserData({
+  Future<bool> addUserData({
     String name = '',
     File pictureId,
     String location = '',
@@ -734,6 +736,14 @@ specialization: '',
     var picture,
     String nationalId,
   }) async {
+
+
+    int points = 0;
+    if(name!= ''){
+      points = points + 5;
+    }
+
+
     print('rtr');
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");

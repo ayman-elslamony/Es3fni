@@ -1,7 +1,6 @@
 import 'package:helpme/core/models/device_info.dart';
 import 'package:helpme/core/ui_components/info_widget.dart';
 import 'package:helpme/models/supplying.dart';
-import 'package:helpme/models/user_data.dart';
 import 'package:helpme/providers/auth.dart';
 import 'package:helpme/providers/home.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 class NurseSupplies extends StatefulWidget {
-
   @override
   _NurseSuppliesState createState() => _NurseSuppliesState();
 }
@@ -19,7 +17,6 @@ class _NurseSuppliesState extends State<NurseSupplies> {
   Home _home;
   Auth _auth;
   bool loadingBody = true;
-
   Widget content({Supplying supplying, DeviceInfo infoWidget}) {
     return Padding(
       padding: const EdgeInsets.only(top: 6),

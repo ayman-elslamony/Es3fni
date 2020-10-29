@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       builder: (context, infoWidget) {
         print(infoWidget.screenWidth);
         print(infoWidget.screenHeight);
+
         return Directionality(
           textDirection: translator.currentLanguage == "en"
               ? TextDirection.ltr

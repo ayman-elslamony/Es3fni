@@ -16,23 +16,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'add_request.dart';
-
 class AllRequests extends StatefulWidget {
   @override
   _AllRequestsState createState() => _AllRequestsState();
 }
 
 class _AllRequestsState extends State<AllRequests> {
+
   Home _home;
   Auth _auth;
   bool loadingBody = false;
-  bool _isSpecializationSelected = false;
 
+  bool _isSpecializationSelected = false;
   bool _showFloating = true;
   ScrollController _scrollController;
-
   List<String> _specialization = [];
+
   Widget content({Requests request, DeviceInfo infoWidget}) {
     String visitDays = '';
     String visitTime = '';
@@ -548,7 +547,6 @@ class _AllRequestsState extends State<AllRequests> {
       ),
     );
   }
-
   Widget rowWidget({String title, String content, DeviceInfo infoWidget}) {
     return Column(
       children: <Widget>[
@@ -639,6 +637,8 @@ class _AllRequestsState extends State<AllRequests> {
       });
     }
   }
+
+
   bool get _isAppBarExpanded {
     return _scrollController.hasClients &&
         _scrollController.offset < (MediaQuery.of(context).size.height*0.1 - kToolbarHeight);
@@ -647,6 +647,7 @@ class _AllRequestsState extends State<AllRequests> {
   void initState() {
     _home = Provider.of<Home>(context, listen: false);
     _auth = Provider.of<Auth>(context, listen: false);
+
     _specialization = translator.currentLanguage == 'en'
         ? [
       'Human medicine',

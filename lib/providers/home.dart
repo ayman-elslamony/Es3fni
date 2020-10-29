@@ -200,7 +200,8 @@ class Home with ChangeNotifier {
             } else {
               convertAllVisitsTime = [];
             }
-            allPatientsRequests.add(Requests(
+            allPatientsRequests.add(
+                Requests(
                 specialization: docs.documents[i].data['specialization'] ?? '',
                 specializationBranch: docs.documents[i].data['specializationBranch'] ?? '',
                 distance:  distance.floor().toString(),
@@ -953,6 +954,17 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
   Future<bool> endRequest({Requests request, UserData userData}) async {
     var nursesCollection = databaseReference.collection("nurses");
     var patientCollection = databaseReference.collection("users");
+//    var x =await  patientCollection.document(request.patientId).get();
+//    if(x.exists){
+//      int points = int.parse(x.data['points']?? '0');
+//      double point = double.parse(request.priceAfterDiscount);
+//      if(points >= point.floor()){
+//        int result = points - point.floor();
+//        patientCollection.document(request.patientId).updateData({
+//          'points': result
+//        });
+//      }
+//    }
     CollectionReference allRequests = databaseReference.collection('requests');
     CollectionReference archived =
         databaseReference.collection('archived requests');
@@ -1078,6 +1090,7 @@ Future<double> getSpecificRating({String nurseId,String patientId})async{
         'priceAfterDiscount': request.priceAfterDiscount,
       });
     }
+
     allPatientsRequests.removeWhere((x) => x.docId == request.docId);
     allAcceptedRequests.removeWhere((x) => x.docId == request.docId);
     userData.points = points.toString();

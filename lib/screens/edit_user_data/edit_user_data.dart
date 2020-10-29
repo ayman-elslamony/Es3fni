@@ -677,6 +677,7 @@ class _EditProfileState extends State<EditProfile> {
                         data.userData.specialization== ''
                             ? SizedBox()
                             : personalInfo(
+                          enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'Specialization'
                                 : 'التخصص',
@@ -686,6 +687,7 @@ class _EditProfileState extends State<EditProfile> {
                         data.userData.specializationBranch== ''
                             ? SizedBox()
                             : personalInfo(
+                            enableEdit: false,
                             title: translator.currentLanguage == "en"
                                 ? 'Specialization type'
                                 : 'نوع التخصص',

@@ -18,8 +18,6 @@ class InfoWidget extends StatelessWidget {
             deviceType: getDeviceType(mediaQueryData),
             screenWidth: mediaQueryData.size.width,
             screenHeight: mediaQueryData.size.height,
-            localHeight: constrains.maxHeight,
-            localWidth: constrains.maxWidth,
             titleButton: TextStyle(
                 fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.04:mediaQueryData.size.width * 0.025,
                 color: Colors.white,

@@ -447,7 +447,7 @@ class _AddUserDataState extends State<AddUserData> {
       if(isVerify){
       try {
         bool isScuess =await Provider.of<Auth>(context, listen: false)
-            .updateUserData(
+            .addUserData(
           name: _userData['name'],
           lat: lat,
           lng: lng,

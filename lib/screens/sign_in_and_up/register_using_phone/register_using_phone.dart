@@ -52,8 +52,8 @@ Auth _auth;
                         fit: BoxFit.fill,
                         width: infoWidget.orientation ==
                             Orientation.landscape
-                            ? infoWidget.localWidth * 0.2
-                            : infoWidget.localWidth * 0.28),
+                            ? infoWidget.screenWidth * 0.2
+                            : infoWidget.screenWidth * 0.28),
                     SizedBox(
                       height: infoWidget.screenWidth * 0.2,
                     ),
