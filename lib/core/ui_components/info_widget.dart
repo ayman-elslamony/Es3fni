@@ -10,30 +10,26 @@ class InfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constrains) {
-        var mediaQueryData = MediaQuery.of(context);
-        var deviceInfo = DeviceInfo(
-            orientation: mediaQueryData.orientation,
-            deviceType: getDeviceType(mediaQueryData),
-            screenWidth: mediaQueryData.size.width,
-            screenHeight: mediaQueryData.size.height,
-            titleButton: TextStyle(
-                fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.04:mediaQueryData.size.width * 0.025,
-                color: Colors.white,
-                fontWeight: FontWeight.bold),
-            title: TextStyle(
-                fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.048:mediaQueryData.size.width * 0.032,
-                color: Colors.black87,
-                fontWeight: FontWeight.bold),
-            subTitle: TextStyle(
-                fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.035:mediaQueryData.size.width * 0.024,
-                color: Color(0xff484848),
-                fontWeight: FontWeight.bold),
-            defaultVerticalPadding: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.015:mediaQueryData.size.width * 0.009,
-            defaultHorizontalPadding: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.height * 0.01:mediaQueryData.size.height * 0.02);
-        return builder(context, deviceInfo);
-      },
-    );
+    var mediaQueryData = MediaQuery.of(context);
+    var deviceInfo = DeviceInfo(
+        orientation: mediaQueryData.orientation,
+        deviceType: getDeviceType(mediaQueryData),
+        screenWidth: mediaQueryData.size.width,
+        screenHeight: mediaQueryData.size.height,
+        titleButton: TextStyle(
+            fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.04:mediaQueryData.size.width * 0.025,
+            color: Colors.white,
+            fontWeight: FontWeight.bold),
+        title: TextStyle(
+            fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.048:mediaQueryData.size.width * 0.032,
+            color: Colors.black87,
+            fontWeight: FontWeight.bold),
+        subTitle: TextStyle(
+            fontSize: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.035:mediaQueryData.size.width * 0.024,
+            color: Color(0xff484848),
+            fontWeight: FontWeight.bold),
+        defaultVerticalPadding: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.width * 0.015:mediaQueryData.size.width * 0.009,
+        defaultHorizontalPadding: mediaQueryData.orientation==Orientation.portrait?mediaQueryData.size.height * 0.01:mediaQueryData.size.height * 0.02);
+    return builder(context, deviceInfo);
   }
 }
