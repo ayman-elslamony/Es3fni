@@ -1,42 +1,63 @@
 {
   "project_info": {
-    "project_number": "351478507940",
-    "firebase_url": "https://es3fni.firebaseio.com",
-    "project_id": "es3fni",
-    "storage_bucket": "es3fni.appspot.com"
+    "project_number": "21625633636",
+    "firebase_url": "https://take-care-of-me.firebaseio.com",
+    "project_id": "take-care-of-me",
+    "storage_bucket": "take-care-of-me.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:351478507940:android:122f8b6e8f6ae415487931",
+        "mobilesdk_app_id": "1:21625633636:android:96cf37efffeb52f4c01871",
         "android_client_info": {
-          "package_name": "com.help_me.helpme"
+          "package_name": "com.esafine.admin"
         }
       },
       "oauth_client": [
         {
-          "client_id": "351478507940-2asn8ghr670ui6m1lcig00gkogd7tuvc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.help_me.helpme",
-            "certificate_hash": "d8f562426f0f41416bbccaee8ecddc17192c3558"
-          }
-        },
-        {
-          "client_id": "351478507940-qseuc0at4gtb46qcdr18utcpqegrrksv.apps.googleusercontent.com",
+          "client_id": "21625633636-tphtf1t5g64pqe51tni9281mhr55sg6r.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAjRj7lvH1k8m6sRFgsoxZBLJEx6d9w32E"
+          "current_key": "AIzaSyCSL2JaDRZ1mEGgMwHB3rgLiL9u9mgcOco"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "351478507940-qseuc0at4gtb46qcdr18utcpqegrrksv.apps.googleusercontent.com",
+              "client_id": "21625633636-tphtf1t5g64pqe51tni9281mhr55sg6r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21625633636:android:7b531746fbb45f19c01871",
+        "android_client_info": {
+          "package_name": "com.help_me.helpme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "21625633636-tphtf1t5g64pqe51tni9281mhr55sg6r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSL2JaDRZ1mEGgMwHB3rgLiL9u9mgcOco"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "21625633636-tphtf1t5g64pqe51tni9281mhr55sg6r.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
