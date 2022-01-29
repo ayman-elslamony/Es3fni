@@ -448,18 +448,19 @@ class _AddUserDataState extends State<AddUserData> {
       }
       if(isVerify){
       try {
+        print('dgfdsgsd');
         bool isScuess =await Provider.of<Auth>(context, listen: false)
             .addUserData(
-          name: _userData['name'],
+          name: _userData['name'].toString(),
           lat: lat,
           lng: lng,
           pictureId: _userData['UrlImgForId']==''?null:_userData['UrlImgForId'],
           nationalId: _userData['National Id'],
-          phoneNumber: _userData['Phone number'],
-          birthDate: _userData['Birth Date'],
+          phoneNumber: _userData['Phone number'].toString(),
+          birthDate: _userData['Birth Date'].toString(),
           gender: _userData['gender'],
          picture: _userData['UrlImgForUser']==''?null:_userData['UrlImgForUser'],
-          aboutYou: _userData['aboutYou'],
+          aboutYou: _userData['aboutYou'].toString(),
             location:_userData['Location'],
         );
         print('isScuessisScuess$isScuess');
@@ -601,7 +602,7 @@ class _AddUserDataState extends State<AddUserData> {
                   child: _isLoading
                       ? Center(
                     child: CircularProgressIndicator(
-                      backgroundColor: Colors.indigo,
+                      color: Colors.indigo,
                     ),
                   )
                       : Stepper(

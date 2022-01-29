@@ -295,7 +295,7 @@ class _SignInState extends State<SignIn> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
                                 CircularProgressIndicator(
-                                  backgroundColor: Colors.indigo,
+                                  color: Colors.indigo,
                                 )
                               ],
                             )
@@ -486,7 +486,7 @@ class _SignInState extends State<SignIn> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: _isSignInUsingGoogleSuccessful
                                     ? Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(color: Colors.indigo,),
                                       )
                                     : ImageIcon(
                                         AssetImage('assets/google.png'),
@@ -545,7 +545,7 @@ class _SignInState extends State<SignIn> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: _isSignInUsingFBSuccessful
                                     ? Center(
-                                        child: CircularProgressIndicator(),
+                                        child: CircularProgressIndicator(color: Colors.indigo,),
                                       )
                                     : ImageIcon(
                                         AssetImage(

@@ -700,7 +700,7 @@ class _AddRequestState extends State<AddRequest> {
                   child: _isLoading
                       ? Center(
                     child: CircularProgressIndicator(
-                      backgroundColor: Colors.indigo,
+                      color: Colors.indigo,
                     ),
                   )
                       : Stepper(
@@ -1100,7 +1100,7 @@ class _AddRequestState extends State<AddRequest> {
                                                     side: BorderSide(color: Colors.indigo)
                                                 ),
                                                 initialValue: translator
-                                                    .currentLanguage ==
+                                                    .activeLanguageCode ==
                                                     "en"
                                                     ? 'Age'
                                                     : 'السن',
@@ -1201,7 +1201,7 @@ class _AddRequestState extends State<AddRequest> {
                                                     side: BorderSide(color: Colors.indigo)
                                                 ),
                                                 initialValue: translator
-                                                    .currentLanguage ==
+                                                    .activeLanguageCode ==
                                                     "en"
                                                     ? 'Male'
                                                     : 'ذكر',
@@ -1319,7 +1319,7 @@ class _AddRequestState extends State<AddRequest> {
                                                         side: BorderSide(color: Colors.indigo)
                                                     ),
                                                     initialValue: translator
-                                                        .currentLanguage ==
+                                                        .activeLanguageCode ==
                                                         "en"
                                                         ? 'Injection'
                                                         : 'حقنه',
@@ -1583,7 +1583,7 @@ class _AddRequestState extends State<AddRequest> {
                                                   side: BorderSide(color: Colors.indigo)
                                               ),
                                               initialValue: translator
-                                                  .currentLanguage ==
+                                                  .activeLanguageCode ==
                                                   "en"
                                                   ? 'otherwise'
                                                   : 'غير ذلك',
@@ -1859,7 +1859,7 @@ class _AddRequestState extends State<AddRequest> {
                                                   side: BorderSide(color: Colors.indigo)
                                               ),
                                               initialValue: translator
-                                                  .currentLanguage ==
+                                                  .activeLanguageCode ==
                                                   "en"
                                                   ? 'Male'
                                                   : 'ذكر',
@@ -1993,7 +1993,7 @@ class _AddRequestState extends State<AddRequest> {
                                         color: Colors.indigo),
                                   ),
                                 ),
-                                keyboardType: TextInputType.text,
+                                keyboardType: TextInputType.multiline,
                                 onChanged: (value) {
                                   _paramedicsData['accessories'] =
                                       value.trim();
@@ -2251,7 +2251,7 @@ class _AddRequestState extends State<AddRequest> {
                                                                 ),
                                                                 isLoadingCoupon
                                                                     ? CircularProgressIndicator(
-                                                                  backgroundColor: Colors.indigo,
+                                                                  color: Colors.indigo,
                                                                 )
                                                                     : FlatButton(
                                                                   child: Text(
@@ -2450,7 +2450,7 @@ class _AddRequestState extends State<AddRequest> {
                                         currentTime:
                                         DateTime.now(),
                                         locale: translator
-                                            .currentLanguage ==
+                                            .activeLanguageCode ==
                                             "en"
                                             ? LocaleType.en
                                             : LocaleType.ar);
@@ -2504,7 +2504,7 @@ class _AddRequestState extends State<AddRequest> {
                                         currentTime:
                                         DateTime.now(),
                                         locale: translator
-                                            .currentLanguage ==
+                                            .activeLanguageCode ==
                                             "en"
                                             ? LocaleType.en
                                             : LocaleType.ar);

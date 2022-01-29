@@ -24,7 +24,8 @@ class _UserProfileState extends State<UserProfile> {
   void initState() {
     super.initState();
     _auth = Provider.of<Auth>(context, listen: false);
-    if(_auth.getUserType == 'nurse'&& _auth.totalRatingForNurse != 0.0){
+    if(_auth.getUserType == 'nurse'&& _auth.totalRatingForNurse == 0.0){
+      print('sdgsdgd');
       getNurseRating();
     }
   }

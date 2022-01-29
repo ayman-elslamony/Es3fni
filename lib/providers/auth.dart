@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+//import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -61,7 +61,7 @@ class Auth with ChangeNotifier {
     }
   }
   getData({document,String key,String ifNull=''}){
-    return document.toString().contains(key)?document[key]:ifNull;
+    return document.data().toString().contains(key)?document[key]:ifNull;
   }
   Future<bool> tryToLogin() async {
     final prefs = await SharedPreferences.getInstance();
@@ -183,31 +183,48 @@ class Auth with ChangeNotifier {
           'phoneNumber': phone,
         }, SetOptions(merge: true));
       }
-      DocumentSnapshot doc;
+      DocumentSnapshot<Map<String, dynamic>> doc;
       if (_userType == 'nurse') {
         doc = await nurseData.doc(_userId).get();
+        _userData = UserData(
+          specialization:getData(document: doc,key: 'specialization')??'',
+          specializationBranch: getData(document: doc,key: 'specializationBranch'),
+          name:  getData(document: doc,key: 'name')??'',
+          docId: doc.id,
+          nationalId: getData(document: doc,key: 'nationalId')??'',
+          gender: getData(document: doc,key: 'gender')??'',
+          birthDate: getData(document: doc,key: 'birthDate')??'',
+          address: getData(document: doc,key: 'address')??'',
+          phoneNumber: getData(document: doc,key: 'phoneNumber')??'',
+          imgUrl: getData(document: doc,key: 'imgUrl')??'',
+          email: getData(document: doc,key: 'email')??'',
+          lat:getData(document: doc,key: 'lat')??'' ,
+          lng: getData(document: doc,key: 'lng')??'',
+          aboutYou: getData(document: doc,key: 'aboutYou')??'',
+          points:getData(document: doc,key: 'points')??'',
+        );
       } else {
         doc = await patientData.doc(_userId).get();
+        _userData = UserData(
+          specialization:getData(document: doc,key: 'specialization')??'',
+          specializationBranch: getData(document: doc,key: 'specializationBranch')??'',
+          isVerify:  doc.data().toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
+          name:  getData(document: doc,key: 'name')??'',
+          docId: doc.id,
+          nationalId: getData(document: doc,key: 'nationalId')??'',
+          gender: getData(document: doc,key: 'gender')??'',
+          birthDate: getData(document: doc,key: 'birthDate')??'',
+          address: getData(document: doc,key: 'address')??'',
+          phoneNumber: getData(document: doc,key: 'phoneNumber')??'',
+          imgUrl: getData(document: doc,key: 'imgUrl')??'',
+          email: getData(document: doc,key: 'email')??'',
+          lat:getData(document: doc,key: 'lat')??'0.0' ,
+          lng: getData(document: doc,key: 'lng')??'0.0',
+          aboutYou: getData(document: doc,key: 'aboutYou')??'',
+          points:getData(document: doc,key: 'points')??'',
+        );
       }
-      _userData = UserData(
-        rating: getData(document: doc,key: 'rating'),
-        specialization:getData(document: doc,key: 'specialization'),
-        specializationBranch: getData(document: doc,key: 'specializationBranch'),
-        isVerify:  doc.toString().contains('isVerify')? '':doc['isVerify'] =='false'?'false':'true',
-        name:  getData(document: doc,key: 'name'),
-        docId: doc.id,
-        nationalId: getData(document: doc,key: 'nationalId'),
-        gender: getData(document: doc,key: 'gender'),
-        birthDate: getData(document: doc,key: 'birthDate'),
-        address: getData(document: doc,key: 'address'),
-        phoneNumber: getData(document: doc,key: 'phoneNumber'),
-        imgUrl: getData(document: doc,key: 'imgUrl'),
-        email: getData(document: doc,key: 'email'),
-        lat:getData(document: doc,key: 'lat') ,
-        lng: getData(document: doc,key: 'lng'),
-        aboutYou: getData(document: doc,key: 'aboutYou'),
-        points:getData(document: doc,key: 'points'),
-      );
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -220,7 +237,7 @@ Future<bool>  checkIsPatientVerify()async{
     CollectionReference patientData = databaseReference.collection("users");
     DocumentSnapshot doc =await patientData.doc(_userId).get();
     bool isVerify=false;
-    if(doc.toString().contains('isVerify')){
+    if(doc.data().toString().contains('isVerify')){
       if(doc['isVerify'] == 'false'){
         isVerify = false;
       }else if(doc['isVerify'] == ''){
@@ -241,36 +258,36 @@ Future<bool>  checkIsPatientVerify()async{
     String returns='true';
     _userType = 'patient';
      if(type == "FB"){
-       final LoginResult loginResult = await FacebookAuth.instance.login();
+      // final LoginResult loginResult = await FacebookAuth.instance.login();
 
        // Create a credential from the access token
-       final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken.token);
-          if (loginResult.status == LoginStatus.success) {
-            final user =
-            await firebaseAuth.signInWithCredential(facebookAuthCredential);
-            _userId = user.user.uid;
-            var patientData = databaseReference.collection("users");
-            DocumentSnapshot doc = await patientData.doc(_userId).get();
-            if(!doc.exists || !doc['nationalId']){
-              _userData = UserData(
-                  specializationBranch: '',
-                  specialization: '',
-                  rating: '0.0',
-                  name: user.user.displayName??'',
-                  points: '0',
-                  docId: user.user.uid,
-                  nationalId: '',
-                  gender: '',
-                  birthDate: '',
-                  address: '',
-                  phoneNumber: phoneNumber??'',
-                  imgUrl: user.user.photoURL??'',
-                  email:user.user.email??'',
-                  aboutYou:'');
-              String x =await  user.user.getIdToken();
-              _temporaryToken= x;
-              returns = 'GoToRegister';
-            }else{
+       //final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken.token);
+//          if (loginResult.status == LoginStatus.success) {
+//            final user =
+//            await firebaseAuth.signInWithCredential(facebookAuthCredential);
+//            _userId = user.user.uid;
+//            var patientData = databaseReference.collection("users");
+//            DocumentSnapshot doc = await patientData.doc(_userId).get();
+//            if(!doc.exists || !doc['nationalId']){
+//              _userData = UserData(
+//                  specializationBranch: '',
+//                  specialization: '',
+//                  rating: '0.0',
+//                  name: user.user.displayName??'',
+//                  points: '0',
+//                  docId: user.user.uid,
+//                  nationalId: '',
+//                  gender: '',
+//                  birthDate: '',
+//                  address: '',
+//                  phoneNumber: phoneNumber??'',
+//                  imgUrl: user.user.photoURL??'',
+//                  email:user.user.email??'',
+//                  aboutYou:'');
+//              String x =await  user.user.getIdToken();
+//              _temporaryToken= x;
+//              returns = 'GoToRegister';
+          //  }else{
 //              _userData = UserData(
 //                  specializationBranch: '',
 //                  specialization: '',
@@ -288,19 +305,19 @@ Future<bool>  checkIsPatientVerify()async{
 //                  imgUrl: doc['imgUrl'] ?? '',
 //                  email:doc['email'] ?? '',
 //                  aboutYou: doc['aboutYou']??  '');
-              String x =await  user.user.getIdToken();
-              _token = x;
-
-              final _signInUsingFBorG = json.encode({
-                'isSignInUsingFaceBook': 'true',
-                'isSignInUsingGoogle': 'false',
-              });
-              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
-              returns = 'true';
-            }
-          }
+//              String x =await  user.user.getIdToken();
+//              _token = x;
+//
+//              final _signInUsingFBorG = json.encode({
+//                'isSignInUsingFaceBook': 'true',
+//                'isSignInUsingGoogle': 'false',
+//              });
+//              prefs.setString('signInUsingFBorG', _signInUsingFBorG);
+//              returns = 'true';
+//            }
+//          }
           print('D');
-          return returns;
+          return 'false';
       }
      else{
        final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
@@ -317,7 +334,7 @@ Future<bool>  checkIsPatientVerify()async{
           var patientData = databaseReference.collection("users");
           DocumentSnapshot doc = await patientData.doc(_userId).get();
           print('A');
-          if(!doc.exists || !doc.data().toString().contains('nationalId')){
+          if(doc.exists == false){
             _userData = UserData(
                 specializationBranch: '',
                 specialization: '',
@@ -337,17 +354,16 @@ Future<bool>  checkIsPatientVerify()async{
             });
             returns = 'GoToRegister';
           }else{
-
             print('B');
             _userData = UserData(
                 specializationBranch: '',
                 specialization: '',
-                isVerify: doc.toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
-                name: doc.toString().contains('name')? doc['name']:'Patient',
-                points: doc.toString().contains('points')? doc['points']:'0',
+                isVerify: doc.data().toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
+                name: doc.data().toString().contains('name')? doc.get('name'):'Patient',
+                points: doc.data().toString().contains('points')? doc['points']:'0',
                 docId: doc.id,
                 nationalId: getData(document: doc,key: 'nationalId'),
-                gender: getData(document: doc,key: 'nationalId'),
+                gender: getData(document: doc,key: 'gender'),
                 birthDate: getData(document: doc,key: 'birthDate'),
                 address: getData(document: doc,key: 'address'),
                 lat: getData(document: doc,key: 'lat'),
@@ -433,12 +449,12 @@ Future<bool>  checkIsPatientVerify()async{
                 _userData = UserData(
                     specializationBranch: '',
                     specialization: '',
-                    isVerify: doc.toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
-                    name: doc.toString().contains('name')? doc['name']:'Patient',
-                    points: doc.toString().contains('points')? doc['points']:'0',
+                    isVerify: doc.data().toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
+                    name: doc.data().toString().contains('name')? doc['name']:'Patient',
+                    points: doc.data().toString().contains('points')? doc['points']:'0',
                     docId: doc.id,
                     nationalId: getData(document: doc,key: 'nationalId'),
-                    gender: getData(document: doc,key: 'nationalId'),
+                    gender: getData(document: doc,key: 'gender'),
                     birthDate: getData(document: doc,key: 'birthDate'),
                     address: getData(document: doc,key: 'address'),
                     lat: getData(document: doc,key: 'lat'),
@@ -523,12 +539,12 @@ Future<bool>  checkIsPatientVerify()async{
                     _userData = UserData(
                         specializationBranch: '',
                         specialization: '',
-                        isVerify: doc.toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
-                        name: doc.toString().contains('name')? doc['name']:'Patient',
-                        points: doc.toString().contains('points')? doc['points']:'0',
+                        isVerify: doc.data().toString().contains('isVerify')? doc['isVerify'] =='false'?'false':'true':'',
+                        name: doc.data().toString().contains('name')? doc['name']:'Patient',
+                        points: doc.data().toString().contains('points')? doc['points']:'0',
                         docId: doc.id,
                         nationalId: getData(document: doc,key: 'nationalId'),
-                        gender: getData(document: doc,key: 'nationalId'),
+                        gender: getData(document: doc,key: 'gender'),
                         birthDate: getData(document: doc,key: 'birthDate'),
                         address: getData(document: doc,key: 'address'),
                         lat: getData(document: doc,key: 'lat'),
@@ -567,19 +583,22 @@ Future<bool>  checkIsPatientVerify()async{
 
   Future<void>  getNurseRating()async{
     var users = databaseReference.collection("nurses");
-     users.doc(_userId).collection('rating').doc('rating').snapshots().listen((rating){
+    print('frgry5r');
+     users.doc(_userId).collection('rating').doc('rating').snapshots().listen((DocumentSnapshot<Map<String, dynamic>> rating){
+       print('dfgsfgsdf');
         if(rating.exists) {
-          int one = rating.toString().contains('1')? int.parse(rating.get('1')): 0 ;
-          int two = rating.toString().contains('2')? int.parse(rating.get('2')): 0 ;
-          int three = rating.toString().contains('3')? int.parse(rating.get('3')): 0 ;
-          int four = rating.toString().contains('4')? int.parse(rating.get('4')): 0 ;
-          int five = rating.toString().contains('5')? int.parse(rating.get('5')): 0 ;
+          int one = rating.data().toString().contains('1')? int.parse(rating.data()['1']??'0'): 0 ;
+          int two = rating.data().toString().contains('2')? int.parse(rating.data()['2']??'0'): 0 ;
+          int three = rating.data().toString().contains('3')? int.parse(rating.data()['3']??'0'): 0 ;
+          int four = rating.data().toString().contains('4')? int.parse(rating.data()['4']??'0'): 0 ;
+          int five = rating.data().toString().contains('5')? int.parse(rating.data()['5']??'0'): 0 ;
           totalRatingForNurse =
               (5 * five + 4 * four + 3 * three + 2 * two + 1 * one) /
                   (one + two + three + four + five);
         }else{
           totalRatingForNurse =0.0;
         }
+
         notifyListeners();
       });
 
@@ -608,21 +627,21 @@ Future<bool>  checkIsPatientVerify()async{
       );
       if (auth != null) {
         _userId = auth.user.uid;
-        IdTokenResult x = await auth.user.getIdToken();
+        String x = await auth.user.getIdToken();
         DocumentSnapshot doc = await users.doc(_userId).get();
-        if (doc.toString().contains('address')||
-            doc.toString().contains('phoneNumber')||
-                doc.toString().contains('gender')) {
+        if (doc.data().toString().contains('address')||
+            doc.data().toString().contains('phoneNumber')||
+                doc.data().toString().contains('gender')) {
           if (isTryToLogin == false) {
             _userData = UserData(
                 specializationBranch: '',
                 specialization: '',
-                name: doc.toString().contains('name')? doc['name']:'Nurse',
+                name: doc.data().toString().contains('name')? doc['name']:'Nurse',
                 docId: doc.id,
                 rating: '0.0',
                 password: password,
                 nationalId: getData(document: doc,key: 'nationalId'),
-                gender: getData(document: doc,key: 'nationalId'),
+                gender: getData(document: doc,key: 'gender'),
                 birthDate: getData(document: doc,key: 'birthDate'),
                 address: getData(document: doc,key: 'address'),
                 lat: getData(document: doc,key: 'lat'),
@@ -637,13 +656,13 @@ Future<bool>  checkIsPatientVerify()async{
           }
         } else {
           _userData = UserData(
-              name: doc.toString().contains('name')? doc['name']:'Nurse',
+              name: doc.data().toString().contains('name')? doc['name']:'Nurse',
               docId: doc.id,
               specializationBranch:getData(document: doc,key: 'specializationBranch'),
               specialization: getData(document: doc,key: 'specialization'),
-              points: doc.toString().contains('points')? doc['points'].toString() : '0',
+              points: doc.data().toString().contains('points')? doc['points'].toString() : '0',
               nationalId: getData(document: doc,key: 'nationalId'),
-              gender: getData(document: doc,key: 'nationalId'),
+              gender: getData(document: doc,key: 'gender'),
               birthDate: getData(document: doc,key: 'birthDate'),
               address: getData(document: doc,key: 'address'),
               lat: getData(document: doc,key: 'lat'),
@@ -655,9 +674,9 @@ Future<bool>  checkIsPatientVerify()async{
               isRegisterData = true;
         }
         if (isTryToLogin) {
-          _token = x.token;
+          _token = x;
         } else {
-          _temporaryToken = x.token;
+          _temporaryToken = x;
         }
         print('isLogout ');
         print(isLogout);
@@ -713,7 +732,7 @@ Future<bool>  checkIsPatientVerify()async{
 
   Future<bool> addUserData({
     String name = '',
-    File pictureId,
+    var pictureId,
     String location = '',
     String lat,
     String lng,
@@ -725,13 +744,13 @@ Future<bool>  checkIsPatientVerify()async{
     String nationalId,
   }) async {
 
-
+print('dfdfd');
     int points = 0;
     if(name!= ''){
       points = points + 5;
     }
 
-
+print(location);
     print('rtr');
     var nurseData = databaseReference.collection("nurses");
     var patientData = databaseReference.collection("users");
@@ -741,7 +760,7 @@ Future<bool>  checkIsPatientVerify()async{
     print('picture');
     print(picture);
     final prefs = await SharedPreferences.getInstance();
-    if (!picture.toString().contains('https:')) {
+    if (picture.toString().contains('https:') == false) {
       try {
         var storageReference =  FirebaseStorage.instance
             .ref()
@@ -824,15 +843,15 @@ Future<bool>  checkIsPatientVerify()async{
       doc = await patientData.doc(_userId).get();
     }
     _userData = UserData(
-        name: doc.toString().contains('name')? doc['name']:'Nurse',
+        name: doc.data().toString().contains('name')? doc['name']:'Nurse',
         docId: doc.id,
         rating: '0.0',
-        isVerify: doc.toString().contains('isVerify')?doc['isVerify'] =='false'?'false':'true':'',
+        isVerify: doc.data().toString().contains('isVerify')?doc['isVerify'] =='false'?'false':'true':'',
         specializationBranch:getData(document: doc,key: 'specializationBranch'),
         specialization: getData(document: doc,key: 'specialization'),
-        points: doc.toString().contains('points')? doc['points'].toString() : '0',
+        points: doc.data().toString().contains('points')? doc['points'].toString() : '0',
         nationalId: getData(document: doc,key: 'nationalId'),
-        gender: getData(document: doc,key: 'nationalId'),
+        gender: getData(document: doc,key: 'gender'),
         birthDate: getData(document: doc,key: 'birthDate'),
         address: getData(document: doc,key: 'address'),
         lat: getData(document: doc,key: 'lat'),

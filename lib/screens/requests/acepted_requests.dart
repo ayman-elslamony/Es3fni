@@ -123,7 +123,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                   builder: (context) =>
                                                       ShowUserProfile(
                                                         type: translator
-                                                                    .currentLanguage ==
+                                                                    .activeLanguageCode ==
                                                                 "en"
                                                             ? 'Patient'
                                                             : 'مريض',
@@ -620,7 +620,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                               decoration:
                                                               InputDecoration(
                                                                 labelText: translator
-                                                                    .currentLanguage ==
+                                                                    .activeLanguageCode ==
                                                                     "en"
                                                                     ? "QR Code"
                                                                     : 'رمز التحقق',
@@ -695,11 +695,16 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                               validator:
                                                                   // ignore: missing_return
                                                                   (String value) {
+                                                                print(value);
+                                                                print( request.docId
+                                                                    .toLowerCase()
+                                                                    .substring(
+                                                                    0, 6));
                                                                 if (value
                                                                     .trim()
                                                                     .isEmpty) {
                                                                   return translator
-                                                                      .currentLanguage ==
+                                                                      .activeLanguageCode ==
                                                                       "en"
                                                                       ? "Please enter QR Code!"
                                                                       : 'من فضلك ادخل رمز التحقق';
@@ -709,11 +714,12 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                                     .length <
                                                                     6) {
                                                                   return translator
-                                                                      .currentLanguage ==
+                                                                      .activeLanguageCode ==
                                                                       "en"
                                                                       ? "Invalid QR Code!"
                                                                       : 'رمز التحقق خطاء';
                                                                 }
+
                                                                 if (value
                                                                     .trim()
                                                                     .toLowerCase() !=
@@ -722,7 +728,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                                         .substring(
                                                                         0, 6)) {
                                                                   return translator
-                                                                      .currentLanguage ==
+                                                                      .activeLanguageCode ==
                                                                       "en"
                                                                       ? "Invalid QR Code!"
                                                                       : 'رمز التحقق غير صحيح';
@@ -805,6 +811,7 @@ class _AcceptedRequestsState extends State<AcceptedRequests> {
                                                   onPressed: () async {
                                                     if (_formKey.currentState
                                                         .validate()) {
+
                                                       print('iam here');
                                                       bool x =
                                                       await _home.endRequest(

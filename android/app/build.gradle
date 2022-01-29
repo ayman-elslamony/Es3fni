@@ -45,8 +45,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.coder.helpme"
-        minSdkVersion 21
-        targetSdkVersion 31
+        minSdkVersion 22
+        targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -66,7 +66,9 @@ flutter {
 }
 
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:29.0.1')
-    implementation 'com.google.firebase:firebase-auth'
+    implementation platform('com.google.firebase:firebase-bom:29.0.4')
+   // implementation 'com.google.firebase:firebase-auth'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:multidex:1.0.3'
+
 }

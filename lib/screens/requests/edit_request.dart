@@ -827,7 +827,7 @@ class _EditRequestState extends State<EditRequest> {
                   child: _isLoading
                       ? Center(
                           child: CircularProgressIndicator(
-                            backgroundColor: Colors.indigo,
+                            color: Colors.indigo,
                           ),
                         )
                       : Stepper(
@@ -1248,7 +1248,7 @@ class _EditRequestState extends State<EditRequest> {
                                                           side: BorderSide(color: Colors.indigo)
                                                       ),
                                                       initialValue: translator
-                                                                  .currentLanguage ==
+                                                                  .activeLanguageCode ==
                                                               "en"
                                                           ? 'Age'
                                                           : 'السن',
@@ -1349,7 +1349,7 @@ class _EditRequestState extends State<EditRequest> {
                                                           side: BorderSide(color: Colors.indigo)
                                                       ),
                                                       initialValue: translator
-                                                                  .currentLanguage ==
+                                                                  .activeLanguageCode ==
                                                               "en"
                                                           ? 'Male'
                                                           : 'ذكر',
@@ -1470,7 +1470,7 @@ class _EditRequestState extends State<EditRequest> {
                                                                   side: BorderSide(color: Colors.indigo)
                                                               ),
                                                       initialValue: translator
-                                                                  .currentLanguage ==
+                                                                  .activeLanguageCode ==
                                                               "en"
                                                           ? 'Injection'
                                                           : 'حقنه',
@@ -1732,7 +1732,7 @@ class _EditRequestState extends State<EditRequest> {
                                                         side: BorderSide(color: Colors.indigo)
                                                     ),
                                                     initialValue: translator
-                                                        .currentLanguage ==
+                                                        .activeLanguageCode ==
                                                         "en"
                                                         ? 'otherwise'
                                                         : 'غير ذلك',
@@ -2008,7 +2008,7 @@ class _EditRequestState extends State<EditRequest> {
                                                         side: BorderSide(color: Colors.indigo)
                                                     ),
                                                     initialValue: translator
-                                                                .currentLanguage ==
+                                                                .activeLanguageCode ==
                                                             "en"
                                                         ? 'Male'
                                                         : 'ذكر',
@@ -2392,7 +2392,7 @@ class _EditRequestState extends State<EditRequest> {
                                                                       ),
                                                                       isLoadingCoupon
                                                                           ? CircularProgressIndicator(
-                                                                              backgroundColor: Colors.indigo,
+                                                                        color: Colors.indigo,
                                                                             )
                                                                           : FlatButton(
                                                                               child: Text(
@@ -2590,7 +2590,7 @@ class _EditRequestState extends State<EditRequest> {
                                                         currentTime:
                                                             DateTime.now(),
                                                         locale: translator
-                                                                    .currentLanguage ==
+                                                                    .activeLanguageCode ==
                                                                 "en"
                                                             ? LocaleType.en
                                                             : LocaleType.ar);
@@ -2644,7 +2644,7 @@ class _EditRequestState extends State<EditRequest> {
                                                         currentTime:
                                                             DateTime.now(),
                                                         locale: translator
-                                                                    .currentLanguage ==
+                                                                    .activeLanguageCode ==
                                                                 "en"
                                                             ? LocaleType.en
                                                             : LocaleType.ar);
@@ -3060,7 +3060,7 @@ class _EditRequestState extends State<EditRequest> {
                                               BorderSide(color: Colors.indigo),
                                         ),
                                       ),
-                                      keyboardType: TextInputType.text,
+                                      keyboardType: TextInputType.multiline,
                                       onChanged: (value) {
                                         _paramedicsData['notes'] = value.trim();
                                       },

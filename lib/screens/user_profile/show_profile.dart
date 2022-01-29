@@ -135,7 +135,7 @@ class _ShowUserProfileState extends State<ShowUserProfile> {
             body: isLoading
                 ? Center(
                     child: CircularProgressIndicator(
-                      backgroundColor: Colors.indigo,
+                      color: Colors.indigo,
                     ),
                   )
                 : _userData == null

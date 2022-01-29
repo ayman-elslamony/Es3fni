@@ -123,7 +123,7 @@ class _AllRequestsState extends State<AllRequests> {
                                           builder: (context) =>
                                               ShowUserProfile(
                                                 type: translator
-                                                    .currentLanguage ==
+                                                    .activeLanguageCode ==
                                                     "en"
                                                     ? 'Patient'
                                                     : 'مريض',
@@ -242,7 +242,7 @@ class _AllRequestsState extends State<AllRequests> {
                                         MaterialPageRoute(builder: (context) =>
                                             ShowImage(
                                               title: translator
-                                                  .currentLanguage == "en"
+                                                  .activeLanguageCode == "en"
                                                   ? 'Roshita or analysis Picture'
                                                   : 'صوره الروشته او التحليل',
                                               imgUrl: request.picture,
@@ -510,7 +510,7 @@ class _AllRequestsState extends State<AllRequests> {
                 children: <Widget>[
                   request.isLoading
                       ? CircularProgressIndicator(
-                    backgroundColor: Colors.indigo,
+                    color: Colors.indigo,
                   )
                       : RaisedButton(
                     onPressed: () async {
@@ -884,7 +884,7 @@ class _AllRequestsState extends State<AllRequests> {
                                                         side: BorderSide(color: Colors.indigo)
                                                     ),
                                                     initialValue: translator
-                                                        .currentLanguage ==
+                                                        .activeLanguageCode ==
                                                         "en"
                                                         ? 'All specialization'
                                                         : 'كل التخصصات',
